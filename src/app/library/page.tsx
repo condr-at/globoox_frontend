@@ -1,10 +1,6 @@
 'use client';
 
-<<<<<<< HEAD
-import { useEffect, useMemo, useState } from 'react';
-=======
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
->>>>>>> 27eaffa (feat: block-level reading progress + API integration)
 import { BookOpen, Plus } from 'lucide-react';
 import BookCard from '@/components/Store/BookCard';
 import UploadBookModal from '@/components/UploadBookModal';
@@ -12,12 +8,9 @@ import SignInToUploadModal from '@/components/SignInToUploadModal';
 import { useAppStore } from '@/lib/store';
 import { useBooks } from '@/lib/useBooks';
 import { useAuth } from '@/lib/hooks/useAuth';
-<<<<<<< HEAD
 import GoogleOneTap from '@/components/GoogleOneTap';
 import { trackBookOpened } from '@/lib/posthog';
-=======
 import { fetchReadingPosition, BookReadingProgress, ApiBook } from '@/lib/api';
->>>>>>> 27eaffa (feat: block-level reading progress + API integration)
 
 const FALLBACK_COVER = '/covers/great-gatsby.jpg';
 const FALLBACK_AUTHOR = 'Unknown author';
@@ -25,10 +18,11 @@ const FALLBACK_AUTHOR = 'Unknown author';
 export default function LibraryPage() {
   const { progress } = useAppStore();
   const { books, loading, error, hideBook, removeBook, refresh } = useBooks();
-<<<<<<< HEAD
   const { isAuthenticated, loading: authLoading } = useAuth(); // authLoading used for upload gate
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [progressData, setProgressData] = useState<Record<string, BookReadingProgress>>({});
+  const [progressLoading, setProgressLoading] = useState(false);
 
   // After OAuth redirect back with ?upload=1, auto-open upload modal
   useEffect(() => {
@@ -47,12 +41,6 @@ export default function LibraryPage() {
       setIsSignInOpen(true);
     }
   };
-=======
-  const { isAuthenticated } = useAuth();
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [progressData, setProgressData] = useState<Record<string, BookReadingProgress>>({});
-  const [progressLoading, setProgressLoading] = useState(false);
->>>>>>> 27eaffa (feat: block-level reading progress + API integration)
 
   // Fetch reading positions for all books (authenticated users only)
   const fetchAllProgress = useCallback(async (bookIds: string[]) => {
@@ -147,11 +135,7 @@ export default function LibraryPage() {
         <div className="container max-w-2xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
           <h1 className="text-2xl font-bold">Library</h1>
           <button
-<<<<<<< HEAD
             onClick={handleUploadClick}
-=======
-            onClick={() => setIsUploadOpen(true)}
->>>>>>> 27eaffa (feat: block-level reading progress + API integration)
             className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <Plus className="w-5 h-5" />

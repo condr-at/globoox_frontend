@@ -583,7 +583,6 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         enabled: !isTranslating && pagesReady,
     });
 
-<<<<<<< HEAD
     // ─── Current page blocks ──────────────────────────────────────────────────
     const currentPageBlockIds = useMemo(() => (
         pagesReady && pages[currentPageIdx] ? new Set(pages[currentPageIdx]) : new Set<string>()
@@ -606,8 +605,6 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         }
     }, [currentChapterIndex, currentPageIdx, chapters.length, pages.length, pagesReady, bookId]);
 
-=======
->>>>>>> 27eaffa (feat: block-level reading progress + API integration)
     // ─── Block-level progress ─────────────────────────────────────────────────
     const blockProgressPct = useMemo(() => {
         if (!pagesReady || pages.length === 0 || displayBlocks.length === 0) return 0;
