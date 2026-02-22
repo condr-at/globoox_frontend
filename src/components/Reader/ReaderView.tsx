@@ -225,11 +225,18 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     // Measure the available height for content after the header
     useEffect(() => {
         if (!contentAreaRef.current) return;
-        const ro = new ResizeObserver(() => {
-            if (contentAreaRef.current) setPageHeight(contentAreaRef.current.clientHeight);
-        });
+        const updateHeight = () => {
+            if (contentAreaRef.current) {
+                const el = contentAreaRef.current;
+                const style = window.getComputedStyle(el);
+                const pt = parseFloat(style.paddingTop) || 0;
+                const pb = parseFloat(style.paddingBottom) || 0;
+                setPageHeight(el.clientHeight - pt - pb);
+            }
+        };
+        const ro = new ResizeObserver(updateHeight);
         ro.observe(contentAreaRef.current);
-        setPageHeight(contentAreaRef.current.clientHeight);
+        updateHeight();
         return () => ro.disconnect();
     }, []);
 
