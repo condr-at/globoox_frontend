@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { createClient } from '@/lib/supabase/client';
-import { getSiteUrl } from '@/lib/supabase/utils';
 import { trackUserSignedUp } from '@/lib/posthog';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -64,14 +63,7 @@ function RegisterForm() {
 
     setLoading(true);
     const supabase = getSupabase();
-    const siteUrl = getSiteUrl();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(nextUrl)}`,
-      },
-    });
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       setError(error.message);
@@ -79,11 +71,15 @@ function RegisterForm() {
       return;
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    if (signInError) {
-      setError(signInError.message);
-      setLoading(false);
-      return;
+    // If Supabase email confirmation is disabled, session is returned immediately
+    if (!data.session) {
+      // Fallback: try signing in (handles edge cases)
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError(signInError.message);
+        setLoading(false);
+        return;
+      }
     }
 
     trackUserSignedUp('email');
