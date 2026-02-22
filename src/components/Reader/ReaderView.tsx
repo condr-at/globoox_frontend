@@ -583,16 +583,6 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         enabled: !isTranslating && pagesReady,
     });
 
-    // ─── Current page blocks ──────────────────────────────────────────────────
-    const currentPageBlockIds = useMemo(() => (
-        pagesReady && pages[currentPageIdx] ? new Set(pages[currentPageIdx]) : new Set<string>()
-    ), [pagesReady, pages, currentPageIdx]);
-
-    const currentPageBlocks = useMemo(
-        () => displayBlocks.filter((b) => currentPageBlockIds.has(b.id)),
-        [displayBlocks, currentPageBlockIds]
-    );
-
     // ─── Book finished detection ──────────────────────────────────────────────
     const bookFinishedTrackedRef = useRef(false);
     useEffect(() => {
