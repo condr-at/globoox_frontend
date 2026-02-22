@@ -121,6 +121,13 @@ export default function LibraryPage() {
         </section>
       </div>
 
+      <footer className="container max-w-2xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-muted-foreground">
+        Need help?{' '}
+        <a href="mailto:support@globoox.co" className="underline underline-offset-2 hover:text-foreground transition-colors">
+          support@globoox.co
+        </a>
+      </footer>
+
       <UploadBookModal
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
