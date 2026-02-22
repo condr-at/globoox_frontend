@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { createClient } from '@/lib/supabase/client';
+import { getSiteUrl } from '@/lib/supabase/utils';
 import { trackUserSignedUp } from '@/lib/posthog';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
