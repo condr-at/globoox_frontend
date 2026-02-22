@@ -122,9 +122,36 @@ export interface SaveReadingPositionRequest {
   updated_at_client?: string
 }
 
+export interface SaveReadingPositionResponse {
+  success: boolean
+  persisted: boolean
+  reason?: 'stale_client'
+  book_id?: string
+  chapter_id?: string
+  block_id?: string | null
+  block_position?: number | null
+  content_version?: number
+  total_blocks?: number
+  updated_at?: string
+}
+
+export interface BookReadingProgress {
+  book_id: string
+  chapter_id: string | null
+  block_id: string | null
+  block_position: number | null
+  total_blocks: number
+  content_version: number
+  updated_at: string | null
+}
+
 const GET_CACHE_TTL_MS = 2000
 const inflightGetRequests = new Map<string, Promise<unknown>>()
 const recentGetResponses = new Map<string, { expiresAt: number; value: unknown }>()
+
+// Reading position cache with TTL (30 seconds)
+const POSITION_CACHE_TTL_MS = 30000
+const positionCache = new Map<string, { data: ReadingPosition; expiresAt: number }>()
 
 function buildGetCacheKey(path: string, options?: RequestInit): string | null {
   const method = (options?.method ?? 'GET').toUpperCase()
@@ -347,16 +374,47 @@ export function updateBookLanguage(bookId: string, lang: string): Promise<ApiBoo
 }
 
 export function fetchReadingPosition(bookId: string): Promise<ReadingPosition> {
+  // Check cache first
+  const cached = positionCache.get(bookId)
+  if (cached && cached.expiresAt > Date.now()) {
+    return Promise.resolve(cached.data)
+  }
+
   return request<ReadingPosition>(`/api/books/${bookId}/reading-position`)
+    .then((data) => {
+      positionCache.set(bookId, {
+        data,
+        expiresAt: Date.now() + POSITION_CACHE_TTL_MS,
+      })
+      return data
+    })
 }
 
 export function saveReadingPosition(
   bookId: string,
   data: SaveReadingPositionRequest
-): Promise<{ success: boolean; persisted: boolean }> {
-  return request<{ success: boolean; persisted: boolean }>(`/api/books/${bookId}/reading-position`, {
+): Promise<SaveReadingPositionResponse> {
+  // Invalidate position cache so next fetchReadingPosition gets fresh data
+  positionCache.delete(bookId)
+  return request<SaveReadingPositionResponse>(`/api/books/${bookId}/reading-position`, {
     method: 'PUT',
     body: JSON.stringify(data),
+  }).then((response) => {
+    // Update cache with the returned position so the next GET is already fresh
+    if (response.persisted && response.chapter_id) {
+      positionCache.set(bookId, {
+        data: {
+          book_id: bookId,
+          chapter_id: response.chapter_id,
+          block_id: response.block_id ?? null,
+          block_position: response.block_position ?? null,
+          lang: data.lang ?? null,
+          updated_at: response.updated_at ?? null,
+        },
+        expiresAt: Date.now() + POSITION_CACHE_TTL_MS,
+      })
+    }
+    return response
   })
 }
 

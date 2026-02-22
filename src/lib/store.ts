@@ -30,6 +30,9 @@ interface ReadingProgress {
     chapter: number;
     progress: number;
     lastRead: string;
+    totalBlocks?: number;
+    blockProgress?: number;
+    serverUpdatedAt?: string;
   };
 }
 
@@ -55,6 +58,10 @@ interface AppState {
   progress: ReadingProgress;
   updateProgress: (bookId: string, chapter: number, progress: number) => void;
   getProgress: (bookId: string) => { chapter: number; progress: number } | null;
+  updateServerProgress: (
+    bookId: string,
+    data: { blockPosition?: number; totalBlocks?: number; serverUpdatedAt: string }
+  ) => void;
 
   // Block-level reading anchor (per book)
   readingAnchors: Record<string, ReadingAnchor>;
@@ -119,6 +126,25 @@ export const useAppStore = create<AppState>()(
         if (!progress) return null;
         return { chapter: progress.chapter, progress: progress.progress };
       },
+
+      updateServerProgress: (bookId, data) =>
+        set((state) => {
+          const existing = state.progress[bookId] || { chapter: 0, progress: 0, lastRead: new Date().toISOString() };
+          const blockProgress = data.blockPosition != null && data.totalBlocks
+            ? Math.round((data.blockPosition / data.totalBlocks) * 100)
+            : existing.blockProgress;
+          return {
+            progress: {
+              ...state.progress,
+              [bookId]: {
+                ...existing,
+                totalBlocks: data.totalBlocks ?? existing.totalBlocks,
+                blockProgress,
+                serverUpdatedAt: data.serverUpdatedAt,
+              }
+            }
+          };
+        }),
 
       // Block-level reading anchors
       readingAnchors: {},
