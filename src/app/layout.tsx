@@ -52,7 +52,7 @@ export default function RootLayout({
         >
           <PostHogProvider />
           <div className="min-h-screen">
-            <main className="pb-[calc(60px+env(safe-area-inset-bottom))]">
+            <main>
               {children}
             </main>
           </div>
