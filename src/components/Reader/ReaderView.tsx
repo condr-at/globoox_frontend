@@ -69,18 +69,31 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     const { chapters, loading: chaptersLoading, error: chaptersError } = useChapters(bookId);
     const currentChapter = chapters[currentChapterIndex - 1] ?? null;
 
-    const { blocks, loading: contentLoading, error: contentError } = useChapterContent(
+    const { blocks, loading: contentLoading, error: contentError, isStale, blocksLang } = useChapterContent(
         currentChapter?.id ?? null,
         activeLang.toUpperCase()
     );
-
+    
     // displayBlocks starts from fetched blocks, gets progressively updated with translations
     const [displayBlocks, setDisplayBlocks] = useState<ContentBlock[]>([]);
+    // Track which language displayBlocks was derived from
+    const [displayBlocksLang, setDisplayBlocksLang] = useState<string | undefined>(undefined);
 
-    // Reset displayBlocks when blocks from the content hook change
+    // Reset displayBlocks when blocks from the content hook change (new language loaded)
     useEffect(() => {
-        setDisplayBlocks(blocks);
-    }, [blocks]);
+        // Only update if blocks are for the correct language (not stale)
+        if (blocksLang === activeLang.toUpperCase()) {
+            setDisplayBlocks(blocks);
+            setDisplayBlocksLang(blocksLang);
+        }
+    }, [blocks, blocksLang, activeLang]);
+
+    // Content is effectively loading if:
+    // - fetch is in progress
+    // - blocks are stale (from different language)
+    // - displayBlocks hasn't been synced with current language yet
+    const isDisplayBlocksSynced = displayBlocksLang === activeLang.toUpperCase();
+    const isContentLoading = contentLoading || isStale || !isDisplayBlocksSynced;
 
     // Merge translated blocks into displayBlocks
     const handleBlocksTranslated = useCallback((translated: ContentBlock[]) => {
@@ -108,13 +121,13 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     // Clear translation glow when content finishes loading
     const wasLoadingRef = useRef(false);
     useEffect(() => {
-        if (contentLoading) {
+        if (isContentLoading) {
             wasLoadingRef.current = true;
         } else if (wasLoadingRef.current) {
             wasLoadingRef.current = false;
             setIsTranslatingForBook(bookId, false);
         }
-    }, [bookId, contentLoading, setIsTranslatingForBook]);
+    }, [bookId, isContentLoading, setIsTranslatingForBook]);
 
     useEffect(() => {
         setBookLanguage(bookId, resolvedServerLang);
@@ -199,9 +212,29 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     // Extend prefetch window up to 10 pages ahead to ensure continuous translation pipeline
     const PREFETCH_PAGES_AHEAD = 10;
 
+    // Helper to convert fragment IDs to original block IDs for translation
+    const resolveBlockIds = useCallback((fragmentIds: string[]): string[] => {
+        const uniqueIds = new Set<string>();
+        for (const id of fragmentIds) {
+            // Check fragmentMap first, then look up in paginatedBlocks
+            const parentId = fragmentMapRef.current.get(id);
+            if (parentId) {
+                uniqueIds.add(parentId);
+            } else {
+                // Not a fragment, might be original ID - verify in paginatedBlocks
+                const block = paginatedBlocks.find((b) => b.id === id);
+                uniqueIds.add(block?.parentId ?? id);
+            }
+        }
+        return Array.from(uniqueIds);
+    }, [paginatedBlocks]);
+
     useEffect(() => {
-        if (!pagesReady || isSourceLang) return;
-        const currentIds = pages[currentPageIdx] ?? [];
+        // Don't enqueue translations while content is loading - wait for fresh data
+        if (!pagesReady || isSourceLang || isContentLoading) return;
+        const currentFragmentIds = pages[currentPageIdx] ?? [];
+        // Convert fragment IDs to original block IDs for the backend
+        const currentIds = resolveBlockIds(currentFragmentIds);
 
         // Current page blocks get HIGH priority - translate immediately
         if (currentIds.length > 0) {
@@ -210,17 +243,18 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         }
 
         // Prefetch next N pages (LOW priority) - ensures we always have a translation pipeline
-        const prefetchIds: string[] = [];
+        const prefetchFragmentIds: string[] = [];
         for (let i = 1; i <= PREFETCH_PAGES_AHEAD; i++) {
             const pageIds = pages[currentPageIdx + i] ?? [];
-            prefetchIds.push(...pageIds);
+            prefetchFragmentIds.push(...pageIds);
         }
+        const prefetchIds = resolveBlockIds(prefetchFragmentIds);
 
         if (prefetchIds.length > 0) {
             console.log(JSON.stringify({ event: 'prefetch_enqueue', pageIdx: currentPageIdx, pagesAhead: PREFETCH_PAGES_AHEAD, totalBlocks: prefetchIds.length }));
             enqueueBlocks(prefetchIds);
         }
-    }, [currentPageIdx, pagesReady, pages, enqueueBlocks, enqueueBlocksImmediate, isSourceLang]);
+    }, [currentPageIdx, pagesReady, pages, enqueueBlocks, enqueueBlocksImmediate, isSourceLang, isContentLoading, resolveBlockIds]);
 
     // Measure the available height for content after the header
     useEffect(() => {
@@ -245,8 +279,8 @@ export default function ReaderView({ bookId, title, availableLanguages, original
 
     // Recompute pages only when block structure or page height changes
     const blockStructureKey = useMemo(
-        () => `${normalizedBlocks.map((b) => b.id).join(',')}__${pageHeight}__${settings.fontSize}__${activeLang}`,
-        [normalizedBlocks, pageHeight, settings.fontSize, activeLang]
+        () => `${normalizedBlocks.map((b) => b.id).join(',')}__${pageHeight}__${settings.fontSize}__${displayBlocksLang}`,
+        [normalizedBlocks, pageHeight, settings.fontSize, displayBlocksLang]
     );
     const prevBlockStructureKey = useRef('');
 
@@ -274,7 +308,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                 pageHeight,
                 measureContainerRef.current,
                 settings.fontSize,
-                activeLang
+                displayBlocksLang ?? activeLang
             );
 
             setPages(computed.pages);
@@ -288,7 +322,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         return () => {
             cancelled = true;
         };
-    }, [blockStructureKey, pageHeight, normalizedBlocks, settings.fontSize, activeLang]);
+    }, [blockStructureKey, pageHeight, normalizedBlocks, settings.fontSize, displayBlocksLang, activeLang]);
 
     // ─── Anchor restore ──────────────────────────────────────────────────────
     // Set by language-switch handler: blockId + sentenceIndex to jump to on next page recompute
@@ -534,22 +568,27 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         if (block) saveAnchor(block.parentId ?? block.id, block.position, (block as any).sentenceIndex ?? 0);
 
         // Directly trigger prefetch for upcoming pages on every navigation
-        if (!isSourceLang && pagesReady) {
-            const prefetchIds: string[] = [];
+        // Skip while content is loading to avoid using stale block data
+        if (!isSourceLang && pagesReady && !isContentLoading) {
+            const prefetchFragmentIds: string[] = [];
             for (let i = 0; i <= PREFETCH_PAGES_AHEAD; i++) {
                 const pageIds = pages[idx + i] ?? [];
-                prefetchIds.push(...pageIds);
+                prefetchFragmentIds.push(...pageIds);
             }
-            if (prefetchIds.length > 0) {
+            if (prefetchFragmentIds.length > 0) {
                 // Current page (idx) as high priority, rest as prefetch
-                const currentPageIds = pages[idx] ?? [];
-                const futurePageIds = prefetchIds.filter(id => !currentPageIds.includes(id));
+                const currentFragmentIds = pages[idx] ?? [];
+                const futureFragmentIds = prefetchFragmentIds.filter(id => !currentFragmentIds.includes(id));
+                
+                // Convert fragment IDs to original block IDs
+                const currentIds = resolveBlockIds(currentFragmentIds);
+                const futureIds = resolveBlockIds(futureFragmentIds);
 
-                if (currentPageIds.length > 0) enqueueBlocksImmediate(currentPageIds);
-                if (futurePageIds.length > 0) enqueueBlocks(futurePageIds);
+                if (currentIds.length > 0) enqueueBlocksImmediate(currentIds);
+                if (futureIds.length > 0) enqueueBlocks(futureIds);
             }
         }
-    }, [pages, displayBlocks, saveAnchor, isSourceLang, pagesReady, enqueueBlocksImmediate, enqueueBlocks]);
+    }, [pages, displayBlocks, saveAnchor, isSourceLang, pagesReady, enqueueBlocksImmediate, enqueueBlocks, isContentLoading, resolveBlockIds]);
 
     const goToNextPage = useCallback(() => {
         if (currentPageIdx < pages.length - 1) {
@@ -634,16 +673,29 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         }
 
         const previousLang = activeLang;
+        
+        // Reset pagination state to force skeleton while new content loads
+        // (similar to goToChapter behavior)
+        setPagesReady(false);
+        setVisiblePagesReady(false);
+        setPages([]);
+        setPaginatedBlocks([]);
+        
         setPendingLang(lang);
         setIsTranslatingForBook(bookId, true);
 
         updateBookLanguage(bookId, lang)
             .then(() => {
-                setPendingLang(lang);
                 setBookLanguage(bookId, lang);
             })
             .catch(() => {
-                setPendingLang(previousLang === resolvedServerLang ? null : previousLang);
+                // Only revert if the user hasn't switched to another language since
+                setPendingLang((current) => {
+                    if (current === lang) {
+                        return previousLang === resolvedServerLang ? null : previousLang;
+                    }
+                    return current;
+                });
                 setIsTranslatingForBook(bookId, false);
                 pendingAnchorBlockId.current = null;
             });
@@ -681,7 +733,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         return Math.round((anchorIdx / paginatedBlocks.length) * 100);
     }, [pagesReady, pages, currentPageIdx, paginatedBlocks]);
 
-    const isLoading = chaptersLoading || contentLoading;
+    const isLoading = chaptersLoading || isContentLoading;
 
     // ─── Render ───────────────────────────────────────────────────────────────
     return (

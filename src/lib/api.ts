@@ -35,6 +35,7 @@ interface BaseBlock {
   partIndex?: number
   isFirstPart?: boolean
   isLastPart?: boolean
+  isTranslated?: boolean // True if block already has translation for requested language
 }
 
 export interface ParagraphBlock extends BaseBlock {
@@ -267,9 +268,9 @@ export function fetchChapters(bookId: string): Promise<ApiChapter[]> {
   return request<ApiChapter[]>(`/api/books/${bookId}/chapters`)
 }
 
-export function fetchContent(chapterId: string, lang?: string): Promise<ContentBlock[]> {
+export function fetchContent(chapterId: string, lang?: string, signal?: AbortSignal): Promise<ContentBlock[]> {
   const params = lang ? `?lang=${encodeURIComponent(lang.toUpperCase())}` : ''
-  return request<ContentBlock[]>(`/api/chapters/${chapterId}/content${params}`)
+  return request<ContentBlock[]>(`/api/chapters/${chapterId}/content${params}`, { signal })
 }
 
 export function translateBlocks(

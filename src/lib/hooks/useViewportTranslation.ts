@@ -82,13 +82,16 @@ export function useViewportTranslation({
   // Observer ref
   const observerRef = useRef<IntersectionObserver | null>(null)
 
-  // Reset all tracking when lang or chapterId changes
+  // Reset all tracking when lang, chapterId, or blocks change
+  // This ensures we don't queue translations for stale blocks during language switches
   useEffect(() => {
     // Abort any in-flight request for the old context
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
     }
+    
+    // Clear all tracking sets
     translatedIds.current.clear()
     pendingIds.current.clear()
     inflightIds.current.clear()
@@ -103,7 +106,15 @@ export function useViewportTranslation({
       clearTimeout(debounceTimer.current)
       debounceTimer.current = null
     }
-  }, [lang, chapterId])
+    
+    // Mark blocks that already have translations as translated
+    // This prevents unnecessary translation requests for pre-translated content
+    for (const block of blocks) {
+      if (block.isTranslated && !SKIP_TYPES.has(block.type)) {
+        translatedIds.current.add(block.id)
+      }
+    }
+  }, [lang, chapterId, blocks])
 
   // Check if translation is needed (not source language)
   const isSourceLang = sourceLanguage
@@ -280,6 +291,13 @@ export function useViewportTranslation({
         translatedIds.current.has(blockId) ||
         inflightIds.current.has(blockId)
       ) {
+        return
+      }
+      
+      // Skip if block is already translated (from content endpoint)
+      const block = blocksRef.current.find((b) => b.id === blockId)
+      if (block?.isTranslated) {
+        translatedIds.current.add(blockId)
         return
       }
       
