@@ -36,6 +36,7 @@ interface BaseBlock {
   isFirstPart?: boolean
   isLastPart?: boolean
   isTranslated?: boolean // True if block already has translation for requested language
+  is_pending?: boolean // True if translation is pending on the server
 }
 
 export interface ParagraphBlock extends BaseBlock {

@@ -44,6 +44,8 @@ export function useViewportTranslation({
   const bookIdRef = useRef(bookId)
   bookIdRef.current = bookId
   const [isTranslatingAny, setIsTranslatingAny] = useState(false)
+  // Expose pending block IDs as state for blur effect
+  const [pendingBlockIds, setPendingBlockIds] = useState<Set<string>>(new Set())
 
   // Tracking sets (use refs to avoid re-renders)
   const translatedIds = useRef(new Set<string>())
@@ -58,6 +60,18 @@ export function useViewportTranslation({
   // High-priority queue for current page blocks (takes precedence)
   const highPriorityPendingIds = useRef(new Set<string>())
   const highPriorityQueuedIds = useRef(new Set<string>())
+
+  // Helper to sync pendingBlockIds state with current queues
+  const updatePendingBlockIds = useCallback(() => {
+    const allPending = new Set<string>([
+      ...pendingIds.current,
+      ...inflightIds.current,
+      ...queuedIds.current,
+      ...highPriorityPendingIds.current,
+      ...highPriorityQueuedIds.current,
+    ])
+    setPendingBlockIds(allPending)
+  }, [])
 
   // Debounce timer
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -82,15 +96,19 @@ export function useViewportTranslation({
   // Observer ref
   const observerRef = useRef<IntersectionObserver | null>(null)
 
-  // Reset all tracking when lang, chapterId, or blocks change
-  // This ensures we don't queue translations for stale blocks during language switches
+  // Reset all tracking when lang or chapterId change.
+  // IMPORTANT: do NOT depend on `blocks` here — `blocks` is `displayBlocks` which
+  // gets a new reference on every single translation callback. Depending on it would
+  // cause a reset→abort→re-enqueue cascade producing dozens of canceled API calls.
+  // Pre-translated blocks are already handled by enqueueBlock() which checks
+  // block.isTranslated via blocksRef before sending any request.
   useEffect(() => {
     // Abort any in-flight request for the old context
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
     }
-    
+
     // Clear all tracking sets
     translatedIds.current.clear()
     pendingIds.current.clear()
@@ -101,20 +119,13 @@ export function useViewportTranslation({
     isInflight.current = false
     isInflightHighPriority.current = false
     setIsTranslatingAny(false)
+    setPendingBlockIds(new Set())
 
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current)
       debounceTimer.current = null
     }
-    
-    // Mark blocks that already have translations as translated
-    // This prevents unnecessary translation requests for pre-translated content
-    for (const block of blocks) {
-      if (block.isTranslated && !SKIP_TYPES.has(block.type)) {
-        translatedIds.current.add(block.id)
-      }
-    }
-  }, [lang, chapterId, blocks])
+  }, [lang, chapterId])
 
   // Check if translation is needed (not source language)
   const isSourceLang = sourceLanguage
@@ -173,6 +184,7 @@ export function useViewportTranslation({
     isInflight.current = true
     isInflightHighPriority.current = highPriorityPending.length > 0
     setIsTranslatingAny(true)
+    updatePendingBlockIds()
 
     const controller = new AbortController()
     abortControllerRef.current = controller
@@ -195,6 +207,7 @@ export function useViewportTranslation({
           // Each block resolves here as soon as the server emits it — one-by-one
           inflightIds.current.delete(result.blockId)
           translatedIds.current.add(result.blockId)
+          updatePendingBlockIds()
 
           if (result.status === 'ok') {
             result.cache === 'hit' ? hits++ : misses++
@@ -283,43 +296,48 @@ export function useViewportTranslation({
     }
   }, [flushPending])
 
-  // Enqueue a block for translation (low priority - prefetch)
+  // Enqueue a single block for translation.
+  // triggerFlush: when false, caller is responsible for calling scheduleFlush after
+  // batching multiple blocks. This avoids an abort cascade where each block in a
+  // loop aborts the in-flight batch started by the previous block.
   const enqueueBlock = useCallback(
-    (blockId: string, isHighPriority = false) => {
+    (blockId: string, isHighPriority = false, triggerFlush = true): boolean => {
       // Skip if already handled
       if (
         translatedIds.current.has(blockId) ||
         inflightIds.current.has(blockId)
       ) {
-        return
+        return false
       }
-      
+
       // Skip if block is already translated (from content endpoint)
       const block = blocksRef.current.find((b) => b.id === blockId)
       if (block?.isTranslated) {
         translatedIds.current.add(blockId)
-        return
+        return false
       }
-      
+
       // Skip if already in any queue (but allow upgrade to high priority)
-      const inPending = pendingIds.current.has(blockId) || highPriorityPendingIds.current.has(blockId)
-      const inQueued = queuedIds.current.has(blockId) || highPriorityQueuedIds.current.has(blockId)
-      
+      const inHighPending = highPriorityPendingIds.current.has(blockId)
+      const inHighQueued = highPriorityQueuedIds.current.has(blockId)
+      const inPending = pendingIds.current.has(blockId) || inHighPending
+      const inQueued = queuedIds.current.has(blockId) || inHighQueued
+
       if (isHighPriority) {
+        // Already in high-priority queue — no-op
+        if (inHighPending || inHighQueued) return false
         // Upgrade: remove from low-priority queues if present
         pendingIds.current.delete(blockId)
         queuedIds.current.delete(blockId)
       } else if (inPending || inQueued) {
         // Already queued, skip
-        return
+        return false
       }
 
       if (isInflight.current) {
         // Queue for next batch
         if (isHighPriority) {
           highPriorityQueuedIds.current.add(blockId)
-          // Always trigger flush for high-priority - it will abort in-flight and process immediately
-          scheduleFlush(true)
         } else {
           queuedIds.current.add(blockId)
         }
@@ -329,10 +347,13 @@ export function useViewportTranslation({
         } else {
           pendingIds.current.add(blockId)
         }
-        scheduleFlush(isHighPriority)
       }
+
+      if (triggerFlush) scheduleFlush(isHighPriority)
+      updatePendingBlockIds()
+      return true
     },
-    [scheduleFlush]
+    [scheduleFlush, updatePendingBlockIds]
   )
 
   // Set up IntersectionObserver
@@ -348,16 +369,18 @@ export function useViewportTranslation({
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
+        let enqueued = false
         for (const entry of entries) {
           if (entry.isIntersecting) {
             const el = entry.target as HTMLElement
             const blockId = el.dataset.blockId
             const blockType = el.dataset.blockType
             if (blockId && !SKIP_TYPES.has(blockType || '')) {
-              enqueueBlock(blockId)
+              if (enqueueBlock(blockId, false, false)) enqueued = true
             }
           }
         }
+        if (enqueued) scheduleFlush(false)
       },
       { rootMargin: ROOT_MARGIN }
     )
@@ -371,7 +394,7 @@ export function useViewportTranslation({
       observerRef.current?.disconnect()
       observerRef.current = null
     }
-  }, [isSourceLang, chapterId, lang, enqueueBlock])
+  }, [isSourceLang, chapterId, lang, enqueueBlock, scheduleFlush])
 
   // Ref callback for each block element
   const getRefCallback = useCallback(
@@ -413,6 +436,7 @@ export function useViewportTranslation({
       debounceTimer.current = null
     }
     setIsTranslatingAny(false)
+    setPendingBlockIds(new Set())
   }, [])
 
   // Cleanup on unmount
@@ -427,39 +451,37 @@ export function useViewportTranslation({
   }, [])
 
   // Enqueue a set of block IDs for prefetch translation (e.g. next page) - LOW PRIORITY
+  // All blocks are added to the queue first, then a single flush is triggered.
   const enqueueBlocks = useCallback((ids: string[]) => {
     let newCount = 0
     for (const id of ids) {
-      const wasNew = !translatedIds.current.has(id) && !pendingIds.current.has(id) && !inflightIds.current.has(id) && !queuedIds.current.has(id) && !highPriorityPendingIds.current.has(id) && !highPriorityQueuedIds.current.has(id)
-      enqueueBlock(id, false) // low priority
-      if (wasNew) newCount++
+      if (enqueueBlock(id, false, false)) newCount++
+    }
+    // Single flush after all blocks are queued
+    if (newCount > 0) {
+      scheduleFlush(false)
     }
     if (ids.length > 0) {
       console.log(JSON.stringify({ event: 'enqueue_blocks', chapterId: chapterIdRef.current, lang: langRef.current, requested: ids.length, newlyEnqueued: newCount, alreadyHandled: ids.length - newCount, priority: 'low' }))
     }
-  }, [enqueueBlock])
-  
+  }, [enqueueBlock, scheduleFlush])
+
   // Enqueue a set of block IDs for IMMEDIATE translation (current page) - HIGH PRIORITY
+  // All blocks are added to the queue first, then a single flush is triggered.
+  // This avoids the abort cascade where each block aborts the batch started by the previous one.
   const enqueueBlocksImmediate = useCallback((ids: string[]) => {
     let newCount = 0
     for (const id of ids) {
-      // Check ALL tracking sets to avoid duplicates
-      const wasNew = !translatedIds.current.has(id) && 
-                     !inflightIds.current.has(id) && 
-                     !pendingIds.current.has(id) && 
-                     !queuedIds.current.has(id) && 
-                     !highPriorityPendingIds.current.has(id) && 
-                     !highPriorityQueuedIds.current.has(id)
-      
-      if (wasNew) {
-        enqueueBlock(id, true) // high priority
-        newCount++
-      }
+      if (enqueueBlock(id, true, false)) newCount++
+    }
+    // Single flush after all blocks are queued — at most one abort of a prior in-flight batch
+    if (newCount > 0) {
+      scheduleFlush(true)
     }
     if (ids.length > 0) {
       console.log(JSON.stringify({ event: 'enqueue_blocks_immediate', chapterId: chapterIdRef.current, lang: langRef.current, requested: ids.length, newlyEnqueued: newCount, alreadyHandled: ids.length - newCount, priority: 'high' }))
     }
-  }, [enqueueBlock])
+  }, [enqueueBlock, scheduleFlush])
 
-  return { getRefCallback, isTranslatingAny, abortAll, enqueueBlocks, enqueueBlocksImmediate }
+  return { getRefCallback, isTranslatingAny, abortAll, enqueueBlocks, enqueueBlocksImmediate, pendingBlockIds }
 }

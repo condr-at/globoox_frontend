@@ -103,7 +103,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         });
     }, []);
 
-    const { getRefCallback, isTranslatingAny, abortAll, enqueueBlocks, enqueueBlocksImmediate } = useViewportTranslation({
+    const { getRefCallback, isTranslatingAny, abortAll, enqueueBlocks, enqueueBlocksImmediate, pendingBlockIds } = useViewportTranslation({
         bookId,
         chapterId: currentChapter?.id ?? null,
         lang: activeLang.toUpperCase(),
@@ -277,9 +277,19 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     // Normalized blocks split lists into items but keep paragraphs intact
     const normalizedBlocks = useMemo(() => normalizeBlocks(displayBlocks), [displayBlocks]);
 
-    // Recompute pages only when block structure or page height changes
+    // Recompute pages when block structure, text content, or page height changes.
+    // Including text lengths ensures pages recompute when translations arrive
+    // (translated text has different length than original → page breaks shift).
     const blockStructureKey = useMemo(
-        () => `${normalizedBlocks.map((b) => b.id).join(',')}__${pageHeight}__${settings.fontSize}__${displayBlocksLang}`,
+        () => {
+            const parts = normalizedBlocks.map((b) => {
+                let tl = 0;
+                if ('text' in b && typeof b.text === 'string') tl = b.text.length;
+                else if ('items' in b && Array.isArray(b.items)) tl = b.items.join('').length;
+                return `${b.id}:${tl}`;
+            });
+            return `${parts.join(',')}__${pageHeight}__${settings.fontSize}__${displayBlocksLang}`;
+        },
         [normalizedBlocks, pageHeight, settings.fontSize, displayBlocksLang]
     );
     const prevBlockStructureKey = useRef('');
@@ -566,29 +576,10 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         const anchorBlockId = pages[idx][0];
         const block = paginatedBlocks.find((b) => b.id === anchorBlockId);
         if (block) saveAnchor(block.parentId ?? block.id, block.position, (block as any).sentenceIndex ?? 0);
-
-        // Directly trigger prefetch for upcoming pages on every navigation
-        // Skip while content is loading to avoid using stale block data
-        if (!isSourceLang && pagesReady && !isContentLoading) {
-            const prefetchFragmentIds: string[] = [];
-            for (let i = 0; i <= PREFETCH_PAGES_AHEAD; i++) {
-                const pageIds = pages[idx + i] ?? [];
-                prefetchFragmentIds.push(...pageIds);
-            }
-            if (prefetchFragmentIds.length > 0) {
-                // Current page (idx) as high priority, rest as prefetch
-                const currentFragmentIds = pages[idx] ?? [];
-                const futureFragmentIds = prefetchFragmentIds.filter(id => !currentFragmentIds.includes(id));
-                
-                // Convert fragment IDs to original block IDs
-                const currentIds = resolveBlockIds(currentFragmentIds);
-                const futureIds = resolveBlockIds(futureFragmentIds);
-
-                if (currentIds.length > 0) enqueueBlocksImmediate(currentIds);
-                if (futureIds.length > 0) enqueueBlocks(futureIds);
-            }
-        }
-    }, [pages, displayBlocks, saveAnchor, isSourceLang, pagesReady, enqueueBlocksImmediate, enqueueBlocks, isContentLoading, resolveBlockIds]);
+        // Translation enqueue is handled by the useEffect on currentPageIdx change.
+        // No direct enqueue here to avoid double-enqueuing (which would cause an
+        // unnecessary abort of the batch the useEffect just started).
+    }, [pages, paginatedBlocks, saveAnchor]);
 
     const goToNextPage = useCallback(() => {
         if (currentPageIdx < pages.length - 1) {
@@ -818,11 +809,21 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                         ) : contentError ? (
                             <p className="text-sm text-destructive py-8 text-center">{contentError}</p>
                         ) : (
-                            currentPageBlocks.map((block) => (
-                                <div key={block.id} ref={getRefCallback(block.parentId ?? block.id, block.type)}>
-                                    <ContentBlockRenderer block={block} fontSize={settings.fontSize} />
-                                </div>
-                            ))
+                            (() => {
+                                // Find the first pending block to show "Translating..." label only on it
+                                let firstPendingFound = false;
+                                return currentPageBlocks.map((block) => {
+                                    const blockId = block.parentId ?? block.id;
+                                    const isPending = block.is_pending || pendingBlockIds.has(blockId);
+                                    const showTranslatingLabel = isPending && !firstPendingFound;
+                                    if (isPending && !firstPendingFound) firstPendingFound = true;
+                                    return (
+                                        <div key={block.id} ref={getRefCallback(blockId, block.type)}>
+                                            <ContentBlockRenderer block={block} fontSize={settings.fontSize} isPending={isPending} showTranslatingLabel={showTranslatingLabel} />
+                                        </div>
+                                    );
+                                });
+                            })()
                         )}
                     </div>
                 </TranslationGlow>
