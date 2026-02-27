@@ -190,6 +190,23 @@ Rules:
 - New switch invalidates previous job by `jobId`.
 - Late responses with old `jobId` are ignored.
 
+### 7.1 Glow policy (state-driven)
+
+Glow and translation visual indicators must be controlled by state machine, not timeout.
+
+Mapping:
+- `STABILIZING` -> `glow = on` (strong)
+- `UNLOCKED_READ_NOW` -> `glow = on` (soft)
+- `LIVE_READING` -> `glow = off`
+- `FAILED` -> `glow = off`
+- `IDLE` / `SWITCH_INIT` -> `glow = off`
+
+Rules:
+- Timeout cannot be the source of truth for glow visibility.
+- Timeout may only act as fail-safe if state transition event is missing.
+- Glow must be purely visual and must not affect layout metrics.
+- Any overlay label (`Translating...`) must remain absolute-positioned and excluded from page height calculations.
+
 ---
 
 ## 8) Cancellation and timeout policy
