@@ -783,7 +783,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                 }}
             >
                 <div className="flex items-center justify-between h-11 px-4">
-                    <Button variant="ghost" size="icon" asChild className="text-[var(--system-blue)] -ml-2 flex-shrink-0">
+                    <Button variant="ghost" size="icon" asChild className="text-[var(--system-blue)] -ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px]">
                         <Link href="/library">
                             <ChevronLeft className="w-6 h-6 text-[var(--system-blue)]" strokeWidth={2.5} />
                         </Link>

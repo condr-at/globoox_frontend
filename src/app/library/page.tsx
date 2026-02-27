@@ -23,6 +23,18 @@ export default function LibraryPage() {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [progressData, setProgressData] = useState<Record<string, BookReadingProgress>>({});
   const [progressLoading, setProgressLoading] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Collapse header past 60px, expand when back under 20px
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > 60) setIsCollapsed(true);
+      else if (y < 20) setIsCollapsed(false);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // After OAuth redirect back with ?upload=1, auto-open upload modal
   useEffect(() => {
@@ -136,14 +148,21 @@ export default function LibraryPage() {
   const lastBook = lastReadEntry ? books.find((b) => b.id === lastReadEntry[0]) : null;
 
   return (
-    <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
+    <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))] [overflow-x:clip]">
       <GoogleOneTap />
       <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b">
-        <div className="container max-w-2xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">Library</h1>
+        <div className="container max-w-2xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 transition-[padding] duration-300 ease-in-out" style={{ paddingTop: isCollapsed ? 8 : 16, paddingBottom: isCollapsed ? 8 : 16 }}>
+          <h1 className={`font-bold transition-[font-size,line-height] duration-300 ease-in-out ${isCollapsed ? 'text-base' : 'text-2xl'}`}>Library</h1>
           <button
             onClick={handleUploadClick}
-            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-[opacity,transform] duration-300 ease-in-out"
+            style={{
+              padding: 8,
+              opacity: isCollapsed ? 0 : 1,
+              transform: isCollapsed ? 'scale(0)' : 'scale(1)',
+              pointerEvents: isCollapsed ? 'none' : 'auto',
+            }}
+            tabIndex={isCollapsed ? -1 : 0}
           >
             <Plus className="w-5 h-5" />
           </button>
