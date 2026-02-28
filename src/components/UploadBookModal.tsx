@@ -24,11 +24,34 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
 
   if (!isOpen) return null;
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const isLikelyEpub = async (selectedFile: File): Promise<boolean> => {
+    const normalizedName = selectedFile.name.trim().toLowerCase();
+    if (normalizedName.endsWith('.epub')) return true;
+
+    const mime = (selectedFile.type || '').toLowerCase();
+    if (mime === 'application/epub+zip') return true;
+
+    // Fallback for browsers that provide weak/empty MIME metadata.
+    // EPUB is a ZIP; by spec it contains "mimetypeapplication/epub+zip" near the beginning.
+    try {
+      const head = await selectedFile.slice(0, 1024).arrayBuffer();
+      const bytes = new Uint8Array(head);
+      const isZip = bytes.length >= 2 && bytes[0] === 0x50 && bytes[1] === 0x4b; // PK
+      if (!isZip) return false;
+      const text = new TextDecoder('latin1').decode(bytes).toLowerCase();
+      return text.includes('mimetypeapplication/epub+zip');
+    } catch {
+      return false;
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (!selectedFile.name.endsWith('.epub')) {
+      const valid = await isLikelyEpub(selectedFile);
+      if (!valid) {
         setError('Please select an EPUB file');
+        e.target.value = '';
         return;
       }
       setFile(selectedFile);
