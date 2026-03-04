@@ -41,6 +41,17 @@ interface ReaderViewProps {
     coverUrl?: string | null;
 }
 
+type PaginationCacheEntry = {
+    pages: string[][];
+    finalBlocks: ContentBlock[];
+    fragmentMap: Map<string, string>;
+    currentPageIdx: number;
+    savedAt: number;
+};
+
+// Module-level cache so it survives route navigation (unmount/remount).
+const paginationCache = new Map<string, PaginationCacheEntry>();
+
 export default function ReaderView({ bookId, title, availableLanguages, originalLanguage, serverLanguage, coverUrl }: ReaderViewProps) {
     const { isAuthenticated, loading: authLoading } = useAuth();
     const {
@@ -302,6 +313,13 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     );
     const prevBlockStructureKey = useRef('');
 
+    // In-memory pagination cache to avoid skeleton flashes on repeated opens.
+    // Keyed by computed layout + chapter to ensure correctness across font/viewport/lang changes.
+    const paginationCacheKey = useMemo(() => {
+        const chapterId = currentChapter?.id ?? '';
+        return `${bookId}::${chapterId}::${blockStructureKey}`;
+    }, [bookId, currentChapter?.id, blockStructureKey]);
+
     useEffect(() => {
         if (blockStructureKey === prevBlockStructureKey.current) return;
         if (pageHeight === 0 || normalizedBlocks.length === 0) return;
@@ -333,6 +351,15 @@ export default function ReaderView({ bookId, title, availableLanguages, original
             setPaginatedBlocks(computed.finalBlocks);
             fragmentMapRef.current = computed.fragmentMap;
             setPagesReady(true);
+
+            // Update cache for instant reopen.
+            paginationCache.set(paginationCacheKey, {
+                pages: computed.pages,
+                finalBlocks: computed.finalBlocks,
+                fragmentMap: computed.fragmentMap,
+                currentPageIdx,
+                savedAt: Date.now(),
+            });
         }
 
         measureAndCompute();
@@ -347,13 +374,34 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     const pendingAnchorBlockId = useRef<string | null>(null);
     const pendingAnchorSentenceIndex = useRef<number>(0);
 
-    // Reset pagination state when chapter changes
+    // Reset pagination state when chapter changes — but first try to restore from cache to avoid flashing skeletons.
     useEffect(() => {
+        const chapterId = currentChapter?.id ?? '';
+        if (!chapterId) return;
+
+        const cached = paginationCache.get(paginationCacheKey);
+        if (cached) {
+            setPages(cached.pages);
+            setPaginatedBlocks(cached.finalBlocks);
+            fragmentMapRef.current = cached.fragmentMap;
+            setPagesReady(true);
+            setCurrentPageIdx(Math.max(0, Math.min(cached.currentPageIdx, cached.pages.length - 1)));
+            setVisiblePagesReady(true);
+            return;
+        }
+
         setPagesReady(false);
         setVisiblePagesReady(false);
         setPages([]);
         setCurrentPageIdx(0);
     }, [currentChapter?.id]);
+
+    useEffect(() => {
+        if (!pagesReady || pages.length === 0) return;
+        const cached = paginationCache.get(paginationCacheKey);
+        if (!cached) return;
+        paginationCache.set(paginationCacheKey, { ...cached, currentPageIdx, savedAt: Date.now() });
+    }, [currentPageIdx, pagesReady, pages.length, paginationCacheKey]);
 
     // Authenticated users use backend as SSOT for reading position.
     // Guests keep purely local position in persisted store.
@@ -818,7 +866,17 @@ export default function ReaderView({ bookId, title, availableLanguages, original
             >
                 <div className="flex items-center justify-between h-11 px-4">
                     <Button variant="ghost" size="icon" asChild className="text-[var(--system-blue)] -ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px]">
-                        <Link href="/library">
+                        <Link
+                            href="/library"
+                            onClick={() => {
+                                try {
+                                    sessionStorage.setItem(
+                                        'globoox:last_read_book',
+                                        JSON.stringify({ bookId, at: Date.now() })
+                                    );
+                                } catch { /* ignore */ }
+                            }}
+                        >
                             <ChevronLeft className="w-6 h-6 text-[var(--system-blue)]" strokeWidth={2.5} />
                         </Link>
                     </Button>

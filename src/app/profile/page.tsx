@@ -8,31 +8,18 @@ import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/c
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { createClient } from '@/lib/supabase/client';
-import type { SupabaseClient, User as SupabaseUser } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 export default function ProfilePage() {
     const router = useRouter();
     const supabaseRef = useRef<SupabaseClient | null>(null);
-    const [user, setUser] = useState<SupabaseUser | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { user, loading } = useAuth();
     const [signingOut, setSigningOut] = useState(false);
 
     useEffect(() => {
         const supabase = createClient();
         supabaseRef.current = supabase;
-
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
-            setLoading(false);
-        };
-        getUser();
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-        });
-
-        return () => subscription.unsubscribe();
     }, []);
 
     const handleSignOut = async () => {
@@ -54,7 +41,7 @@ export default function ProfilePage() {
     return (
         <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
             {/* Header */}
-            <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b">
+            <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b">
                 <div className="container max-w-2xl mx-auto px-4 sm:px-6">
                     <h1 className="text-2xl font-bold py-4">Profile</h1>
                 </div>

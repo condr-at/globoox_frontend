@@ -18,6 +18,13 @@ export interface ApiBook {
   created_at: string
 }
 
+// Simple in-memory cache for book metadata to avoid spinners during in-app navigation.
+const bookByIdCache = new Map<string, ApiBook>()
+
+export function getCachedBookById(id: string): ApiBook | undefined {
+  return bookByIdCache.get(id)
+}
+
 export interface ApiChapter {
   id: string
   book_id: string
@@ -239,7 +246,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export function fetchBooks(status?: string): Promise<ApiBook[]> {
   const params = status ? `?status=${encodeURIComponent(status)}` : ''
-  return request<ApiBook[]>(`/api/books${params}`)
+  return request<ApiBook[]>(`/api/books${params}`).then((books) => {
+    for (const b of books) bookByIdCache.set(b.id, b)
+    return books
+  })
 }
 
 export function fetchBook(id: string): Promise<ApiBook> {
@@ -248,6 +258,7 @@ export function fetchBook(id: string): Promise<ApiBook> {
   return request<ApiBook[]>('/api/books').then((allBooks) => {
     const book = allBooks.find((item) => item.id === id)
     if (!book) throw new Error('Book not found')
+    bookByIdCache.set(book.id, book)
     return book
   })
 }

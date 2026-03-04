@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import ReaderView from '@/components/Reader/ReaderView';
-import { ApiBook, fetchBook } from '@/lib/api';
+import { ApiBook, fetchBook, getCachedBookById } from '@/lib/api';
 
 interface ReaderPageProps {
   params: Promise<{ id: string }>;
@@ -11,11 +11,18 @@ interface ReaderPageProps {
 
 export default function ReaderPage({ params }: ReaderPageProps) {
   const { id } = use(params);
-  const [book, setBook] = useState<ApiBook | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [book, setBook] = useState<ApiBook | null>(() => getCachedBookById(id) ?? null);
+  const [loading, setLoading] = useState(() => !getCachedBookById(id));
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    const cached = getCachedBookById(id);
+    if (cached) {
+      setBook(cached);
+      setLoading(false);
+      return;
+    }
+
     fetchBook(id)
       .then(setBook)
       .catch(() => setNotFound(true))

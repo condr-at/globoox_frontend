@@ -24,6 +24,21 @@ export default function LibraryPage() {
   const [progressLoading, setProgressLoading] = useState(false);
   const [progressFetchedOnce, setProgressFetchedOnce] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [justReadBookId, setJustReadBookId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('globoox:last_read_book');
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { bookId?: string; at?: number };
+      if (parsed?.bookId && typeof parsed.at === 'number' && Date.now() - parsed.at < 5 * 60 * 1000) {
+        setJustReadBookId(parsed.bookId);
+      }
+      sessionStorage.removeItem('globoox:last_read_book');
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Collapse header past 60px, expand when back under 20px
   useEffect(() => {
@@ -134,8 +149,20 @@ export default function LibraryPage() {
       )[0];
     }
 
-    // Avoid rendering an incorrect "Continue Reading" card before the first server progress fetch completes.
-    if (!progressFetchedOnce) return undefined;
+    // Before the first server progress fetch completes, prefer a recent local "just read" book to avoid hiding the section.
+    if (!progressFetchedOnce) {
+      if (justReadBookId && progress[justReadBookId]) return [justReadBookId, progress[justReadBookId]];
+
+      const local = Object.entries(progress).sort(
+        (a, b) => new Date(b[1].lastRead).getTime() - new Date(a[1].lastRead).getTime()
+      )[0];
+      if (local) {
+        const lastReadAt = new Date(local[1].lastRead).getTime();
+        if (Number.isFinite(lastReadAt) && Date.now() - lastReadAt < 5 * 60 * 1000) return local;
+      }
+
+      return undefined;
+    }
 
     // First try server updated_at
     const serverEntries = Object.entries(progressData)
@@ -152,14 +179,14 @@ export default function LibraryPage() {
     return Object.entries(progress).sort(
       (a, b) => new Date(b[1].lastRead).getTime() - new Date(a[1].lastRead).getTime()
     )[0];
-  }, [progressData, progress, isAuthenticated, progressFetchedOnce]);
+  }, [progressData, progress, isAuthenticated, progressFetchedOnce, justReadBookId]);
 
   const lastBook = lastReadEntry ? books.find((b) => b.id === lastReadEntry[0]) : null;
 
   return (
     <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
       <GoogleOneTap />
-      <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b">
+      <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b">
         <div className="container max-w-2xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 transition-[padding] duration-300 ease-in-out" style={{ paddingTop: isCollapsed ? 8 : 16, paddingBottom: isCollapsed ? 8 : 16 }}>
           <h1 className={`font-medium transition-[font-size,line-height] duration-300 ease-in-out -mt-1 ${isCollapsed ? 'text-base' : 'text-2xl'}`}>Library</h1>
           <button
@@ -201,7 +228,7 @@ export default function LibraryPage() {
 
         <section>
           <h2 className="text-lg font-semibold mb-4">All Books</h2>
-          {loading || progressLoading ? (
+          {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="aspect-[2/3] rounded-md bg-muted animate-pulse" />
