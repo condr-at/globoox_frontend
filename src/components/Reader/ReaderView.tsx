@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useAppStore, Language, ReadingAnchor } from '@/lib/store';
 import { fetchReadingPosition, saveReadingPosition, updateBookLanguage, translateChapterTitles } from '@/lib/api';
@@ -1018,11 +1018,10 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     variant="ghost"
                     size="sm"
                     onClick={goToPrevPage}
-                    disabled={!prevChapter}
+                    disabled={currentPageIdx === 0 && !prevChapter}
                     className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
                 >
-                    <ChevronLeft className="w-4 h-4" />
-                    <span className="max-w-[80px] truncate">{prevChapter?.title ?? ''}</span>
+                    <span className="truncate">{currentPageIdx === 0 ? '← Previous chapter' : '← Previous page'}</span>
                 </Button>
 
                 <span className="text-center tabular-nums">
@@ -1036,11 +1035,10 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     variant="ghost"
                     size="sm"
                     onClick={goToNextPage}
-                    disabled={!nextChapter}
+                    disabled={currentPageIdx >= pages.length - 1 && !nextChapter}
                     className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
                 >
-                    <span className="max-w-[80px] truncate">{nextChapter?.title ?? ''}</span>
-                    <ChevronRight className="w-4 h-4" />
+                    <span className="truncate">{currentPageIdx >= pages.length - 1 ? 'Next chapter →' : 'Next page →'}</span>
                 </Button>
             </div>
         </div>
