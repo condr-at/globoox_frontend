@@ -471,9 +471,26 @@ export function fetchSyncStatus(): Promise<SyncStatusResponse> {
   return request<SyncStatusResponse>('/api/sync/status')
 }
 
-export function uploadBook(formData: FormData): Promise<ApiBook & { chapter_count?: number }> {
-  return request<ApiBook & { chapter_count?: number }>('/api/books/upload', {
+export type UploadBookResponse =
+  | { jobId: string; bookId: string }
+  | (ApiBook & { chapter_count?: number })
+
+export function uploadBook(formData: FormData): Promise<UploadBookResponse> {
+  return request<UploadBookResponse>('/api/books/upload', {
     method: 'POST',
     body: formData,
   })
+}
+
+export type JobState = 'waiting' | 'active' | 'completed' | 'failed' | 'delayed'
+
+export interface JobStatus {
+  state: JobState
+  progress: number
+  result?: { bookId: string; title: string; author: string | null; chapterCount: number }
+  failReason?: string
+}
+
+export function getJobStatus(jobId: string): Promise<JobStatus> {
+  return request<JobStatus>(`/api/jobs/${jobId}`)
 }
