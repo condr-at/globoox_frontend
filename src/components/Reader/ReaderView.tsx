@@ -57,6 +57,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     const { user, isAuthenticated, loading: authLoading } = useAuth();
     const {
         settings,
+        syncVersions,
         setBookLanguage,
         setIsTranslatingForBook,
         setAnchor: storeSetAnchor,
@@ -328,6 +329,8 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         [normalizedBlocks, pageHeight, settings.fontSize, displayBlocksLang]
     );
     const prevBlockStructureKey = useRef('');
+    const lastProgressFetchAtRef = useRef<Map<string, number>>(new Map());
+    const lastHandledProgressScopeRef = useRef<string | null>(null);
 
     // In-memory pagination cache to avoid skeleton flashes on repeated opens.
     // Keyed by computed layout + chapter to ensure correctness across font/viewport/lang changes.
@@ -419,8 +422,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         paginationCache.set(paginationCacheKey, { ...cached, currentPageIdx, savedAt: Date.now() });
     }, [currentPageIdx, pagesReady, pages.length, paginationCacheKey]);
 
-    // Authenticated users use backend as SSOT for reading position.
-    // Guests keep purely local position in persisted store.
+    // Authenticated users: local-first anchor restore + conditional server revalidation.
     useEffect(() => {
         let cancelled = false;
 
@@ -431,47 +433,41 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         }
 
         const scopeKey = user?.id ?? 'guest';
+        const localAnchor = getAnchor(bookId);
+        const hasLocalAnchor = !!localAnchor;
+        const currentProgressScope = syncVersions.progress;
+        const scopeChanged =
+            !!currentProgressScope &&
+            currentProgressScope !== lastHandledProgressScopeRef.current;
+        const lastFetchAt = lastProgressFetchAtRef.current.get(bookId) ?? 0;
+        const ttlExpired = Date.now() - lastFetchAt > 5 * 60 * 1000;
+        const shouldFetchRemote = !hasLocalAnchor || scopeChanged || ttlExpired;
+
+        // Never block initial render if we already have local anchor.
+        setRemoteAnchorReady(hasLocalAnchor);
+        console.log(JSON.stringify({
+            event: 'reading_position_revalidate_decision',
+            bookId,
+            hasLocalAnchor,
+            scopeChanged,
+            ttlExpired,
+            shouldFetchRemote,
+        }));
 
         // Fast restore from persisted cache, then revalidate against server.
-        setRemoteAnchorReady(false);
+        if (!hasLocalAnchor) {
+            setRemoteAnchorReady(false);
+        }
         void getCachedReadingPosition(scopeKey, bookId).then((cached) => {
             if (cancelled) return;
             const remote = cached?.position;
             const chapterId = remote?.chapter_id;
             if (!chapterId) return;
 
-            const chapterIdx = chapters.findIndex((c) => c.id === chapterId);
-            if (chapterIdx >= 0) setCurrentChapterIndex(chapterIdx + 1);
-
-            if (remote.block_id && remote.block_position != null) {
-                storeSetAnchor(bookId, {
-                    chapterId,
-                    blockId: remote.block_id,
-                    blockPosition: remote.block_position,
-                    sentenceIndex: remote.sentence_index ?? 0,
-                    updatedAt: remote.updated_at ?? new Date().toISOString(),
-                });
-            }
-
-            setRemoteAnchorReady(true);
-        }).catch(() => {
-            // ignore
-        });
-
-        fetchReadingPosition(bookId)
-            .then((remote) => {
-                if (cancelled) return;
-
-                const chapterId = remote.chapter_id;
-                if (!chapterId) {
-                    setRemoteAnchorReady(true);
-                    return;
-                }
-
+            // Apply cached server anchor only when no stronger local anchor exists.
+            if (!hasLocalAnchor) {
                 const chapterIdx = chapters.findIndex((c) => c.id === chapterId);
-                if (chapterIdx >= 0) {
-                    setCurrentChapterIndex(chapterIdx + 1);
-                }
+                if (chapterIdx >= 0) setCurrentChapterIndex(chapterIdx + 1);
 
                 if (remote.block_id && remote.block_position != null) {
                     storeSetAnchor(bookId, {
@@ -482,8 +478,61 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                         updatedAt: remote.updated_at ?? new Date().toISOString(),
                     });
                 }
+            }
+
+            setRemoteAnchorReady(true);
+        }).catch(() => {
+            // ignore
+        });
+
+        if (!shouldFetchRemote) {
+            if (currentProgressScope) {
+                lastHandledProgressScopeRef.current = currentProgressScope;
+            }
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        fetchReadingPosition(bookId)
+            .then((remote) => {
+                if (cancelled) return;
+
+                const chapterId = remote.chapter_id;
+                if (!chapterId) {
+                    lastProgressFetchAtRef.current.set(bookId, Date.now());
+                    if (currentProgressScope) {
+                        lastHandledProgressScopeRef.current = currentProgressScope;
+                    }
+                    setRemoteAnchorReady(true);
+                    return;
+                }
+
+                // Soft reconcile: only force navigation when local anchor is missing
+                // or server progress scope definitely changed.
+                const shouldApplyRemoteAnchor = !hasLocalAnchor || scopeChanged;
+                if (shouldApplyRemoteAnchor) {
+                    const chapterIdx = chapters.findIndex((c) => c.id === chapterId);
+                    if (chapterIdx >= 0) {
+                        setCurrentChapterIndex(chapterIdx + 1);
+                    }
+
+                    if (remote.block_id && remote.block_position != null) {
+                        storeSetAnchor(bookId, {
+                            chapterId,
+                            blockId: remote.block_id,
+                            blockPosition: remote.block_position,
+                            sentenceIndex: remote.sentence_index ?? 0,
+                            updatedAt: remote.updated_at ?? new Date().toISOString(),
+                        });
+                    }
+                }
 
                 void setCachedReadingPosition(scopeKey, bookId, { position: remote, updatedAt: remote.updated_at ?? null });
+                lastProgressFetchAtRef.current.set(bookId, Date.now());
+                if (currentProgressScope) {
+                    lastHandledProgressScopeRef.current = currentProgressScope;
+                }
                 setRemoteAnchorReady(true);
             })
             .catch(() => {
@@ -495,7 +544,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         return () => {
             cancelled = true;
         };
-    }, [authLoading, chaptersLoading, isAuthenticated, bookId, chapters, storeSetAnchor, user?.id]);
+    }, [authLoading, chaptersLoading, isAuthenticated, bookId, chapters, storeSetAnchor, user?.id, getAnchor, syncVersions.progress]);
 
     useEffect(() => {
         if (!remoteAnchorReady) return;
