@@ -16,13 +16,17 @@ interface ReaderActionsMenuProps {
   currentChapter: number;
   onSelectChapter: (num: number) => void;
   disabled?: boolean;
+  onTocOpen?: () => void;
+  isTranslatingChapterTitles?: boolean;
 }
 
 export default function ReaderActionsMenu({
   book,
   currentChapter,
   onSelectChapter,
-  disabled
+  disabled,
+  onTocOpen,
+  isTranslatingChapterTitles,
 }: ReaderActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeModal, setActiveModal] = useState<'none' | 'toc' | 'settings'>('none');
@@ -43,6 +47,7 @@ export default function ReaderActionsMenu({
   const handleAction = (action: 'toc' | 'settings') => {
     setIsOpen(false);
     setActiveModal(action);
+    if (action === 'toc') onTocOpen?.();
   };
 
   return (
@@ -95,6 +100,7 @@ export default function ReaderActionsMenu({
         onSelectChapter={onSelectChapter}
         open={activeModal === 'toc'}
         onOpenChange={(open) => !open && setActiveModal('none')}
+        isTranslating={isTranslatingChapterTitles}
       />
 
       <ReaderSettings

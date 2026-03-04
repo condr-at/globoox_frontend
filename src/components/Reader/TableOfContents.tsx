@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { List, Check, X } from 'lucide-react';
+import { List, X, Loader2 } from 'lucide-react';
 
 interface Chapter {
     number: number;
@@ -16,6 +16,7 @@ interface TableOfContentsProps {
     onSelectChapter: (chapter: number) => void;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
+    isTranslating?: boolean;
 }
 
 export default function TableOfContents({
@@ -24,6 +25,7 @@ export default function TableOfContents({
     onSelectChapter,
     open: externalOpen,
     onOpenChange: setExternalOpen,
+    isTranslating = false,
 }: TableOfContentsProps) {
     const [internalOpen, setInternalOpen] = useState(false);
 
@@ -62,7 +64,12 @@ export default function TableOfContents({
             <div className="fixed inset-y-0 left-0 w-[320px] max-w-[85vw] bg-[var(--bg-grouped-secondary)] z-[201] flex flex-col safe-area-inset-top">
                 {/* Header */}
                 <div className="flex items-center justify-between p-[16px] border-b border-[var(--separator)]">
-                    <h3 className="text-[20px] font-semibold">Contents</h3>
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-[20px] font-semibold">Contents</h3>
+                        {isTranslating && (
+                            <Loader2 className="w-[16px] h-[16px] text-[var(--system-blue)] animate-spin" />
+                        )}
+                    </div>
                     <button
                         onClick={() => setIsOpen(false)}
                         className="p-[8px] -mr-[8px] rounded-full active:bg-[var(--fill-tertiary)] transition-colors"

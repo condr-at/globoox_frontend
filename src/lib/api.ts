@@ -23,6 +23,7 @@ export interface ApiChapter {
   book_id: string
   index: number
   title: string
+  translations?: Record<string, string>
   depth: number
   parent_id: string | null
   created_at: string
@@ -273,6 +274,16 @@ export function deleteBook(id: string): Promise<{ success: boolean }> {
 
 export function fetchChapters(bookId: string): Promise<ApiChapter[]> {
   return request<ApiChapter[]>(`/api/books/${bookId}/chapters`)
+}
+
+export function translateChapterTitles(
+  bookId: string,
+  lang: string,
+): Promise<{ results: { id: string; title: string }[] }> {
+  return request<{ results: { id: string; title: string }[] }>(
+    `/api/books/${bookId}/chapters/translate-titles`,
+    { method: 'POST', body: JSON.stringify({ lang: lang.toUpperCase() }) },
+  )
 }
 
 export function fetchContent(chapterId: string, lang?: string, signal?: AbortSignal): Promise<ContentBlock[]> {

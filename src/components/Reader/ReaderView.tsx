@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useAppStore, Language, ReadingAnchor } from '@/lib/store';
-import { fetchReadingPosition, saveReadingPosition, updateBookLanguage } from '@/lib/api';
+import { fetchReadingPosition, saveReadingPosition, updateBookLanguage, translateChapterTitles } from '@/lib/api';
 import { useChapters } from '@/lib/hooks/useChapters';
 import { useChapterContent } from '@/lib/hooks/useChapterContent';
 import { useViewportTranslation } from '@/lib/hooks/useViewportTranslation';
@@ -68,6 +68,17 @@ export default function ReaderView({ bookId, title, availableLanguages, original
 
     const { chapters, loading: chaptersLoading, error: chaptersError } = useChapters(bookId);
     const currentChapter = chapters[currentChapterIndex - 1] ?? null;
+
+    // Chapter title translation state
+    const [translatedChapterTitles, setTranslatedChapterTitles] = useState<Map<string, string>>(new Map());
+    const [isTranslatingChapterTitles, setIsTranslatingChapterTitles] = useState(false);
+    const translatingTitlesLangRef = useRef<string | null>(null);
+
+    // Reset translated titles when active language changes
+    useEffect(() => {
+        setTranslatedChapterTitles(new Map());
+        translatingTitlesLangRef.current = null;
+    }, [activeLang]);
 
     const { blocks, loading: contentLoading, error: contentError, isStale, blocksLang } = useChapterContent(
         currentChapter?.id ?? null,
@@ -647,6 +658,29 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         goToChapter(chapterIndex);
     }, [navigateTo, goToChapter]);
 
+    // ─── TOC open: translate chapter titles if needed ─────────────────────────
+    const handleTocOpen = useCallback(async () => {
+        const lang = activeLang.toUpperCase();
+        if (isSourceLang || !chapters.length) return;
+        // Skip if already translated or in progress for this lang
+        if (translatingTitlesLangRef.current === lang) return;
+        const missing = chapters.some((c) => c.title && !c.translations?.[lang]);
+        if (!missing) return;
+
+        translatingTitlesLangRef.current = lang;
+        setIsTranslatingChapterTitles(true);
+        try {
+            const { results } = await translateChapterTitles(bookId, lang);
+            const map = new Map<string, string>();
+            for (const r of results) map.set(r.id, r.title);
+            setTranslatedChapterTitles(map);
+        } catch {
+            // silently fail — original titles remain visible
+        } finally {
+            setIsTranslatingChapterTitles(false);
+        }
+    }, [activeLang, isSourceLang, chapters, bookId]);
+
     // ─── Language switch (lock anchor before, restore after) ─────────────────
     const handleLanguageChange = (lang: Language) => {
         trackLanguageSwitched({ book_id: bookId, from_language: activeLang, to_language: lang });
@@ -804,11 +838,19 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                             book={{
                                 id: bookId,
                                 languages,
-                                chapters: chapters.map((c) => ({ number: c.index, title: c.title })),
+                                chapters: chapters.map((c) => ({
+                                    number: c.index,
+                                    title: translatedChapterTitles.get(c.id)
+                                        || (activeLang && c.translations?.[activeLang.toUpperCase()])
+                                        || c.title,
+                                    depth: c.depth,
+                                })),
                             }}
                             currentChapter={currentChapterIndex}
                             onSelectChapter={handleSelectChapterFromToc}
                             disabled={false}
+                            onTocOpen={handleTocOpen}
+                            isTranslatingChapterTitles={isTranslatingChapterTitles}
                         />
                     </div>
                 </div>
