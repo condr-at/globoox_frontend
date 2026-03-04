@@ -43,6 +43,10 @@ export interface ReadingAnchor {
 }
 
 interface AppState {
+  // Persist hydration flag (runtime only)
+  hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
+
   // Reader settings
   settings: ReaderSettings;
   setFontSize: (size: number) => void;
@@ -56,6 +60,7 @@ interface AppState {
   // Reading progress (block-based)
   progress: ReadingProgress;
   updateProgress: (bookId: string, blockPosition: number, totalBlocks: number) => void;
+  touchLastRead: (bookId: string) => void;
   getProgress: (bookId: string) => { blockPosition?: number; totalBlocks?: number } | null;
   updateServerProgress: (
     bookId: string,
@@ -70,11 +75,22 @@ interface AppState {
   // Translation state
   isTranslatingByBook: Record<string, boolean>;
   setIsTranslatingForBook: (bookId: string, value: boolean) => void;
+
+  // Sync state – last known server timestamps per scope
+  syncVersions: {
+    library: string | null;
+    progress: string | null;
+    settings: string | null;
+  };
+  setSyncVersions: (versions: Partial<AppState['syncVersions']>) => void;
 }
 
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
+      hasHydrated: false,
+      setHasHydrated: (value) => set({ hasHydrated: value }),
+
       // Default settings
       settings: {
         fontSize: 16,
@@ -124,6 +140,20 @@ export const useAppStore = create<AppState>()(
           };
         }),
 
+      touchLastRead: (bookId) =>
+        set((state) => {
+          const existing = state.progress[bookId] || {};
+          return {
+            progress: {
+              ...state.progress,
+              [bookId]: {
+                ...existing,
+                lastRead: new Date().toISOString(),
+              }
+            }
+          };
+        }),
+
       getProgress: (bookId) => {
         const progress = get().progress[bookId];
         if (!progress) return null;
@@ -165,7 +195,18 @@ export const useAppStore = create<AppState>()(
             ...state.isTranslatingByBook,
             [bookId]: value,
           },
-        }))
+        })),
+
+      // Last known sync timestamps from the server
+      syncVersions: {
+        library: null,
+        progress: null,
+        settings: null,
+      },
+      setSyncVersions: (versions) =>
+        set((state) => ({
+          syncVersions: { ...state.syncVersions, ...versions },
+        })),
     }),
     {
       name: 'globoox-preview-storage',
@@ -174,7 +215,12 @@ export const useAppStore = create<AppState>()(
         perBookLanguages: state.perBookLanguages,
         progress: state.progress,
         readingAnchors: state.readingAnchors,
+        syncVersions: state.syncVersions,
       }),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) return;
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

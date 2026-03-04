@@ -10,19 +10,37 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import GoogleOneTap from '@/components/GoogleOneTap';
 import { trackBookOpened } from '@/lib/posthog';
 import { fetchReadingPosition, BookReadingProgress, ApiBook } from '@/lib/api';
+import { getCachedReadingPosition } from '@/lib/contentCache';
 
 const FALLBACK_COVER = '/covers/great-gatsby.jpg';
 const FALLBACK_AUTHOR = 'Unknown author';
 
 export default function LibraryPage() {
-  const { progress } = useAppStore();
-  const { books, loading, error, hideBook, removeBook, refresh } = useBooks();
-  const { isAuthenticated, loading: authLoading } = useAuth(); // authLoading used for upload gate
+  const { progress, touchLastRead } = useAppStore();
+  const syncProgressVersion = useAppStore((s) => s.syncVersions.progress);
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const scopeKey = isAuthenticated && user?.id ? user.id : 'guest';
+  const { books, loading, error, hideBook, removeBook, refresh } = useBooks({ scopeKey });
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [progressData, setProgressData] = useState<Record<string, BookReadingProgress>>({});
-  const [progressLoading, setProgressLoading] = useState(false);
+  const [progressFetchedOnce, setProgressFetchedOnce] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [justReadBookId, setJustReadBookId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('globoox:last_read_book');
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { bookId?: string; at?: number };
+      if (parsed?.bookId && typeof parsed.at === 'number' && Date.now() - parsed.at < 5 * 60 * 1000) {
+        setJustReadBookId(parsed.bookId);
+      }
+      sessionStorage.removeItem('globoox:last_read_book');
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Collapse header past 60px, expand when back under 20px
   useEffect(() => {
@@ -57,50 +75,92 @@ export default function LibraryPage() {
   const fetchAllProgress = useCallback(async (bookIds: string[]) => {
     if (!isAuthenticated || bookIds.length === 0) return;
 
-    setProgressLoading(true);
-    const results = await Promise.allSettled(
-      bookIds.map(id => fetchReadingPosition(id))
-    );
+    try {
+      const results = await Promise.allSettled(
+        bookIds.map(id => fetchReadingPosition(id))
+      );
 
-    const progressMap: Record<string, BookReadingProgress> = {};
-    results.forEach((result, idx) => {
-      if (result.status === 'fulfilled') {
-        const data = result.value;
-        const bookId = bookIds[idx];
-        // Use server value if present, otherwise fallback to local store (Fix #5)
-        const totalBlocks = data.total_blocks || progress[bookId]?.totalBlocks || 0;
+      const progressMap: Record<string, BookReadingProgress> = {};
+      results.forEach((result, idx) => {
+        if (result.status === 'fulfilled') {
+          const data = result.value;
+          const bookId = bookIds[idx];
+          // Use server value if present, otherwise fallback to local store (Fix #5)
+          const totalBlocks = data.total_blocks || progress[bookId]?.totalBlocks || 0;
 
-        progressMap[bookId] = {
-          book_id: data.book_id,
-          chapter_id: data.chapter_id,
-          block_id: data.block_id,
-          block_position: data.block_position,
-          total_blocks: totalBlocks,
-          content_version: 0,
-          updated_at: data.updated_at,
-        };
-      }
-    });
+          progressMap[bookId] = {
+            book_id: data.book_id,
+            chapter_id: data.chapter_id,
+            block_id: data.block_id,
+            block_position: data.block_position,
+            total_blocks: totalBlocks,
+            content_version: 0,
+            updated_at: data.updated_at,
+          };
+        }
+      });
 
-    setProgressData(progressMap);
-    setProgressLoading(false);
+      setProgressData(progressMap);
+    } finally {
+      setProgressFetchedOnce(true);
+    }
   }, [isAuthenticated, progress]);
 
-  // Fetch progress after books are loaded
-  // Note: We use a ref to avoid the set-state-in-effect warning
-  const hasFetchedRef = useRef(false);
-
-  // Reset fetch state on mount to ensure fresh data when returning to Library (Fix #4)
+  // Hydrate server reading positions from IndexedDB on load to avoid N requests on refresh.
   useEffect(() => {
-    hasFetchedRef.current = false;
-  }, []);
-
-  useEffect(() => {
-    if (books.length > 0 && !hasFetchedRef.current) {
-      hasFetchedRef.current = true;
-      void fetchAllProgress(books.map(b => b.id));
+    if (!isAuthenticated) {
+      setProgressFetchedOnce(true);
+      return;
     }
-  }, [books, fetchAllProgress]);
+
+    if (books.length === 0) {
+      setProgressData({});
+      setProgressFetchedOnce(false);
+      return;
+    }
+
+    let cancelled = false;
+    setProgressFetchedOnce(false);
+    void (async () => {
+      const entries = await Promise.all(
+        books.map(async (b) => {
+          const cached = await getCachedReadingPosition(scopeKey, b.id);
+          return [b.id, cached?.position ?? null] as const;
+        })
+      );
+
+      if (cancelled) return;
+
+      const progressMap: Record<string, BookReadingProgress> = {};
+      for (const [bookId, pos] of entries) {
+        if (!pos) continue;
+        progressMap[bookId] = {
+          book_id: pos.book_id,
+          chapter_id: pos.chapter_id,
+          block_id: pos.block_id,
+          block_position: pos.block_position,
+          total_blocks: pos.total_blocks ?? progress[bookId]?.totalBlocks ?? 0,
+          content_version: 0,
+          updated_at: pos.updated_at,
+        };
+      }
+      setProgressData(progressMap);
+      setProgressFetchedOnce(true);
+    })();
+
+    return () => { cancelled = true; };
+  }, [books, isAuthenticated, scopeKey, progress]);
+
+  // Only revalidate server reading positions when sync-check indicates progress changed.
+  const lastSyncProgressVersionRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (!syncProgressVersion) return;
+    if (lastSyncProgressVersionRef.current === syncProgressVersion) return;
+    lastSyncProgressVersionRef.current = syncProgressVersion;
+    if (books.length === 0) return;
+    void fetchAllProgress(books.map((b) => b.id));
+  }, [isAuthenticated, syncProgressVersion, books, fetchAllProgress]);
 
   // Get block-based progress for a book
   const getBookProgress = useCallback((book: ApiBook) => {
@@ -127,6 +187,27 @@ export default function LibraryPage() {
       )[0];
     }
 
+    // If user just opened a book, prefer it (even after server progress fetch) so Continue Reading feels instant.
+    if (justReadBookId && progress[justReadBookId]) {
+      const lastReadAt = new Date(progress[justReadBookId].lastRead).getTime();
+      if (Number.isFinite(lastReadAt) && Date.now() - lastReadAt < 5 * 60 * 1000) {
+        return [justReadBookId, progress[justReadBookId]];
+      }
+    }
+
+    // Before the first server progress fetch completes, prefer a recent local "just read" book to avoid hiding the section.
+    if (!progressFetchedOnce) {
+      const local = Object.entries(progress).sort(
+        (a, b) => new Date(b[1].lastRead).getTime() - new Date(a[1].lastRead).getTime()
+      )[0];
+      if (local) {
+        const lastReadAt = new Date(local[1].lastRead).getTime();
+        if (Number.isFinite(lastReadAt) && Date.now() - lastReadAt < 5 * 60 * 1000) return local;
+      }
+
+      return undefined;
+    }
+
     // First try server updated_at
     const serverEntries = Object.entries(progressData)
       .filter(([, data]) => data.updated_at != null)
@@ -142,14 +223,14 @@ export default function LibraryPage() {
     return Object.entries(progress).sort(
       (a, b) => new Date(b[1].lastRead).getTime() - new Date(a[1].lastRead).getTime()
     )[0];
-  }, [progressData, progress, isAuthenticated]);
+  }, [progressData, progress, isAuthenticated, progressFetchedOnce, justReadBookId]);
 
   const lastBook = lastReadEntry ? books.find((b) => b.id === lastReadEntry[0]) : null;
 
   return (
     <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
       <GoogleOneTap />
-      <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b">
+      <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b">
         <div className="container max-w-2xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 transition-[padding] duration-300 ease-in-out" style={{ paddingTop: isCollapsed ? 8 : 16, paddingBottom: isCollapsed ? 8 : 16 }}>
           <h1 className={`font-medium transition-[font-size,line-height] duration-300 ease-in-out -mt-1 ${isCollapsed ? 'text-base' : 'text-2xl'}`}>Library</h1>
           <button
@@ -183,7 +264,10 @@ export default function LibraryPage() {
                 onHide={hideBook}
                 onDelete={removeBook}
                 hideLabel="Hide"
-                onOpen={() => trackBookOpened({ book_id: lastBook.id, title: lastBook.title, source: 'library' })}
+                onOpen={() => {
+                  touchLastRead(lastBook.id);
+                  trackBookOpened({ book_id: lastBook.id, title: lastBook.title, source: 'library' });
+                }}
               />
             </div>
           </section>
@@ -191,7 +275,7 @@ export default function LibraryPage() {
 
         <section>
           <h2 className="text-lg font-semibold mb-4">All Books</h2>
-          {loading || progressLoading ? (
+          {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="aspect-[2/3] rounded-md bg-muted animate-pulse" />
@@ -212,7 +296,10 @@ export default function LibraryPage() {
                   onHide={hideBook}
                   onDelete={removeBook}
                   hideLabel="Hide"
-                  onOpen={() => trackBookOpened({ book_id: book.id, title: book.title, source: 'library' })}
+                  onOpen={() => {
+                    touchLastRead(book.id);
+                    trackBookOpened({ book_id: book.id, title: book.title, source: 'library' });
+                  }}
                 />
               ))}
             </div>

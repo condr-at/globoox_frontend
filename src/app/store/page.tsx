@@ -30,7 +30,7 @@ export default function StorePage() {
     return (
         <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
             {/* Header */}
-            <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b">
+            <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b">
                 <div className="container max-w-2xl mx-auto px-4 sm:px-6 py-4 space-y-3">
                     <h1 className="text-2xl font-bold">Store</h1>
 

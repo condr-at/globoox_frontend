@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ContentBlock, TranslatedBlockResult, TranslateDoneEvent, translateBlocksStreaming } from '@/lib/api'
 import { trackTranslationBatch } from '@/lib/posthog'
+import { setCachedTranslatedBlockText } from '@/lib/contentCache'
 
 interface UseViewportTranslationOptions {
   bookId: string
@@ -10,6 +11,7 @@ interface UseViewportTranslationOptions {
   lang: string
   blocks: ContentBlock[]
   sourceLanguage: string | null
+  canTranslate: boolean
   onBlocksTranslated: (translated: ContentBlock[]) => void
 }
 
@@ -24,10 +26,10 @@ const SKIP_TYPES = new Set(['image', 'hr'])
 /** Merge a translatedText string into the appropriate field(s) of a ContentBlock. */
 function applyTranslation(block: ContentBlock, translatedText: string): ContentBlock | null {
   if (block.type === 'paragraph' || block.type === 'quote' || block.type === 'heading') {
-    return { ...block, text: translatedText }
+    return { ...block, text: translatedText, isTranslated: true, is_pending: false }
   }
   if (block.type === 'list') {
-    return { ...block, items: translatedText.split('\n').filter(Boolean) }
+    return { ...block, items: translatedText.split('\n').filter(Boolean), isTranslated: true, is_pending: false }
   }
   // image / hr — no text translation
   return null
@@ -39,6 +41,7 @@ export function useViewportTranslation({
   lang,
   blocks,
   sourceLanguage,
+  canTranslate,
   onBlocksTranslated,
 }: UseViewportTranslationOptions) {
   const bookIdRef = useRef(bookId)
@@ -84,11 +87,13 @@ export function useViewportTranslation({
   const langRef = useRef(lang)
   const blocksRef = useRef(blocks)
   const onBlocksTranslatedRef = useRef(onBlocksTranslated)
+  const canTranslateRef = useRef(canTranslate)
 
   chapterIdRef.current = chapterId
   langRef.current = lang
   blocksRef.current = blocks
   onBlocksTranslatedRef.current = onBlocksTranslated
+  canTranslateRef.current = canTranslate
 
   // Element refs map: blockId -> DOM element
   const elementRefs = useRef(new Map<string, HTMLElement>())
@@ -135,6 +140,7 @@ export function useViewportTranslation({
   // Flush pending IDs: send a streaming translation request
   // isHighPriority: if true, these are current-page blocks that need immediate translation
   const flushPending = useCallback(async (isHighPriority = false) => {
+    if (!canTranslateRef.current) return
     if (!chapterIdRef.current) return
     
     // If ANY batch is in-flight and we have high-priority blocks, abort it
@@ -221,7 +227,12 @@ export function useViewportTranslation({
             const original = blocksRef.current.find((b) => b.id === result.blockId)
             if (original) {
               const translated = applyTranslation(original, result.translatedText)
-              if (translated) onBlocksTranslatedRef.current([translated])
+              if (translated) {
+                onBlocksTranslatedRef.current([translated])
+                if (chapterIdRef.current) {
+                  void setCachedTranslatedBlockText(chapterIdRef.current, langRef.current, translated)
+                }
+              }
             }
           }
         },
@@ -302,6 +313,7 @@ export function useViewportTranslation({
   // loop aborts the in-flight batch started by the previous block.
   const enqueueBlock = useCallback(
     (blockId: string, isHighPriority = false, triggerFlush = true): boolean => {
+      if (!canTranslateRef.current) return false
       // Skip if already handled
       if (
         translatedIds.current.has(blockId) ||
@@ -358,7 +370,7 @@ export function useViewportTranslation({
 
   // Set up IntersectionObserver
   useEffect(() => {
-    if (isSourceLang || !chapterId) {
+    if (isSourceLang || !chapterId || !canTranslate) {
       // No translation needed — clean up observer
       if (observerRef.current) {
         observerRef.current.disconnect()
@@ -394,7 +406,7 @@ export function useViewportTranslation({
       observerRef.current?.disconnect()
       observerRef.current = null
     }
-  }, [isSourceLang, chapterId, lang, enqueueBlock, scheduleFlush])
+  }, [isSourceLang, chapterId, lang, enqueueBlock, scheduleFlush, canTranslate])
 
   // Ref callback for each block element
   const getRefCallback = useCallback(

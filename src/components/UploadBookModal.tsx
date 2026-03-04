@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { X, Upload, Loader2, CheckCircle, FileText } from 'lucide-react';
-import { uploadBook } from '@/lib/api';
+import { getSignedUploadUrl, uploadToStorage, processBook, getJobStatus } from '@/lib/api';
 import { trackBookUploadStarted, trackBookUploaded, trackBookUploadFailed } from '@/lib/posthog';
 import * as Sentry from '@sentry/nextjs';
 
@@ -12,6 +12,9 @@ interface UploadBookModalProps {
   onUploaded?: (bookId: string) => void;
 }
 
+const POLL_INTERVAL_MS = 2000
+const POLL_TIMEOUT_MS = 10 * 60 * 1000 // 10 minutes max
+
 export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadBookModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -19,6 +22,7 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
   const [message, setMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   if (!isOpen) return null;
 
@@ -29,17 +33,13 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
     const mime = (selectedFile.type || '').toLowerCase();
     if (mime === 'application/epub+zip') return true;
 
-    // Fallback for browsers that provide weak/empty MIME metadata.
-    // EPUB is a ZIP; by spec it contains "mimetypeapplication/epub+zip" near the beginning.
     try {
       const head = await selectedFile.slice(0, 1024).arrayBuffer();
       const bytes = new Uint8Array(head);
-      const isZip = bytes.length >= 2 && bytes[0] === 0x50 && bytes[1] === 0x4b; // PK
+      const isZip = bytes.length >= 2 && bytes[0] === 0x50 && bytes[1] === 0x4b;
       if (!isZip) return false;
       const text = new TextDecoder('latin1').decode(bytes).toLowerCase();
-      // Some EPUB generators place the mimetype record deeper than the first 1KB.
       if (text.includes('mimetypeapplication/epub+zip')) return true;
-      // Loosen check: any ZIP that isn't clearly something else is allowed and will be verified by the parser later.
       console.warn('[upload] EPUB header not found in first 1KB, treating as ZIP fallback');
       return true;
     } catch {
@@ -61,12 +61,68 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
     }
   };
 
+  const pollJobStatus = (jobId: string, bookId: string, fileSizeKb: number, fileName: string) => {
+    const startedAt = Date.now()
+
+    const tick = async () => {
+      try {
+        const status = await getJobStatus(jobId)
+
+        // Map job progress (0–100) to upload bar range 40–95
+        const mappedProgress = 40 + Math.round((status.progress / 100) * 55)
+        setProgress(Math.min(mappedProgress, 95))
+
+        if (status.state === 'active' || status.state === 'waiting' || status.state === 'delayed') {
+          setMessage('Processing book…')
+          if (Date.now() - startedAt < POLL_TIMEOUT_MS) {
+            pollTimerRef.current = setTimeout(tick, POLL_INTERVAL_MS)
+          } else {
+            setError('Processing is taking longer than expected. Check back soon — the book will appear in your library when ready.')
+            setUploading(false)
+          }
+          return
+        }
+
+        if (status.state === 'completed' && status.result) {
+          trackBookUploaded({
+            title: status.result.title || fileName,
+            author: status.result.author || 'Unknown',
+            language: 'unknown',
+            chapter_count: status.result.chapterCount ?? 0,
+            file_size_kb: fileSizeKb,
+          })
+          Sentry.addBreadcrumb({ category: 'upload', message: 'upload.success', data: { bookId }, level: 'info' })
+          setProgress(100)
+          setMessage('Book uploaded successfully!')
+          setTimeout(() => { onUploaded?.(bookId); handleClose() }, 1500)
+          return
+        }
+
+        if (status.state === 'failed') {
+          throw new Error(status.failReason || 'Processing failed')
+        }
+
+        // Unknown state — retry
+        if (Date.now() - startedAt < POLL_TIMEOUT_MS) {
+          pollTimerRef.current = setTimeout(tick, POLL_INTERVAL_MS)
+        }
+      } catch (err: any) {
+        Sentry.captureException(err)
+        trackBookUploadFailed({ error: err.message || 'Processing failed', file_size_kb: fileSizeKb })
+        setError(err.message || 'Processing failed')
+        setUploading(false)
+      }
+    }
+
+    tick()
+  }
+
   const handleUpload = async () => {
     if (!file) return;
 
     setUploading(true);
     setProgress(10);
-    setMessage('Uploading book...');
+    setMessage('Preparing upload…');
     setError(null);
 
     const fileSizeKb = Math.round(file.size / 1024);
@@ -80,35 +136,44 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
         level: 'info',
       });
 
-      setProgress(30);
+      // Generate unique file path
+      const slug = file.name
+        .replace(/\.epub$/i, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 60);
+      const fileName = `${slug}-${Date.now()}-${Math.random().toString(36).substring(7)}.epub`;
 
-      const formData = new FormData();
-      formData.append('epub', file);
+      // Step 1: Get signed URL for direct upload
+      setProgress(15);
+      setMessage('Getting upload URL…');
+      const { signedUrl } = await getSignedUploadUrl('books', fileName);
 
-      const book = await uploadBook(formData);
+      // Step 2: Upload directly to Supabase Storage (bypasses server limits)
+      setProgress(25);
+      setMessage('Uploading book…');
+      await uploadToStorage(signedUrl, file, 'application/epub+zip');
 
+      // Step 3: Process the book on the server
+      setProgress(50);
+      setMessage('Processing book…');
+      const response = await processBook(fileName, file.name, file.size);
+
+      // Success
       trackBookUploaded({
-        title: book.title || file.name,
-        author: book.author || 'Unknown',
-        language: book.original_language ?? 'unknown',
-        chapter_count: book.chapter_count ?? 0,
+        title: file.name,
+        author: 'Unknown',
+        language: 'unknown',
+        chapter_count: response.chapter_count ?? 0,
         file_size_kb: fileSizeKb,
       });
 
-      Sentry.addBreadcrumb({
-        category: 'upload',
-        message: 'upload.success',
-        data: { bookId: book.id },
-        level: 'info',
-      });
-
+      Sentry.addBreadcrumb({ category: 'upload', message: 'upload.success', data: { bookId: response.id }, level: 'info' });
       setProgress(100);
       setMessage('Book uploaded successfully!');
 
-      setTimeout(() => {
-        onUploaded?.(book.id);
-        handleClose();
-      }, 1500);
+      setTimeout(() => { onUploaded?.(response.id); handleClose() }, 1500);
     } catch (err: any) {
       console.error('Upload error:', err);
       Sentry.captureException(err, {
@@ -121,6 +186,7 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
   };
 
   const handleClose = () => {
+    if (pollTimerRef.current) clearTimeout(pollTimerRef.current);
     setFile(null);
     setUploading(false);
     setProgress(0);

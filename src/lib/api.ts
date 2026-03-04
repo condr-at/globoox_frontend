@@ -1,4 +1,5 @@
 import { trackApiRequest } from './posthog'
+import { setCachedBookMeta } from './contentCache'
 
 // In browser we must call local Next.js API routes (/api/*), so auth can be injected by proxy.
 // Direct backend calls are allowed only during server-side execution.
@@ -18,11 +19,19 @@ export interface ApiBook {
   created_at: string
 }
 
+// Simple in-memory cache for book metadata to avoid spinners during in-app navigation.
+const bookByIdCache = new Map<string, ApiBook>()
+
+export function getCachedBookById(id: string): ApiBook | undefined {
+  return bookByIdCache.get(id)
+}
+
 export interface ApiChapter {
   id: string
   book_id: string
   index: number
   title: string
+  translations?: Record<string, string>
   depth: number
   parent_id: string | null
   created_at: string
@@ -162,6 +171,12 @@ const recentGetResponses = new Map<string, { expiresAt: number; value: unknown }
 const POSITION_CACHE_TTL_MS = 30000
 const positionCache = new Map<string, { data: ReadingPosition; expiresAt: number }>()
 
+/** Clears the entire reading-position cache (used by useSyncCheck on cross-device sync) */
+export function positionCacheInvalidateAll() {
+  positionCache.clear()
+}
+
+
 function buildGetCacheKey(path: string, options?: RequestInit): string | null {
   const method = (options?.method ?? 'GET').toUpperCase()
   if (method !== 'GET') return null
@@ -232,7 +247,14 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export function fetchBooks(status?: string): Promise<ApiBook[]> {
   const params = status ? `?status=${encodeURIComponent(status)}` : ''
-  return request<ApiBook[]>(`/api/books${params}`)
+  return request<ApiBook[]>(`/api/books${params}`).then((books) => {
+    for (const b of books) {
+      bookByIdCache.set(b.id, b)
+      // Best-effort: persist for fast reloads. Authenticated flows overwrite scoped caches when userId is known.
+      void setCachedBookMeta('guest', b)
+    }
+    return books
+  })
 }
 
 export function fetchBook(id: string): Promise<ApiBook> {
@@ -241,6 +263,8 @@ export function fetchBook(id: string): Promise<ApiBook> {
   return request<ApiBook[]>('/api/books').then((allBooks) => {
     const book = allBooks.find((item) => item.id === id)
     if (!book) throw new Error('Book not found')
+    bookByIdCache.set(book.id, book)
+    void setCachedBookMeta('guest', book)
     return book
   })
 }
@@ -267,6 +291,16 @@ export function deleteBook(id: string): Promise<{ success: boolean }> {
 
 export function fetchChapters(bookId: string): Promise<ApiChapter[]> {
   return request<ApiChapter[]>(`/api/books/${bookId}/chapters`)
+}
+
+export function translateChapterTitles(
+  bookId: string,
+  lang: string,
+): Promise<{ results: { id: string; title: string }[] }> {
+  return request<{ results: { id: string; title: string }[] }>(
+    `/api/books/${bookId}/chapters/translate-titles`,
+    { method: 'POST', body: JSON.stringify({ lang: lang.toUpperCase() }) },
+  )
 }
 
 export function fetchContent(chapterId: string, lang?: string, signal?: AbortSignal): Promise<ContentBlock[]> {
@@ -430,9 +464,81 @@ export function saveReadingPosition(
   })
 }
 
-export function uploadBook(formData: FormData): Promise<ApiBook & { chapter_count?: number }> {
-  return request<ApiBook & { chapter_count?: number }>('/api/books/upload', {
+export interface SyncStatusResponse {
+  account_version: string | null
+  scopes: {
+    library: string | null
+    progress: string | null
+    settings: string | null
+  }
+}
+
+export function fetchSyncStatus(): Promise<SyncStatusResponse> {
+  return request<SyncStatusResponse>('/api/sync/status')
+}
+
+export type UploadBookResponse =
+  | { jobId: string; bookId: string }
+  | (ApiBook & { chapter_count?: number })
+  | { id: string; chapter_count?: number }
+
+export interface SignedUrlResponse {
+  signedUrl: string
+  token: string
+  path: string
+}
+
+export interface ProcessBookResponse {
+  id: string
+  chapter_count?: number
+}
+
+/** Get a signed URL for direct upload to Supabase Storage */
+export function getSignedUploadUrl(bucket: string, path: string): Promise<SignedUrlResponse> {
+  return request<SignedUrlResponse>('/api/storage/signed-url', {
+    method: 'POST',
+    body: JSON.stringify({ bucket, path }),
+  })
+}
+
+/** Upload file directly to Supabase Storage using signed URL */
+export async function uploadToStorage(signedUrl: string, file: File, contentType: string): Promise<void> {
+  const res = await fetch(signedUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': contentType },
+    body: file,
+  })
+  if (!res.ok) {
+    const errorText = await res.text()
+    throw new Error(`Storage upload failed: ${errorText}`)
+  }
+}
+
+/** Process an already-uploaded EPUB file */
+export function processBook(filePath: string, fileName: string, fileSize: number): Promise<ProcessBookResponse> {
+  return request<ProcessBookResponse>('/api/books/process', {
+    method: 'POST',
+    body: JSON.stringify({ file_path: filePath, file_name: fileName, file_size: fileSize }),
+  })
+}
+
+/** @deprecated Use getSignedUploadUrl + uploadToStorage + processBook instead */
+export function uploadBook(formData: FormData): Promise<UploadBookResponse> {
+  return request<UploadBookResponse>('/api/books/upload', {
     method: 'POST',
     body: formData,
   })
+}
+
+export type JobState = 'waiting' | 'active' | 'completed' | 'failed' | 'delayed'
+
+export interface JobStatus {
+  state: JobState
+  progress: number
+  result?: { bookId: string; title: string; author: string | null; chapterCount: number }
+  failReason?: string
+}
+
+export function getJobStatus(jobId: string): Promise<JobStatus> {
+  return request<JobStatus>(`/api/jobs/${jobId}`)
 }

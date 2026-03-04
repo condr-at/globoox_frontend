@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useAppStore, Language, ReadingAnchor } from '@/lib/store';
-import { fetchReadingPosition, saveReadingPosition, updateBookLanguage } from '@/lib/api';
+import { fetchReadingPosition, saveReadingPosition, updateBookLanguage, translateChapterTitles } from '@/lib/api';
 import { useChapters } from '@/lib/hooks/useChapters';
 import { useChapterContent } from '@/lib/hooks/useChapterContent';
 import { useViewportTranslation } from '@/lib/hooks/useViewportTranslation';
@@ -12,6 +12,7 @@ import { usePageGestures } from '@/lib/hooks/usePageGestures';
 import { computePages, findPageForBlock, findPageForBlockAndSentence, findPageByBlockPosition, normalizeBlocks } from '@/lib/paginatorUtils';
 import { ContentBlock } from '@/lib/api';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { getCachedReadingPosition, setCachedReadingPosition, getCachedTocTitles, setCachedTocTitles } from '@/lib/contentCache';
 import {
   trackReadingSessionStarted,
   trackReadingSessionEnded,
@@ -41,10 +42,22 @@ interface ReaderViewProps {
     coverUrl?: string | null;
 }
 
+type PaginationCacheEntry = {
+    pages: string[][];
+    finalBlocks: ContentBlock[];
+    fragmentMap: Map<string, string>;
+    currentPageIdx: number;
+    savedAt: number;
+};
+
+// Module-level cache so it survives route navigation (unmount/remount).
+const paginationCache = new Map<string, PaginationCacheEntry>();
+
 export default function ReaderView({ bookId, title, availableLanguages, originalLanguage, serverLanguage, coverUrl }: ReaderViewProps) {
-    const { isAuthenticated, loading: authLoading } = useAuth();
+    const { user, isAuthenticated, loading: authLoading } = useAuth();
     const {
         settings,
+        syncVersions,
         setBookLanguage,
         setIsTranslatingForBook,
         setAnchor: storeSetAnchor,
@@ -69,7 +82,32 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     const { chapters, loading: chaptersLoading, error: chaptersError } = useChapters(bookId);
     const currentChapter = chapters[currentChapterIndex - 1] ?? null;
 
-    const { blocks, loading: contentLoading, error: contentError, isStale, blocksLang } = useChapterContent(
+    // Chapter title translation state
+    const [translatedChapterTitles, setTranslatedChapterTitles] = useState<Map<string, string>>(new Map());
+    const [isTranslatingChapterTitles, setIsTranslatingChapterTitles] = useState(false);
+    const translatingTitlesLangRef = useRef<string | null>(null);
+
+    // Reset translated titles when active language changes
+    useEffect(() => {
+        setTranslatedChapterTitles(new Map());
+        translatingTitlesLangRef.current = null;
+    }, [activeLang]);
+
+    // Best-effort: hydrate translated chapter titles from IndexedDB for fast reloads.
+    useEffect(() => {
+        let cancelled = false;
+        const scopeKey = user?.id ?? 'guest';
+        void getCachedTocTitles(scopeKey, bookId, activeLang).then((titles) => {
+            if (cancelled) return;
+            if (!titles) return;
+            setTranslatedChapterTitles(new Map(Object.entries(titles)));
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [bookId, activeLang, user?.id]);
+
+    const { blocks, loading: contentLoading, error: contentError, isStale, blocksLang, hasServerSnapshot } = useChapterContent(
         currentChapter?.id ?? null,
         activeLang.toUpperCase()
     );
@@ -109,6 +147,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         lang: activeLang.toUpperCase(),
         blocks: displayBlocks,
         sourceLanguage: originalLanguage ?? null,
+        canTranslate: hasServerSnapshot,
         onBlocksTranslated: handleBlocksTranslated,
     });
     void isTranslatingAny; // used by AppleIntelligenceGlow indirectly
@@ -290,6 +329,15 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         [normalizedBlocks, pageHeight, settings.fontSize, displayBlocksLang]
     );
     const prevBlockStructureKey = useRef('');
+    const lastProgressFetchAtRef = useRef<Map<string, number>>(new Map());
+    const lastHandledProgressScopeRef = useRef<string | null>(null);
+
+    // In-memory pagination cache to avoid skeleton flashes on repeated opens.
+    // Keyed by computed layout + chapter to ensure correctness across font/viewport/lang changes.
+    const paginationCacheKey = useMemo(() => {
+        const chapterId = currentChapter?.id ?? '';
+        return `${bookId}::${chapterId}::${blockStructureKey}`;
+    }, [bookId, currentChapter?.id, blockStructureKey]);
 
     useEffect(() => {
         if (blockStructureKey === prevBlockStructureKey.current) return;
@@ -322,6 +370,15 @@ export default function ReaderView({ bookId, title, availableLanguages, original
             setPaginatedBlocks(computed.finalBlocks);
             fragmentMapRef.current = computed.fragmentMap;
             setPagesReady(true);
+
+            // Update cache for instant reopen.
+            paginationCache.set(paginationCacheKey, {
+                pages: computed.pages,
+                finalBlocks: computed.finalBlocks,
+                fragmentMap: computed.fragmentMap,
+                currentPageIdx,
+                savedAt: Date.now(),
+            });
         }
 
         measureAndCompute();
@@ -336,16 +393,36 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     const pendingAnchorBlockId = useRef<string | null>(null);
     const pendingAnchorSentenceIndex = useRef<number>(0);
 
-    // Reset pagination state when chapter changes
+    // Reset pagination state when chapter changes — but first try to restore from cache to avoid flashing skeletons.
     useEffect(() => {
+        const chapterId = currentChapter?.id ?? '';
+        if (!chapterId) return;
+
+        const cached = paginationCache.get(paginationCacheKey);
+        if (cached) {
+            setPages(cached.pages);
+            setPaginatedBlocks(cached.finalBlocks);
+            fragmentMapRef.current = cached.fragmentMap;
+            setPagesReady(true);
+            setCurrentPageIdx(Math.max(0, Math.min(cached.currentPageIdx, cached.pages.length - 1)));
+            setVisiblePagesReady(true);
+            return;
+        }
+
         setPagesReady(false);
         setVisiblePagesReady(false);
         setPages([]);
         setCurrentPageIdx(0);
     }, [currentChapter?.id]);
 
-    // Authenticated users use backend as SSOT for reading position.
-    // Guests keep purely local position in persisted store.
+    useEffect(() => {
+        if (!pagesReady || pages.length === 0) return;
+        const cached = paginationCache.get(paginationCacheKey);
+        if (!cached) return;
+        paginationCache.set(paginationCacheKey, { ...cached, currentPageIdx, savedAt: Date.now() });
+    }, [currentPageIdx, pagesReady, pages.length, paginationCacheKey]);
+
+    // Authenticated users: local-first anchor restore + conditional server revalidation.
     useEffect(() => {
         let cancelled = false;
 
@@ -355,21 +432,42 @@ export default function ReaderView({ bookId, title, availableLanguages, original
             return;
         }
 
-        setRemoteAnchorReady(false);
-        fetchReadingPosition(bookId)
-            .then((remote) => {
-                if (cancelled) return;
+        const scopeKey = user?.id ?? 'guest';
+        const localAnchor = getAnchor(bookId);
+        const hasLocalAnchor = !!localAnchor;
+        const currentProgressScope = syncVersions.progress;
+        const scopeChanged =
+            !!currentProgressScope &&
+            currentProgressScope !== lastHandledProgressScopeRef.current;
+        const lastFetchAt = lastProgressFetchAtRef.current.get(bookId) ?? 0;
+        const ttlExpired = Date.now() - lastFetchAt > 5 * 60 * 1000;
+        const shouldFetchRemote = !hasLocalAnchor || scopeChanged || ttlExpired;
 
-                const chapterId = remote.chapter_id;
-                if (!chapterId) {
-                    setRemoteAnchorReady(true);
-                    return;
-                }
+        // Never block initial render if we already have local anchor.
+        setRemoteAnchorReady(hasLocalAnchor);
+        console.log(JSON.stringify({
+            event: 'reading_position_revalidate_decision',
+            bookId,
+            hasLocalAnchor,
+            scopeChanged,
+            ttlExpired,
+            shouldFetchRemote,
+        }));
 
+        // Fast restore from persisted cache, then revalidate against server.
+        if (!hasLocalAnchor) {
+            setRemoteAnchorReady(false);
+        }
+        void getCachedReadingPosition(scopeKey, bookId).then((cached) => {
+            if (cancelled) return;
+            const remote = cached?.position;
+            const chapterId = remote?.chapter_id;
+            if (!chapterId) return;
+
+            // Apply cached server anchor only when no stronger local anchor exists.
+            if (!hasLocalAnchor) {
                 const chapterIdx = chapters.findIndex((c) => c.id === chapterId);
-                if (chapterIdx >= 0) {
-                    setCurrentChapterIndex(chapterIdx + 1);
-                }
+                if (chapterIdx >= 0) setCurrentChapterIndex(chapterIdx + 1);
 
                 if (remote.block_id && remote.block_position != null) {
                     storeSetAnchor(bookId, {
@@ -380,7 +478,61 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                         updatedAt: remote.updated_at ?? new Date().toISOString(),
                     });
                 }
+            }
 
+            setRemoteAnchorReady(true);
+        }).catch(() => {
+            // ignore
+        });
+
+        if (!shouldFetchRemote) {
+            if (currentProgressScope) {
+                lastHandledProgressScopeRef.current = currentProgressScope;
+            }
+            return () => {
+                cancelled = true;
+            };
+        }
+
+        fetchReadingPosition(bookId)
+            .then((remote) => {
+                if (cancelled) return;
+
+                const chapterId = remote.chapter_id;
+                if (!chapterId) {
+                    lastProgressFetchAtRef.current.set(bookId, Date.now());
+                    if (currentProgressScope) {
+                        lastHandledProgressScopeRef.current = currentProgressScope;
+                    }
+                    setRemoteAnchorReady(true);
+                    return;
+                }
+
+                // Soft reconcile: only force navigation when local anchor is missing
+                // or server progress scope definitely changed.
+                const shouldApplyRemoteAnchor = !hasLocalAnchor || scopeChanged;
+                if (shouldApplyRemoteAnchor) {
+                    const chapterIdx = chapters.findIndex((c) => c.id === chapterId);
+                    if (chapterIdx >= 0) {
+                        setCurrentChapterIndex(chapterIdx + 1);
+                    }
+
+                    if (remote.block_id && remote.block_position != null) {
+                        storeSetAnchor(bookId, {
+                            chapterId,
+                            blockId: remote.block_id,
+                            blockPosition: remote.block_position,
+                            sentenceIndex: remote.sentence_index ?? 0,
+                            updatedAt: remote.updated_at ?? new Date().toISOString(),
+                        });
+                    }
+                }
+
+                void setCachedReadingPosition(scopeKey, bookId, { position: remote, updatedAt: remote.updated_at ?? null });
+                lastProgressFetchAtRef.current.set(bookId, Date.now());
+                if (currentProgressScope) {
+                    lastHandledProgressScopeRef.current = currentProgressScope;
+                }
                 setRemoteAnchorReady(true);
             })
             .catch(() => {
@@ -392,7 +544,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         return () => {
             cancelled = true;
         };
-    }, [authLoading, chaptersLoading, isAuthenticated, bookId, chapters, storeSetAnchor]);
+    }, [authLoading, chaptersLoading, isAuthenticated, bookId, chapters, storeSetAnchor, user?.id, getAnchor, syncVersions.progress]);
 
     useEffect(() => {
         if (!remoteAnchorReady) return;
@@ -451,6 +603,23 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         storeSetAnchor(bookId, anchor);
         if (!isAuthenticated) return;
 
+        const scopeKey = user?.id ?? 'guest';
+        // Persist the last-known local anchor so reloads are instant even if the network write fails.
+        void setCachedReadingPosition(scopeKey, bookId, {
+            position: {
+                book_id: bookId,
+                chapter_id: anchor.chapterId,
+                block_id: anchor.blockId,
+                block_position: anchor.blockPosition,
+                sentence_index: anchor.sentenceIndex,
+                total_blocks: null,
+                lang: activeLang.toUpperCase(),
+                updated_at: anchor.updatedAt,
+            },
+            updatedAt: anchor.updatedAt,
+            pendingAnchor: anchor,
+        });
+
         void saveReadingPosition(bookId, {
             chapter_id: anchor.chapterId,
             block_id: anchor.blockId,
@@ -461,10 +630,24 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         }).then((response) => {
             if (response.persisted && response.updated_at) {
                 // Sync anchor timestamp with server so subsequent PUTs are never stale
-                storeSetAnchor(bookId, { ...anchor, updatedAt: response.updated_at });
+                const syncedAnchor = { ...anchor, updatedAt: response.updated_at };
+                storeSetAnchor(bookId, syncedAnchor);
                 if (lastAnchorRef.current?.blockId === anchor.blockId) {
-                    lastAnchorRef.current = { ...anchor, updatedAt: response.updated_at };
+                    lastAnchorRef.current = syncedAnchor;
                 }
+                void setCachedReadingPosition(scopeKey, bookId, {
+                    position: {
+                        book_id: bookId,
+                        chapter_id: anchor.chapterId,
+                        block_id: anchor.blockId,
+                        block_position: anchor.blockPosition,
+                        sentence_index: anchor.sentenceIndex,
+                        total_blocks: response.total_blocks ?? null,
+                        lang: activeLang.toUpperCase(),
+                        updated_at: response.updated_at,
+                    },
+                    updatedAt: response.updated_at,
+                });
             } else if (response.reason === 'stale_client') {
                 // Server has a newer position than us. Fetch it and update store + anchor
                 // so subsequent PUTs use the correct updated_at baseline.
@@ -482,6 +665,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                         if (lastAnchorRef.current?.blockId === anchor.blockId) {
                             lastAnchorRef.current = synced;
                         }
+                        void setCachedReadingPosition(scopeKey, bookId, { position: remote, updatedAt: remote.updated_at });
                     }
                 }).catch(() => { /* silently ignore */ });
             }
@@ -495,7 +679,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         }).catch(() => {
             // Keep local state as fallback when backend write fails.
         });
-    }, [bookId, storeSetAnchor, isAuthenticated, activeLang, updateServerProgress]);
+    }, [bookId, storeSetAnchor, isAuthenticated, activeLang, updateServerProgress, user?.id]);
 
     const saveAnchor = useCallback((blockId: string, blockPosition: number, sentenceIndex = 0) => {
         if (!currentChapter) return;
@@ -647,6 +831,31 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         goToChapter(chapterIndex);
     }, [navigateTo, goToChapter]);
 
+    // ─── TOC open: translate chapter titles if needed ─────────────────────────
+    const handleTocOpen = useCallback(async () => {
+        const lang = activeLang.toUpperCase();
+        if (isSourceLang || !chapters.length) return;
+        // Skip if already translated or in progress for this lang
+        if (translatingTitlesLangRef.current === lang) return;
+        const missing = chapters.some((c) => c.title && !c.translations?.[lang]);
+        if (!missing) return;
+
+        translatingTitlesLangRef.current = lang;
+        setIsTranslatingChapterTitles(true);
+        try {
+            const { results } = await translateChapterTitles(bookId, lang);
+            const map = new Map<string, string>();
+            for (const r of results) map.set(r.id, r.title);
+            setTranslatedChapterTitles(map);
+            const scopeKey = user?.id ?? 'guest';
+            void setCachedTocTitles(scopeKey, bookId, lang, Object.fromEntries(map.entries()));
+        } catch {
+            // silently fail — original titles remain visible
+        } finally {
+            setIsTranslatingChapterTitles(false);
+        }
+    }, [activeLang, isSourceLang, chapters, bookId, user?.id]);
+
     // ─── Language switch (lock anchor before, restore after) ─────────────────
     const handleLanguageChange = (lang: Language) => {
         trackLanguageSwitched({ book_id: bookId, from_language: activeLang, to_language: lang });
@@ -784,7 +993,17 @@ export default function ReaderView({ bookId, title, availableLanguages, original
             >
                 <div className="flex items-center justify-between h-11 px-4">
                     <Button variant="ghost" size="icon" asChild className="text-[var(--system-blue)] -ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px]">
-                        <Link href="/library">
+                        <Link
+                            href="/library"
+                            onClick={() => {
+                                try {
+                                    sessionStorage.setItem(
+                                        'globoox:last_read_book',
+                                        JSON.stringify({ bookId, at: Date.now() })
+                                    );
+                                } catch { /* ignore */ }
+                            }}
+                        >
                             <ChevronLeft className="w-6 h-6 text-[var(--system-blue)]" strokeWidth={2.5} />
                         </Link>
                     </Button>
@@ -804,11 +1023,19 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                             book={{
                                 id: bookId,
                                 languages,
-                                chapters: chapters.map((c) => ({ number: c.index, title: c.title })),
+                                chapters: chapters.map((c) => ({
+                                    number: c.index,
+                                    title: translatedChapterTitles.get(c.id)
+                                        || (activeLang && c.translations?.[activeLang.toUpperCase()])
+                                        || c.title,
+                                    depth: c.depth,
+                                })),
                             }}
                             currentChapter={currentChapterIndex}
                             onSelectChapter={handleSelectChapterFromToc}
                             disabled={false}
+                            onTocOpen={handleTocOpen}
+                            isTranslatingChapterTitles={isTranslatingChapterTitles}
                         />
                     </div>
                 </div>
@@ -918,11 +1145,10 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     variant="ghost"
                     size="sm"
                     onClick={goToPrevPage}
-                    disabled={!prevChapter}
+                    disabled={currentPageIdx === 0 && !prevChapter}
                     className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
                 >
-                    <ChevronLeft className="w-4 h-4" />
-                    <span className="max-w-[80px] truncate">{prevChapter?.title ?? ''}</span>
+                    <span className="truncate">{currentPageIdx === 0 ? '← Previous chapter' : '← Previous page'}</span>
                 </Button>
 
                 <span className="text-center tabular-nums">
@@ -936,11 +1162,10 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     variant="ghost"
                     size="sm"
                     onClick={goToNextPage}
-                    disabled={!nextChapter}
+                    disabled={currentPageIdx >= pages.length - 1 && !nextChapter}
                     className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
                 >
-                    <span className="max-w-[80px] truncate">{nextChapter?.title ?? ''}</span>
-                    <ChevronRight className="w-4 h-4" />
+                    <span className="truncate">{currentPageIdx >= pages.length - 1 ? 'Next chapter →' : 'Next page →'}</span>
                 </Button>
             </div>
         </div>
