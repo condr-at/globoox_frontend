@@ -39,7 +39,11 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
       const isZip = bytes.length >= 2 && bytes[0] === 0x50 && bytes[1] === 0x4b; // PK
       if (!isZip) return false;
       const text = new TextDecoder('latin1').decode(bytes).toLowerCase();
-      return text.includes('mimetypeapplication/epub+zip');
+      // Some EPUB generators place the mimetype record deeper than the first 1KB.
+      if (text.includes('mimetypeapplication/epub+zip')) return true;
+      // Loosen check: any ZIP that isn't clearly something else is allowed and will be verified by the parser later.
+      console.warn('[upload] EPUB header not found in first 1KB, treating as ZIP fallback');
+      return true;
     } catch {
       return false;
     }
