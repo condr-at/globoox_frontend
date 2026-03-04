@@ -19,7 +19,7 @@ import { invalidateAllChapterContentCache } from '@/lib/contentCache'
  * Usage: mount once near the root of authenticated pages (e.g. LibraryPage or a layout).
  */
 export function useSyncCheck() {
-    const { syncVersions, setSyncVersions } = useAppStore()
+    const { syncVersions, setSyncVersions, hasHydrated } = useAppStore()
     const checking = useRef(false)
     const lastCheckedAtRef = useRef<number>(0)
 
@@ -27,6 +27,9 @@ export function useSyncCheck() {
     const MIN_INTERVAL_MS = 30_000
 
     const check = async (reason: 'mount' | 'visibility') => {
+        // Avoid invalidating caches based on default (non-rehydrated) timestamps.
+        if (!hasHydrated) return
+
         if (checking.current) return
         const now = Date.now()
         if (now - lastCheckedAtRef.current < MIN_INTERVAL_MS) return

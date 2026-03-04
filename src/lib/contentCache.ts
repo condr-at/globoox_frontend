@@ -21,6 +21,10 @@ function makeBlockKey(blockId: string, lang?: string): CacheKey {
   return `${blockId}::${normalizeLang(lang)}`
 }
 
+function makeLegacyChapterKey(chapterId: string, lang?: string): CacheKey {
+  return `${chapterId}::${normalizeLang(lang)}`
+}
+
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION)
@@ -169,11 +173,31 @@ function toBlockText(chapterId: string, lang: string, block: ContentBlock): Cach
 export async function getCachedChapterContent(chapterId: string, lang?: string): Promise<CachedAssembledChapter | null> {
   try {
     const normalizedLang = normalizeLang(lang)
-    const skeleton = await withStore<CachedChapterSkeleton | undefined>(
+    let skeleton = await withStore<CachedChapterSkeleton | undefined>(
       STORE_CHAPTER_SKELETON,
       'readonly',
       (store) => store.get(chapterId),
     )
+
+    // On-demand migration from legacy v1 store (chapter cached as full blocks array).
+    if (!skeleton) {
+      type LegacyEntry = { key: string; chapterId: string; lang: string; blocks: ContentBlock[]; fetchedAt: number }
+      const legacyKey = makeLegacyChapterKey(chapterId, normalizedLang)
+      const legacy = await withStore<LegacyEntry | undefined>(
+        STORE_CHAPTER_CONTENT_V1,
+        'readonly',
+        (store) => store.get(legacyKey),
+      )
+      if (legacy?.blocks?.length) {
+        await setCachedChapterContent(chapterId, normalizedLang, legacy.blocks)
+        skeleton = await withStore<CachedChapterSkeleton | undefined>(
+          STORE_CHAPTER_SKELETON,
+          'readonly',
+          (store) => store.get(chapterId),
+        )
+      }
+    }
+
     if (!skeleton) return null
 
     const texts = await openDb().then(

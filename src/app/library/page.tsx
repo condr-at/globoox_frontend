@@ -15,7 +15,7 @@ const FALLBACK_COVER = '/covers/great-gatsby.jpg';
 const FALLBACK_AUTHOR = 'Unknown author';
 
 export default function LibraryPage() {
-  const { progress } = useAppStore();
+  const { progress, touchLastRead } = useAppStore();
   const { books, loading, error, hideBook, removeBook, refresh } = useBooks();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -149,10 +149,16 @@ export default function LibraryPage() {
       )[0];
     }
 
+    // If user just opened a book, prefer it (even after server progress fetch) so Continue Reading feels instant.
+    if (justReadBookId && progress[justReadBookId]) {
+      const lastReadAt = new Date(progress[justReadBookId].lastRead).getTime();
+      if (Number.isFinite(lastReadAt) && Date.now() - lastReadAt < 5 * 60 * 1000) {
+        return [justReadBookId, progress[justReadBookId]];
+      }
+    }
+
     // Before the first server progress fetch completes, prefer a recent local "just read" book to avoid hiding the section.
     if (!progressFetchedOnce) {
-      if (justReadBookId && progress[justReadBookId]) return [justReadBookId, progress[justReadBookId]];
-
       const local = Object.entries(progress).sort(
         (a, b) => new Date(b[1].lastRead).getTime() - new Date(a[1].lastRead).getTime()
       )[0];
@@ -220,7 +226,10 @@ export default function LibraryPage() {
                 onHide={hideBook}
                 onDelete={removeBook}
                 hideLabel="Hide"
-                onOpen={() => trackBookOpened({ book_id: lastBook.id, title: lastBook.title, source: 'library' })}
+                onOpen={() => {
+                  touchLastRead(lastBook.id);
+                  trackBookOpened({ book_id: lastBook.id, title: lastBook.title, source: 'library' });
+                }}
               />
             </div>
           </section>
@@ -249,7 +258,10 @@ export default function LibraryPage() {
                   onHide={hideBook}
                   onDelete={removeBook}
                   hideLabel="Hide"
-                  onOpen={() => trackBookOpened({ book_id: book.id, title: book.title, source: 'library' })}
+                  onOpen={() => {
+                    touchLastRead(book.id);
+                    trackBookOpened({ book_id: book.id, title: book.title, source: 'library' });
+                  }}
                 />
               ))}
             </div>

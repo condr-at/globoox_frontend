@@ -43,6 +43,10 @@ export interface ReadingAnchor {
 }
 
 interface AppState {
+  // Persist hydration flag (runtime only)
+  hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
+
   // Reader settings
   settings: ReaderSettings;
   setFontSize: (size: number) => void;
@@ -56,6 +60,7 @@ interface AppState {
   // Reading progress (block-based)
   progress: ReadingProgress;
   updateProgress: (bookId: string, blockPosition: number, totalBlocks: number) => void;
+  touchLastRead: (bookId: string) => void;
   getProgress: (bookId: string) => { blockPosition?: number; totalBlocks?: number } | null;
   updateServerProgress: (
     bookId: string,
@@ -83,6 +88,9 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
+      hasHydrated: false,
+      setHasHydrated: (value) => set({ hasHydrated: value }),
+
       // Default settings
       settings: {
         fontSize: 16,
@@ -127,6 +135,20 @@ export const useAppStore = create<AppState>()(
                 blockPosition,
                 totalBlocks,
                 lastRead: new Date().toISOString()
+              }
+            }
+          };
+        }),
+
+      touchLastRead: (bookId) =>
+        set((state) => {
+          const existing = state.progress[bookId] || {};
+          return {
+            progress: {
+              ...state.progress,
+              [bookId]: {
+                ...existing,
+                lastRead: new Date().toISOString(),
               }
             }
           };
@@ -195,6 +217,10 @@ export const useAppStore = create<AppState>()(
         readingAnchors: state.readingAnchors,
         syncVersions: state.syncVersions,
       }),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) return;
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
