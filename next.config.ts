@@ -4,10 +4,13 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: '50mb',
+      bodySizeLimit: '1gb',
     },
+    // Increase the clonable-body limit used by middleware and route handlers.
+    // Without this, POST bodies > 10 MB (the default) get truncated before
+    // they reach the /api/books/upload route handler.
+    proxyClientMaxBodySize: 1024 * 1024 * 1024, // 1 GB
   },
-  // Increase body size limit for API routes (covers can be large base64)
   serverExternalPackages: [],
   images: {
     remotePatterns: [
