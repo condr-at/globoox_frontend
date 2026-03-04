@@ -162,6 +162,12 @@ const recentGetResponses = new Map<string, { expiresAt: number; value: unknown }
 const POSITION_CACHE_TTL_MS = 30000
 const positionCache = new Map<string, { data: ReadingPosition; expiresAt: number }>()
 
+/** Clears the entire reading-position cache (used by useSyncCheck on cross-device sync) */
+export function positionCacheInvalidateAll() {
+  positionCache.clear()
+}
+
+
 function buildGetCacheKey(path: string, options?: RequestInit): string | null {
   const method = (options?.method ?? 'GET').toUpperCase()
   if (method !== 'GET') return null
@@ -428,6 +434,19 @@ export function saveReadingPosition(
     // fetchReadingPosition will do a real GET and get the authoritative position.
     return response
   })
+}
+
+export interface SyncStatusResponse {
+  account_version: string | null
+  scopes: {
+    library: string | null
+    progress: string | null
+    settings: string | null
+  }
+}
+
+export function fetchSyncStatus(): Promise<SyncStatusResponse> {
+  return request<SyncStatusResponse>('/api/sync/status')
 }
 
 export function uploadBook(formData: FormData): Promise<ApiBook & { chapter_count?: number }> {
