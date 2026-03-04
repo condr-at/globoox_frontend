@@ -1,10 +1,10 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ApiBook, fetchBooks, createBook, updateBook, deleteBook as apiDeleteBook } from './api'
 
-// Stale-While-Revalidate cache — module-level so it survives component remounts (route navigation)
-const STALE_TIME_MS = 5 * 60 * 1000 // 5 minutes — background refresh only if older
+// Stale-while-revalidate cache for books
+const STALE_TIME_MS = 60000 // 1 minute
 
 interface CachedBooks {
   data: ApiBook[]
@@ -13,81 +13,68 @@ interface CachedBooks {
 
 const booksCache = new Map<string, CachedBooks>()
 
-/** Expose a way for useSyncCheck to force-invalidate the cache from outside the hook */
-export function invalidateBooksCache() {
-  booksCache.delete('all')
-}
-
 export function useBooks() {
-  // Initialise from cache immediately — no skeleton on repeated visits
-  const cached = booksCache.get('all')
-  const [books, setBooks] = useState<ApiBook[]>(cached?.data ?? [])
-  // loading=true only when there is absolutely no cached data yet (very first visit)
-  const [loading, setLoading] = useState(!cached)
+  const [books, setBooks] = useState<ApiBook[]>([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const revalidating = useRef(false)
+  const [isStale, setIsStale] = useState(false)
 
-  /**
-   * refresh(force=false) — stale-while-revalidate:
-   *   - Always shows existing cached data immediately (no skeletons)
-   *   - Fetches in background when cache is older than STALE_TIME_MS
-   *   - force=true: always re-fetches (e.g. after mutating the list)
-   */
   const refresh = useCallback(async (force = false) => {
-    const entry = booksCache.get('all')
+    const cached = booksCache.get('all')
     const now = Date.now()
-    const isFresh = entry && now - entry.fetchedAt < STALE_TIME_MS
 
-    // Show cached data instantly — never block the user with a spinner
-    if (entry) {
-      setBooks(entry.data)
+    // Return fresh cache immediately (unless force refresh)
+    if (!force && cached && now - cached.fetchedAt < STALE_TIME_MS) {
+      setBooks(cached.data)
+      setIsStale(false)
       setLoading(false)
+      return
     }
 
-    // Nothing to do if cache is fresh and not forced
-    if (!force && isFresh) return
+    // Invalidate cache on force refresh
+    if (force) {
+      booksCache.delete('all')
+    }
 
-    // Prevent concurrent fetches
-    if (revalidating.current) return
-    revalidating.current = true
+    // Show stale data while revalidating
+    if (cached && !force) {
+      setBooks(cached.data)
+      setIsStale(true)
+    }
 
-    // Clear stale entry when forced so we don't risk showing it again on next mount
-    if (force) booksCache.delete('all')
-
+    setLoading(true)
     setError(null)
-    // Don't set loading=true here — we already have data to show
     try {
       const data = await fetchBooks('active')
-      booksCache.set('all', { data, fetchedAt: Date.now() })
+      booksCache.set('all', { data, fetchedAt: now })
       setBooks(data)
+      setIsStale(false)
     } catch (err: any) {
       setError(err.message || 'Failed to load books')
     } finally {
-      revalidating.current = false
-      // Only clear the initial loading spinner (first ever load)
       setLoading(false)
     }
   }, [])
 
-  // On mount: show cache immediately, revalidate if stale
   useEffect(() => {
-    void refresh()
+    refresh()
   }, [refresh])
 
-  // On tab focus: silent background revalidation (no skeleton)
+  // Revalidate on visibility change (when coming back to tab)
   useEffect(() => {
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        void refresh()
+      if (document.visibilityState === 'visible' && isStale) {
+        refresh()
       }
     }
     document.addEventListener('visibilitychange', handleVisibility)
     return () => document.removeEventListener('visibilitychange', handleVisibility)
-  }, [refresh])
+  }, [isStale, refresh])
 
   const addBook = useCallback(async (data: { title: string; author?: string; cover_url?: string; source_language?: string }) => {
     const created = await createBook(data)
     setBooks((prev) => [created, ...prev])
+    // Invalidate cache
     booksCache.delete('all')
     return created
   }, [])
@@ -95,19 +82,21 @@ export function useBooks() {
   const hideBook = useCallback(async (id: string) => {
     await updateBook(id, { status: 'hidden' })
     setBooks((prev) => prev.filter((b) => b.id !== id))
+    // Invalidate cache
     booksCache.delete('all')
   }, [])
 
   const unhideBook = useCallback(async (id: string) => {
     await updateBook(id, { status: 'active' })
-    await refresh(true)
+    await refresh()
   }, [refresh])
 
   const removeBook = useCallback(async (id: string) => {
     await apiDeleteBook(id)
     setBooks((prev) => prev.filter((b) => b.id !== id))
+    // Invalidate cache
     booksCache.delete('all')
   }, [])
 
-  return { books, loading, error, refresh, addBook, hideBook, unhideBook, removeBook }
+  return { books, loading, error, refresh, addBook, hideBook, unhideBook, removeBook, isStale }
 }

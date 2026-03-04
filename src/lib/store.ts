@@ -70,14 +70,6 @@ interface AppState {
   // Translation state
   isTranslatingByBook: Record<string, boolean>;
   setIsTranslatingForBook: (bookId: string, value: boolean) => void;
-
-  // Sync state – last known server timestamps per scope
-  syncVersions: {
-    library: string | null;
-    progress: string | null;
-    settings: string | null;
-  };
-  setSyncVersions: (versions: Partial<AppState['syncVersions']>) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -173,18 +165,7 @@ export const useAppStore = create<AppState>()(
             ...state.isTranslatingByBook,
             [bookId]: value,
           },
-        })),
-
-      // Last known sync timestamps from the server
-      syncVersions: {
-        library: null,
-        progress: null,
-        settings: null,
-      },
-      setSyncVersions: (versions) =>
-        set((state) => ({
-          syncVersions: { ...state.syncVersions, ...versions },
-        })),
+        }))
     }),
     {
       name: 'globoox-preview-storage',
@@ -193,7 +174,6 @@ export const useAppStore = create<AppState>()(
         perBookLanguages: state.perBookLanguages,
         progress: state.progress,
         readingAnchors: state.readingAnchors,
-        syncVersions: state.syncVersions,
       }),
     }
   )

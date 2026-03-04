@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import BookCard from '@/components/Store/BookCard';
 import UploadBookModal from '@/components/UploadBookModal';
 import SignInToUploadModal from '@/components/SignInToUploadModal';
 import { useAppStore } from '@/lib/store';
 import { useBooks } from '@/lib/useBooks';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { useSyncCheck } from '@/lib/hooks/useSyncCheck';
 import GoogleOneTap from '@/components/GoogleOneTap';
 import { trackBookOpened } from '@/lib/posthog';
 import { fetchReadingPosition, BookReadingProgress, ApiBook } from '@/lib/api';
@@ -18,8 +17,7 @@ const FALLBACK_AUTHOR = 'Unknown author';
 export default function LibraryPage() {
   const { progress } = useAppStore();
   const { books, loading, error, hideBook, removeBook, refresh } = useBooks();
-  const { isAuthenticated, loading: authLoading } = useAuth();
-  useSyncCheck(); // Cross-device sync: invalidates caches on tab focus if server has newer data
+  const { isAuthenticated, loading: authLoading } = useAuth(); // authLoading used for upload gate
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [progressData, setProgressData] = useState<Record<string, BookReadingProgress>>({});
@@ -88,13 +86,21 @@ export default function LibraryPage() {
     setProgressLoading(false);
   }, [isAuthenticated, progress]);
 
-  // Re-fetch reading progress whenever books list changes (e.g. after sync invalidation)
+  // Fetch progress after books are loaded
+  // Note: We use a ref to avoid the set-state-in-effect warning
+  const hasFetchedRef = useRef(false);
+
+  // Reset fetch state on mount to ensure fresh data when returning to Library (Fix #4)
   useEffect(() => {
-    if (books.length > 0) {
+    hasFetchedRef.current = false;
+  }, []);
+
+  useEffect(() => {
+    if (books.length > 0 && !hasFetchedRef.current) {
+      hasFetchedRef.current = true;
       void fetchAllProgress(books.map(b => b.id));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [books.length, isAuthenticated]);
+  }, [books, fetchAllProgress]);
 
   // Get block-based progress for a book
   const getBookProgress = useCallback((book: ApiBook) => {
