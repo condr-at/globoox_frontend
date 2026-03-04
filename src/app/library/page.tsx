@@ -24,6 +24,7 @@ export default function LibraryPage() {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [progressData, setProgressData] = useState<Record<string, BookReadingProgress>>({});
   const [progressLoading, setProgressLoading] = useState(false);
+  const [progressFetchedOnce, setProgressFetchedOnce] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Collapse header past 60px, expand when back under 20px
@@ -60,39 +61,53 @@ export default function LibraryPage() {
     if (!isAuthenticated || bookIds.length === 0) return;
 
     setProgressLoading(true);
-    const results = await Promise.allSettled(
-      bookIds.map(id => fetchReadingPosition(id))
-    );
+    try {
+      const results = await Promise.allSettled(
+        bookIds.map(id => fetchReadingPosition(id))
+      );
 
-    const progressMap: Record<string, BookReadingProgress> = {};
-    results.forEach((result, idx) => {
-      if (result.status === 'fulfilled') {
-        const data = result.value;
-        const bookId = bookIds[idx];
-        // Use server value if present, otherwise fallback to local store (Fix #5)
-        const totalBlocks = data.total_blocks || progress[bookId]?.totalBlocks || 0;
+      const progressMap: Record<string, BookReadingProgress> = {};
+      results.forEach((result, idx) => {
+        if (result.status === 'fulfilled') {
+          const data = result.value;
+          const bookId = bookIds[idx];
+          // Use server value if present, otherwise fallback to local store (Fix #5)
+          const totalBlocks = data.total_blocks || progress[bookId]?.totalBlocks || 0;
 
-        progressMap[bookId] = {
-          book_id: data.book_id,
-          chapter_id: data.chapter_id,
-          block_id: data.block_id,
-          block_position: data.block_position,
-          total_blocks: totalBlocks,
-          content_version: 0,
-          updated_at: data.updated_at,
-        };
-      }
-    });
+          progressMap[bookId] = {
+            book_id: data.book_id,
+            chapter_id: data.chapter_id,
+            block_id: data.block_id,
+            block_position: data.block_position,
+            total_blocks: totalBlocks,
+            content_version: 0,
+            updated_at: data.updated_at,
+          };
+        }
+      });
 
-    setProgressData(progressMap);
-    setProgressLoading(false);
+      setProgressData(progressMap);
+    } finally {
+      setProgressLoading(false);
+      setProgressFetchedOnce(true);
+    }
   }, [isAuthenticated, progress]);
 
   // Re-fetch reading progress whenever books list changes (e.g. after sync invalidation)
   useEffect(() => {
-    if (books.length > 0) {
-      void fetchAllProgress(books.map(b => b.id));
+    if (!isAuthenticated) {
+      setProgressFetchedOnce(true);
+      return;
     }
+
+    if (books.length === 0) {
+      setProgressData({});
+      setProgressFetchedOnce(false);
+      return;
+    }
+
+    setProgressFetchedOnce(false);
+    void fetchAllProgress(books.map(b => b.id));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [books.length, isAuthenticated]);
 
@@ -121,6 +136,9 @@ export default function LibraryPage() {
       )[0];
     }
 
+    // Avoid rendering an incorrect "Continue Reading" card before the first server progress fetch completes.
+    if (!progressFetchedOnce) return undefined;
+
     // First try server updated_at
     const serverEntries = Object.entries(progressData)
       .filter(([, data]) => data.updated_at != null)
@@ -136,7 +154,7 @@ export default function LibraryPage() {
     return Object.entries(progress).sort(
       (a, b) => new Date(b[1].lastRead).getTime() - new Date(a[1].lastRead).getTime()
     )[0];
-  }, [progressData, progress, isAuthenticated]);
+  }, [progressData, progress, isAuthenticated, progressFetchedOnce]);
 
   const lastBook = lastReadEntry ? books.find((b) => b.id === lastReadEntry[0]) : null;
 
