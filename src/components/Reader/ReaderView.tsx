@@ -68,6 +68,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
 
     const [currentChapterIndex, setCurrentChapterIndex] = useState(1);
     const [pendingLang, setPendingLang] = useState<Language | null>(null);
+    const [isLanguageSwitching, setIsLanguageSwitching] = useState(false);
 
     const resolvedServerLang = useMemo<Language>(() => {
         const candidates = [serverLanguage, originalLanguage];
@@ -157,24 +158,11 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         ? originalLanguage.toUpperCase() === activeLang.toUpperCase()
         : false;
 
-    // Clear translation glow when content finishes loading
-    const wasLoadingRef = useRef(false);
-    useEffect(() => {
-        if (isContentLoading) {
-            wasLoadingRef.current = true;
-        } else if (wasLoadingRef.current) {
-            wasLoadingRef.current = false;
-            setIsTranslatingForBook(bookId, false);
-        }
-    }, [bookId, isContentLoading, setIsTranslatingForBook]);
-
     useEffect(() => {
         setBookLanguage(bookId, resolvedServerLang);
     }, [bookId, resolvedServerLang, setBookLanguage]);
 
-    useEffect(() => {
-        setIsTranslatingForBook(bookId, false);
-    }, [bookId, setIsTranslatingForBook]);
+    // NOTE: glow state is derived later, once pagination + currentPageBlocks are available.
 
     // ─── Reading session tracking ─────────────────────────────────────────────
     const sessionStartRef = useRef(Date.now());
@@ -734,6 +722,51 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         [paginatedBlocks, currentPageBlockIds]
     );
 
+    // Glow policy:
+    // - Can appear ONLY during a language switch.
+    // - Even then, show it only if this page has zero ready translatable blocks
+    //   (i.e. the whole page is still pending/blurred).
+    const shouldShowGlow = useMemo(() => {
+        if (!isLanguageSwitching) return false;
+        if (!pagesReady || !visiblePagesReady) return false;
+        if (!currentPageBlocks.length) return false;
+        const translatable = currentPageBlocks.filter((b) => b.type !== 'image' && b.type !== 'hr');
+        if (translatable.length === 0) return false;
+        const hasAnyReady = translatable.some((block) => {
+            const blockId = block.parentId ?? block.id;
+            return !(block.is_pending || pendingBlockIds.has(blockId));
+        });
+        return !hasAnyReady;
+    }, [isLanguageSwitching, pagesReady, visiblePagesReady, currentPageBlocks, pendingBlockIds]);
+
+    useEffect(() => {
+        setIsTranslatingForBook(bookId, shouldShowGlow);
+    }, [bookId, shouldShowGlow, setIsTranslatingForBook]);
+
+    // Consider language switching "done" once the switched-to page is readable:
+    // - the correct language is loaded
+    // - pagination/anchor applied
+    // - and at least one translatable block is ready (or there are none).
+    useEffect(() => {
+        if (!isLanguageSwitching) return;
+        if (isContentLoading) return;
+        if (!blocksLang) return;
+        if (blocksLang.toLowerCase() !== activeLang.toLowerCase()) return;
+        if (!pagesReady || !visiblePagesReady) return;
+        if (!currentPageBlocks.length) return;
+
+        const translatable = currentPageBlocks.filter((b) => b.type !== 'image' && b.type !== 'hr');
+        if (translatable.length === 0) {
+            setIsLanguageSwitching(false);
+            return;
+        }
+        const hasAnyReady = translatable.some((block) => {
+            const blockId = block.parentId ?? block.id;
+            return !(block.is_pending || pendingBlockIds.has(blockId));
+        });
+        if (hasAnyReady) setIsLanguageSwitching(false);
+    }, [isLanguageSwitching, isContentLoading, blocksLang, activeLang, pagesReady, visiblePagesReady, currentPageBlocks, pendingBlockIds]);
+
     const currentPageBlocksRef = useRef<ContentBlock[]>([]);
 
     // Keep ref updated with current page blocks
@@ -858,6 +891,8 @@ export default function ReaderView({ bookId, title, availableLanguages, original
 
     // ─── Language switch (lock anchor before, restore after) ─────────────────
     const handleLanguageChange = (lang: Language) => {
+        if (lang.toLowerCase() === activeLang.toLowerCase()) return;
+
         trackLanguageSwitched({ book_id: bookId, from_language: activeLang, to_language: lang });
         // Lock the current anchor so we can restore it after the language reloads
         if (pages.length > 0 && currentChapter) {
@@ -888,7 +923,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         setPaginatedBlocks([]);
         
         setPendingLang(lang);
-        setIsTranslatingForBook(bookId, true);
+        setIsLanguageSwitching(true);
 
         updateBookLanguage(bookId, lang)
             .then(() => {
@@ -902,7 +937,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     }
                     return current;
                 });
-                setIsTranslatingForBook(bookId, false);
+                setIsLanguageSwitching(false);
                 pendingAnchorBlockId.current = null;
             });
     };

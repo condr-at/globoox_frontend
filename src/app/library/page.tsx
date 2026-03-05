@@ -8,6 +8,7 @@ import { useAppStore } from '@/lib/store';
 import { useBooks } from '@/lib/useBooks';
 import { useAuth } from '@/lib/hooks/useAuth';
 import GoogleOneTap from '@/components/GoogleOneTap';
+import PageHeader from '@/components/ui/PageHeader';
 import { trackBookOpened } from '@/lib/posthog';
 import { fetchReadingPosition, BookReadingProgress, ApiBook } from '@/lib/api';
 import { getCachedReadingPosition } from '@/lib/contentCache';
@@ -225,30 +226,18 @@ export default function LibraryPage() {
     )[0];
   }, [progressData, progress, isAuthenticated, progressFetchedOnce, justReadBookId]);
 
-  const lastBook = lastReadEntry ? books.find((b) => b.id === lastReadEntry[0]) : null;
+      const lastBook = lastReadEntry ? books.find((b) => b.id === lastReadEntry[0]) : null;
 
   return (
     <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
       <GoogleOneTap />
-      <header className="pt-[env(safe-area-inset-top)] sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b">
-        <div className="container max-w-2xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 transition-[padding] duration-300 ease-in-out" style={{ paddingTop: isCollapsed ? 8 : 16, paddingBottom: isCollapsed ? 8 : 16 }}>
-          <h1 className={`font-medium transition-[font-size,line-height] duration-300 ease-in-out -mt-1 ${isCollapsed ? 'text-base' : 'text-2xl'}`}>Library</h1>
-          <button
-            onClick={handleUploadClick}
-            className="text-[15px] font-medium text-[var(--system-blue)] active:opacity-50 transition-[opacity,transform] duration-300 ease-in-out px-2 py-2"
-            style={{
-              opacity: isCollapsed ? 0 : 1,
-              transform: isCollapsed ? 'scale(0)' : 'scale(1)',
-              pointerEvents: isCollapsed ? 'none' : 'auto',
-            }}
-            tabIndex={isCollapsed ? -1 : 0}
-          >
-            Add
-          </button>
-        </div>
-      </header>
+      <PageHeader
+        title="Library"
+        collapsed={isCollapsed}
+        action={{ label: 'Add', onClick: handleUploadClick }}
+      />
 
-      <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-8 pb-4 space-y-6">
+      <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top)+72px)] pb-4 space-y-6">
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         {lastBook && lastReadEntry && (
