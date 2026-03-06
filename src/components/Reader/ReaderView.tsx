@@ -85,6 +85,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
 
     const { chapters, loading: chaptersLoading, error: chaptersError } = useChapters(bookId);
     const currentChapter = chapters[currentChapterIndex - 1] ?? null;
+    const currentChapterId = currentChapter?.id ?? null;
 
     // Chapter title translation state
     const [translatedChapterTitles, setTranslatedChapterTitles] = useState<Map<string, string>>(new Map());
@@ -112,7 +113,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     }, [bookId, activeLang, user?.id]);
 
     const { blocks, loading: contentLoading, error: contentError, isStale, blocksLang, hasServerSnapshot } = useChapterContent(
-        currentChapter?.id ?? null,
+        currentChapterId,
         activeLang.toUpperCase()
     );
     
@@ -152,7 +153,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
 
     const { getRefCallback, isTranslatingAny, abortAll, enqueueBlocks, enqueueBlocksImmediate, pendingBlockIds } = useViewportTranslation({
         bookId,
-        chapterId: currentChapter?.id ?? null,
+        chapterId: currentChapterId,
         lang: activeLang.toUpperCase(),
         blocks: displayBlocks,
         sourceLanguage: originalLanguage ?? null,
@@ -717,10 +718,6 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         };
     }, [persistAnchor]);
 
-    // ─── Page navigation ─────────────────────────────────────────────────────
-    const prevChapter = currentChapterIndex > 1 ? chapters[currentChapterIndex - 2] : null;
-    const nextChapter = currentChapterIndex < chapters.length ? chapters[currentChapterIndex] : null;
-
     // ─── Current page blocks (needed for goToChapter) ───────────────────────
     const currentPageBlockIds = useMemo(() => (
         pagesReady && pages[currentPageIdx] ? new Set(pages[currentPageIdx]) : new Set<string>()
@@ -814,20 +811,14 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     const goToNextPage = useCallback(() => {
         if (currentPageIdx < pages.length - 1) {
             goToPage(currentPageIdx + 1);
-        } else if (nextChapter) {
-            goToChapter(currentChapterIndex + 1);
         }
-    }, [currentPageIdx, pages.length, nextChapter, currentChapterIndex, goToPage, goToChapter]);
+    }, [currentPageIdx, pages.length, goToPage]);
 
     const goToPrevPage = useCallback(() => {
         if (currentPageIdx > 0) {
             goToPage(currentPageIdx - 1);
-        } else if (prevChapter) {
-            pendingAnchorBlockId.current = LAST_PAGE_SENTINEL;
-            pendingAnchorSentenceIndex.current = 0;
-            goToChapter(currentChapterIndex - 1);
         }
-    }, [currentPageIdx, prevChapter, currentChapterIndex, goToPage, goToChapter]);
+    }, [currentPageIdx, goToPage]);
 
     // ─── Navigation intent API ────────────────────────────────────────────────
     // Single entry point for all navigation events. Any source other than
@@ -1191,10 +1182,10 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     variant="ghost"
                     size="sm"
                     onClick={goToPrevPage}
-                    disabled={currentPageIdx === 0 && !prevChapter}
+                    disabled={currentPageIdx === 0}
                     className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
                 >
-                    <span className="truncate">{currentPageIdx === 0 ? '← Previous chapter' : '← Previous page'}</span>
+                    <span className="truncate">← Previous page</span>
                 </Button>
 
                 <span className="text-center tabular-nums">
@@ -1208,10 +1199,10 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     variant="ghost"
                     size="sm"
                     onClick={goToNextPage}
-                    disabled={currentPageIdx >= pages.length - 1 && !nextChapter}
+                    disabled={currentPageIdx >= pages.length - 1}
                     className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
                 >
-                    <span className="truncate">{currentPageIdx >= pages.length - 1 ? 'Next chapter →' : 'Next page →'}</span>
+                    <span className="truncate">Next page →</span>
                 </Button>
             </div>
         </div>

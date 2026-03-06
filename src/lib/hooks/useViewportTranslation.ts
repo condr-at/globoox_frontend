@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ContentBlock, TranslatedBlockResult, TranslateDoneEvent, translateBlocksStreaming } from '@/lib/api'
+import { ContentBlock, getTranslateStatus, TranslatedBlockResult, TranslateDoneEvent, translateBlocksStreaming } from '@/lib/api'
 import { trackTranslationBatch } from '@/lib/posthog'
 import { setCachedTranslatedBlockText } from '@/lib/contentCache'
 
@@ -19,6 +19,8 @@ const DEBOUNCE_MS = 0 // No debounce - translate immediately
 const DEBOUNCE_MS_IMMEDIATE = 0 // No debounce for high-priority blocks
 const ROOT_MARGIN = '50% 0px'
 const MAX_BATCH_SIZE = 10 // Smaller batches to reduce duplicate requests and improve responsiveness
+const RECOVERY_POLL_MS = 1500
+const RECOVERY_BATCH_SIZE = 50
 
 // Block types that don't need translation
 const SKIP_TYPES = new Set(['image', 'hr'])
@@ -64,6 +66,12 @@ export function useViewportTranslation({
   // High-priority queue for current page blocks (takes precedence)
   const highPriorityPendingIds = useRef(new Set<string>())
   const highPriorityQueuedIds = useRef(new Set<string>())
+
+  // Recovery queue: after abort the server may still complete work; poll status and
+  // persist finished translations to IndexedDB so work isn't wasted.
+  // Key: `${chapterId}::${LANG}` -> blockId -> blockType
+  const recoveryRef = useRef(new Map<string, Map<string, string>>())
+  const recoveryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Helper to sync pendingBlockIds state with current queues
   const updatePendingBlockIds = useCallback(() => {
@@ -151,6 +159,19 @@ export function useViewportTranslation({
     // User has navigated to a new page - old translation is no longer immediately visible
     if (isInflight.current && isHighPriority) {
       console.log(JSON.stringify({ event: 'abort_inflight', reason: 'new_high_priority_request', wasHighPriority: isInflightHighPriority.current }))
+
+      // Add old in-flight IDs to recovery: server may still finish them after disconnect.
+      const requestLang = langRef.current
+      if (requestLang && inflightIds.current.size > 0) {
+        const key = `${requestChapterId}::${requestLang.toUpperCase()}`
+        const map = recoveryRef.current.get(key) ?? new Map<string, string>()
+        for (const id of inflightIds.current) {
+          const block = blocksRef.current.find((b) => b.id === id)
+          if (block?.type) map.set(id, block.type)
+        }
+        recoveryRef.current.set(key, map)
+      }
+
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
         abortControllerRef.current = null
@@ -443,6 +464,28 @@ export function useViewportTranslation({
   // Abort all in-flight and queued prefetch requests.
   // Called by navigateTo on any non-manual_scroll jump.
   const abortAll = useCallback(() => {
+    // Best-effort: add everything currently queued to recovery.
+    const requestChapterId = chapterIdRef.current
+    const requestLang = langRef.current
+    if (requestChapterId && requestLang) {
+      const key = `${requestChapterId}::${requestLang.toUpperCase()}`
+      const map = recoveryRef.current.get(key) ?? new Map<string, string>()
+      const all = new Set<string>([
+        ...pendingIds.current,
+        ...queuedIds.current,
+        ...highPriorityPendingIds.current,
+        ...highPriorityQueuedIds.current,
+        ...inflightIds.current,
+      ])
+      if (all.size > 0) {
+        for (const id of all) {
+          const block = blocksRef.current.find((b) => b.id === id)
+          if (block?.type) map.set(id, block.type)
+        }
+        recoveryRef.current.set(key, map)
+      }
+    }
+
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
@@ -464,6 +507,60 @@ export function useViewportTranslation({
     }
   }, [])
 
+  // Background recovery loop: pull finished translations and persist to IDB.
+  useEffect(() => {
+    if (recoveryTimerRef.current) return
+
+    recoveryTimerRef.current = setInterval(async () => {
+      if (!canTranslateRef.current) return
+      if (recoveryRef.current.size === 0) return
+
+      for (const [key, idToType] of recoveryRef.current) {
+        if (idToType.size === 0) {
+          recoveryRef.current.delete(key)
+          continue
+        }
+
+        const [recoveryChapterId, recoveryLangRaw] = key.split('::')
+        const recoveryLang = recoveryLangRaw || ''
+        if (!recoveryChapterId || !recoveryLang) {
+          recoveryRef.current.delete(key)
+          continue
+        }
+
+        const ids = Array.from(idToType.keys()).slice(0, RECOVERY_BATCH_SIZE)
+        if (ids.length === 0) continue
+
+        try {
+          const res = await getTranslateStatus(recoveryChapterId, recoveryLang, ids)
+          for (const r of res.results) {
+            if (r.status === 'ok') {
+              const type = idToType.get(r.blockId)
+              if (type && r.translatedText) {
+                const translatedBlock: ContentBlock =
+                  type === 'list'
+                    ? ({ id: r.blockId, type: 'list', items: r.translatedText.split('\n').filter(Boolean) } as any)
+                    : ({ id: r.blockId, type, text: r.translatedText } as any)
+                void setCachedTranslatedBlockText(recoveryChapterId, recoveryLang, translatedBlock)
+              }
+              idToType.delete(r.blockId)
+            } else if (r.status === 'missing') {
+              idToType.delete(r.blockId)
+            }
+          }
+          if (idToType.size === 0) recoveryRef.current.delete(key)
+        } catch {
+          // ignore and retry later
+        }
+      }
+    }, RECOVERY_POLL_MS)
+
+    return () => {
+      if (recoveryTimerRef.current) clearInterval(recoveryTimerRef.current)
+      recoveryTimerRef.current = null
+    }
+  }, [])
+
   // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true
@@ -471,6 +568,10 @@ export function useViewportTranslation({
       isMountedRef.current = false
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current)
+      }
+      if (recoveryTimerRef.current) {
+        clearInterval(recoveryTimerRef.current)
+        recoveryTimerRef.current = null
       }
       // Intentionally keep in-flight request alive across reader unmount,
       // so translated blocks can still be persisted to IndexedDB.

@@ -409,6 +409,26 @@ export async function translateBlocksStreaming(
   }
 }
 
+export type TranslateStatusResult =
+  | { blockId: string; status: 'ok'; translatedText: string }
+  | { blockId: string; status: 'pending' }
+  | { blockId: string; status: 'missing' }
+
+export interface TranslateStatusResponse {
+  chapterId: string
+  lang: string
+  results: TranslateStatusResult[]
+  pendingCount: number
+  okCount: number
+}
+
+export function getTranslateStatus(chapterId: string, lang: string, blockIds: string[]): Promise<TranslateStatusResponse> {
+  return request<TranslateStatusResponse>(`/api/chapters/${chapterId}/translate-status`, {
+    method: 'POST',
+    body: JSON.stringify({ lang: lang.toUpperCase(), blockIds }),
+  })
+}
+
 export function updateBookLanguage(bookId: string, lang: string): Promise<ApiBook> {
   return request<ApiBook>(`/api/books/${bookId}/language`, {
     method: 'PATCH',
