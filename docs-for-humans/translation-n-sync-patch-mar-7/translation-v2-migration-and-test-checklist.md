@@ -1,5 +1,11 @@
 # Translation v2 — Миграция (IDB) и чеклист тестов
 
+> Status note:
+> - Решение по `DB_VERSION` bump и очистке translation/content caches **взято как основное**.
+> - Но итоговый патч оказался шире одной миграции: добавился compat-слой для текущего `ContentBlock` shape и новый reconcile path.
+> - Финальное описание того, что реально внедрено:
+>   `translation-v2-final-implementation-and-deviations.md`
+
 ## Миграция IndexedDB (одноразовая, принудительная)
 
 Причина: старый кэш мог содержать “кашу” (fallback/оригинал, ошибочно принятый за target язык). Для Translation v2 это недопустимо.

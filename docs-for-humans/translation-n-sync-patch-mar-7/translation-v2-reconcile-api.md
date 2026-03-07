@@ -1,5 +1,11 @@
 # Translation v2 — Reconcile API (bulk fetch по blockIds)
 
+> Status note:
+> - Основное решение этого документа **взято в работу**: `POST /api/chapters/:id/blocks/text`.
+> - Старый `translate-status` не удален мгновенно, а переведен на ту же серверную логику как legacy compatibility layer.
+> - Итоговая серверная и фронтовая трактовка зафиксирована в:
+>   `translation-v2-final-implementation-and-deviations.md`
+
 Цель: обеспечить “догоночную” синхронизацию переводов после:
 - ухода/возврата (abort стримов),
 - прыжков по главам/страницам,

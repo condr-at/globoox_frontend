@@ -44,6 +44,7 @@ interface BaseBlock {
   partIndex?: number
   isFirstPart?: boolean
   isLastPart?: boolean
+  targetLangReady?: boolean
   isTranslated?: boolean // True if block already has translation for requested language
   is_pending?: boolean // True if translation is pending on the server
 }
@@ -119,6 +120,18 @@ export interface TranslateDoneEvent {
 }
 
 export type TranslateStreamMessage = TranslatedBlockResult | TranslateDoneEvent
+
+export type BlockTextPayload =
+  | { blockId: string; type: 'paragraph' | 'quote' | 'heading'; text: string }
+  | { blockId: string; type: 'list'; items: string[] }
+
+export interface FetchBlockTextsResponse {
+  chapterId: string
+  lang: string
+  ok: BlockTextPayload[]
+  missing: string[]
+  pending?: string[]
+}
 
 export interface ReadingPosition {
   book_id: string
@@ -345,8 +358,15 @@ export async function translateBlocksStreaming(
   })
 
   if (!res.ok) {
-    const errBody = await res.json().catch(() => ({}))
-    throw new Error((errBody as any).message || `Request failed: ${res.status}`)
+    const errBody = await res.json().catch((): unknown => ({}))
+    const message =
+      typeof errBody === 'object' &&
+      errBody !== null &&
+      'message' in errBody &&
+      typeof errBody.message === 'string'
+        ? errBody.message
+        : `Request failed: ${res.status}`
+    throw new Error(message)
   }
 
   if (!res.body) throw new Error('No response body')
@@ -402,28 +422,15 @@ export async function translateBlocksStreaming(
     const data = await res.json() as ContentBlock[]
     for (const block of data) {
       let translatedText = ''
-      if ('text' in block && typeof (block as any).text === 'string') translatedText = (block as any).text
-      else if ('items' in block && Array.isArray((block as any).items)) translatedText = (block as any).items.join('\n')
+      if ('text' in block && typeof block.text === 'string') translatedText = block.text
+      else if ('items' in block && Array.isArray(block.items)) translatedText = block.items.join('\n')
       onBlock({ blockId: block.id, status: 'ok', cache: 'miss', translatedText })
     }
   }
 }
 
-export type TranslateStatusResult =
-  | { blockId: string; status: 'ok'; translatedText: string }
-  | { blockId: string; status: 'pending' }
-  | { blockId: string; status: 'missing' }
-
-export interface TranslateStatusResponse {
-  chapterId: string
-  lang: string
-  results: TranslateStatusResult[]
-  pendingCount: number
-  okCount: number
-}
-
-export function getTranslateStatus(chapterId: string, lang: string, blockIds: string[]): Promise<TranslateStatusResponse> {
-  return request<TranslateStatusResponse>(`/api/chapters/${chapterId}/translate-status`, {
+export function fetchBlockTexts(chapterId: string, lang: string, blockIds: string[]): Promise<FetchBlockTextsResponse> {
+  return request<FetchBlockTextsResponse>(`/api/chapters/${chapterId}/blocks/text`, {
     method: 'POST',
     body: JSON.stringify({ lang: lang.toUpperCase(), blockIds }),
   })

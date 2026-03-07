@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useAppStore, Language, ReadingAnchor } from '@/lib/store';
-import { fetchReadingPosition, saveReadingPosition, updateBookLanguage, translateChapterTitles } from '@/lib/api';
+import { fetchContent, fetchReadingPosition, saveReadingPosition, updateBookLanguage, translateChapterTitles } from '@/lib/api';
 import { useChapters } from '@/lib/hooks/useChapters';
 import { useChapterContent } from '@/lib/hooks/useChapterContent';
 import { useViewportTranslation } from '@/lib/hooks/useViewportTranslation';
@@ -12,8 +12,9 @@ import { usePageGestures } from '@/lib/hooks/usePageGestures';
 import { computePages, findPageForBlock, findPageForBlockAndSentence, findPageByBlockPosition, normalizeBlocks } from '@/lib/paginatorUtils';
 import { ContentBlock } from '@/lib/api';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { getCachedReadingPosition, setCachedReadingPosition, getCachedTocTitles, setCachedTocTitles } from '@/lib/contentCache';
+import { getCachedChapterBlockIds, getCachedReadingPosition, setCachedChapterContent, setCachedReadingPosition, getCachedTocTitles, setCachedTocTitles } from '@/lib/contentCache';
 import { mergeDisplayBlocksPreservingTranslations } from '@/lib/reader/mergeDisplayBlocks';
+import { isBlockPendingForActiveLang, isTranslatableBlock } from '@/lib/translationState';
 import {
   trackReadingSessionStarted,
   trackReadingSessionEnded,
@@ -43,6 +44,17 @@ interface ReaderViewProps {
     coverUrl?: string | null;
 }
 
+function isPendingChapterTitle(
+    chapterId: string,
+    activeLang: string,
+    sourceLanguage: string | null | undefined,
+    translatedTitles: Map<string, string>,
+): boolean {
+    if (!sourceLanguage) return false;
+    if (sourceLanguage.toUpperCase() === activeLang.toUpperCase()) return false;
+    return !translatedTitles.has(chapterId);
+}
+
 type PaginationCacheEntry = {
     pages: string[][];
     finalBlocks: ContentBlock[];
@@ -50,6 +62,10 @@ type PaginationCacheEntry = {
     currentPageIdx: number;
     savedAt: number;
 };
+
+function getSentenceIndex(block: ContentBlock): number {
+    return 'sentenceIndex' in block && typeof block.sentenceIndex === 'number' ? block.sentenceIndex : 0;
+}
 
 // Module-level cache so it survives route navigation (unmount/remount).
 const paginationCache = new Map<string, PaginationCacheEntry>();
@@ -151,7 +167,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         });
     }, []);
 
-    const { getRefCallback, isTranslatingAny, abortAll, enqueueBlocks, enqueueBlocksImmediate, pendingBlockIds } = useViewportTranslation({
+    const { getRefCallback, isTranslatingAny, abortAll, enqueueBlocks, enqueueBlocksImmediate, pendingBlockIds, reconcileBlocks } = useViewportTranslation({
         bookId,
         chapterId: currentChapterId,
         lang: activeLang.toUpperCase(),
@@ -190,10 +206,11 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     }, []);
 
     useEffect(() => {
+        const sessionStartedAt = sessionStartRef.current;
         return () => {
             trackReadingSessionEnded({
                 book_id: bookId,
-                duration_seconds: Math.round((Date.now() - sessionStartRef.current) / 1000),
+                duration_seconds: Math.round((Date.now() - sessionStartedAt) / 1000),
                 pages_read: pagesReadRef.current,
                 chapters_navigated: chaptersNavigatedRef.current,
             });
@@ -239,9 +256,10 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     const [visiblePagesReady, setVisiblePagesReady] = useState(false);
     const [remoteAnchorReady, setRemoteAnchorReady] = useState(false);
 
-    // On every page change: translate current page immediately (HIGH PRIORITY), prefetch next pages (LOW PRIORITY)
-    // Extend prefetch window up to 10 pages ahead to ensure continuous translation pipeline
-    const PREFETCH_PAGES_AHEAD = 10;
+    // Translation windows are block-based around the current reading position.
+    const PREFETCH_BLOCKS_FORWARD = 20;
+    const PREFETCH_BLOCKS_BACKWARD = 10;
+    const HIGH_PRIORITY_VISIBLE_BLOCKS = 2;
 
     // Helper to convert fragment IDs to original block IDs for translation
     const resolveBlockIds = useCallback((fragmentIds: string[]): string[] => {
@@ -261,31 +279,92 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     }, [paginatedBlocks]);
 
     useEffect(() => {
-        // Don't enqueue translations while content is loading - wait for fresh data
         if (!pagesReady || isSourceLang || isContentLoading) return;
-        const currentFragmentIds = pages[currentPageIdx] ?? [];
-        // Convert fragment IDs to original block IDs for the backend
-        const currentIds = resolveBlockIds(currentFragmentIds);
 
-        // Current page blocks get HIGH priority - translate immediately
-        if (currentIds.length > 0) {
-            console.log(JSON.stringify({ event: 'translate_current_page', pageIdx: currentPageIdx, blockCount: currentIds.length }));
-            enqueueBlocksImmediate(currentIds);
-        }
+        let cancelled = false;
 
-        // Prefetch next N pages (LOW priority) - ensures we always have a translation pipeline
-        const prefetchFragmentIds: string[] = [];
-        for (let i = 1; i <= PREFETCH_PAGES_AHEAD; i++) {
-            const pageIds = pages[currentPageIdx + i] ?? [];
-            prefetchFragmentIds.push(...pageIds);
-        }
-        const prefetchIds = resolveBlockIds(prefetchFragmentIds);
+        const run = async () => {
+            const currentFragmentIds = pages[currentPageIdx] ?? [];
+            const currentIds = resolveBlockIds(currentFragmentIds);
+            const anchorBlockId = currentIds[0] ?? null;
+            const anchorIdx = anchorBlockId ? displayBlocks.findIndex((block) => block.id === anchorBlockId) : -1;
+            const chapterIdx = currentChapterIndex - 1;
 
-        if (prefetchIds.length > 0) {
-            console.log(JSON.stringify({ event: 'prefetch_enqueue', pageIdx: currentPageIdx, pagesAhead: PREFETCH_PAGES_AHEAD, totalBlocks: prefetchIds.length }));
-            enqueueBlocks(prefetchIds);
-        }
-    }, [currentPageIdx, pagesReady, pages, enqueueBlocks, enqueueBlocksImmediate, isSourceLang, isContentLoading, resolveBlockIds]);
+            const loadChapterIds = async (idx: number): Promise<string[]> => {
+                const chapter = chapters[idx];
+                if (!chapter) return [];
+                const cachedIds = await getCachedChapterBlockIds(chapter.id);
+                if (cachedIds.length > 0) return cachedIds;
+                try {
+                    const nextBlocks = await fetchContent(chapter.id, activeLang.toUpperCase());
+                    await setCachedChapterContent(chapter.id, activeLang.toUpperCase(), nextBlocks);
+                    return nextBlocks.map((block) => block.id);
+                } catch {
+                    return [];
+                }
+            };
+
+            const forwardIds: string[] = [];
+            if (anchorIdx >= 0) {
+                forwardIds.push(...displayBlocks.slice(anchorIdx + 1).map((block) => block.id));
+            }
+            for (let idx = chapterIdx + 1; forwardIds.length < PREFETCH_BLOCKS_FORWARD && idx < chapters.length; idx += 1) {
+                forwardIds.push(...(await loadChapterIds(idx)));
+            }
+
+            const backwardIds: string[] = [];
+            if (anchorIdx >= 0) {
+                backwardIds.unshift(...displayBlocks.slice(Math.max(0, anchorIdx - PREFETCH_BLOCKS_BACKWARD), anchorIdx).map((block) => block.id));
+            }
+            for (let idx = chapterIdx - 1; backwardIds.length < PREFETCH_BLOCKS_BACKWARD && idx >= 0; idx -= 1) {
+                const ids = await loadChapterIds(idx);
+                backwardIds.unshift(...ids);
+            }
+
+            const boundedForwardIds = forwardIds.slice(0, PREFETCH_BLOCKS_FORWARD);
+            const boundedBackwardIds = backwardIds.slice(Math.max(0, backwardIds.length - PREFETCH_BLOCKS_BACKWARD));
+
+            if (cancelled) return;
+
+            const reconcileIds = Array.from(new Set([...currentIds, ...boundedForwardIds, ...boundedBackwardIds]));
+            if (reconcileIds.length > 0) {
+                void reconcileBlocks(reconcileIds);
+            }
+
+            if (currentIds.length > 0) {
+                const visibleHighIds = currentIds.slice(0, HIGH_PRIORITY_VISIBLE_BLOCKS);
+                const visibleRemainingIds = currentIds.slice(HIGH_PRIORITY_VISIBLE_BLOCKS);
+                console.log(JSON.stringify({
+                    event: 'translate_current_page',
+                    pageIdx: currentPageIdx,
+                    blockCount: currentIds.length,
+                    visibleHighCount: visibleHighIds.length,
+                    visibleDeferredCount: visibleRemainingIds.length,
+                }));
+                if (visibleHighIds.length > 0) {
+                    enqueueBlocksImmediate(visibleHighIds);
+                }
+                if (visibleRemainingIds.length > 0) {
+                    enqueueBlocks(visibleRemainingIds);
+                }
+            }
+
+            if (boundedForwardIds.length > 0) {
+                console.log(JSON.stringify({ event: 'prefetch_forward_enqueue', pageIdx: currentPageIdx, totalBlocks: boundedForwardIds.length }));
+                enqueueBlocks(boundedForwardIds);
+            }
+            if (boundedBackwardIds.length > 0) {
+                console.log(JSON.stringify({ event: 'prefetch_backward_enqueue', pageIdx: currentPageIdx, totalBlocks: boundedBackwardIds.length }));
+                enqueueBlocks(boundedBackwardIds);
+            }
+        };
+
+        void run();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [currentPageIdx, pagesReady, pages, enqueueBlocks, enqueueBlocksImmediate, isSourceLang, isContentLoading, resolveBlockIds, displayBlocks, reconcileBlocks, chapters, currentChapterIndex, activeLang]);
 
     // Measure the available height for content after the header
     useEffect(() => {
@@ -384,7 +463,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         return () => {
             cancelled = true;
         };
-    }, [blockStructureKey, pageHeight, normalizedBlocks, settings.fontSize, displayBlocksLang, activeLang]);
+    }, [blockStructureKey, pageHeight, normalizedBlocks, settings.fontSize, displayBlocksLang, activeLang, currentPageIdx, paginationCacheKey]);
 
     // ─── Anchor restore ──────────────────────────────────────────────────────
     // Set by language-switch handler: blockId + sentenceIndex to jump to on next page recompute
@@ -411,7 +490,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         setVisiblePagesReady(false);
         setPages([]);
         setCurrentPageIdx(0);
-    }, [currentChapter?.id]);
+    }, [currentChapter?.id, paginationCacheKey]);
 
     useEffect(() => {
         if (!pagesReady || pages.length === 0) return;
@@ -590,7 +669,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
             setCurrentPageIdx(Math.max(0, byPos));
         }
         setVisiblePagesReady(true);
-    }, [remoteAnchorReady, pagesReady, pages, bookId, currentChapter?.id, displayBlocks, getAnchor]);
+    }, [remoteAnchorReady, pagesReady, pages, bookId, currentChapter?.id, displayBlocks, getAnchor, paginatedBlocks]);
 
     // ─── Anchor save (throttled ~1 s) ────────────────────────────────────────
     const lastSavedAnchorAt = useRef(0);
@@ -736,11 +815,10 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         if (!isLanguageSwitching) return false;
         if (!pagesReady || !visiblePagesReady) return false;
         if (!currentPageBlocks.length) return false;
-        const translatable = currentPageBlocks.filter((b) => b.type !== 'image' && b.type !== 'hr');
+        const translatable = currentPageBlocks.filter(isTranslatableBlock);
         if (translatable.length === 0) return false;
         const hasAnyReady = translatable.some((block) => {
-            const blockId = block.parentId ?? block.id;
-            return !(block.is_pending || pendingBlockIds.has(blockId));
+            return !isBlockPendingForActiveLang(block, pendingBlockIds);
         });
         return !hasAnyReady;
     }, [isLanguageSwitching, pagesReady, visiblePagesReady, currentPageBlocks, pendingBlockIds]);
@@ -761,14 +839,13 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         if (!pagesReady || !visiblePagesReady) return;
         if (!currentPageBlocks.length) return;
 
-        const translatable = currentPageBlocks.filter((b) => b.type !== 'image' && b.type !== 'hr');
+        const translatable = currentPageBlocks.filter(isTranslatableBlock);
         if (translatable.length === 0) {
             setIsLanguageSwitching(false);
             return;
         }
         const hasAnyReady = translatable.some((block) => {
-            const blockId = block.parentId ?? block.id;
-            return !(block.is_pending || pendingBlockIds.has(blockId));
+            return !isBlockPendingForActiveLang(block, pendingBlockIds);
         });
         if (hasAnyReady) setIsLanguageSwitching(false);
     }, [isLanguageSwitching, isContentLoading, blocksLang, activeLang, pagesReady, visiblePagesReady, currentPageBlocks, pendingBlockIds]);
@@ -786,7 +863,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
             if (currentPageBlocksRef.current.length > 0) {
                 const currentBlock = currentPageBlocksRef.current[0];
                 const blockId = currentBlock.parentId ?? currentBlock.id;
-                saveAnchor(blockId, currentBlock.position, (currentBlock as any).sentenceIndex ?? 0);
+                saveAnchor(blockId, currentBlock.position, getSentenceIndex(currentBlock));
             }
 
             setCurrentPageIdx(0);
@@ -802,7 +879,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         setCurrentPageIdx(idx);
         const anchorBlockId = pages[idx][0];
         const block = paginatedBlocks.find((b) => b.id === anchorBlockId);
-        if (block) saveAnchor(block.parentId ?? block.id, block.position, (block as any).sentenceIndex ?? 0);
+        if (block) saveAnchor(block.parentId ?? block.id, block.position, getSentenceIndex(block));
         // Translation enqueue is handled by the useEffect on currentPageIdx change.
         // No direct enqueue here to avoid double-enqueuing (which would cause an
         // unnecessary abort of the batch the useEffect just started).
@@ -837,7 +914,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     chapterId: currentChapter.id,
                     blockId: block.parentId ?? block.id,
                     blockPosition: block.position,
-                    sentenceIndex: (block as any).sentenceIndex ?? 0,
+                    sentenceIndex: getSentenceIndex(block),
                     updatedAt: new Date().toISOString(),
                 });
             }
@@ -856,7 +933,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
             const byPos = findPageByBlockPosition(pages, paginatedBlocks, block.position);
             setCurrentPageIdx(Math.max(0, byPos));
         }
-    }, [abortAll, currentChapter, displayBlocks, bookId, storeSetAnchor, pages, pagesReady]);
+    }, [abortAll, currentChapter, displayBlocks, bookId, storeSetAnchor, pages, pagesReady, paginatedBlocks]);
 
     // TOC selects chapters (not blocks). Abort prefetch immediately, then switch chapter.
     const handleSelectChapterFromToc = useCallback((chapterIndex: number) => {
@@ -899,7 +976,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
             const anchorBlockId = pages[currentPageIdx]?.[0];
             const block = paginatedBlocks.find((b) => b.id === anchorBlockId);
             if (block) {
-                const sentenceIndex = (block as any).sentenceIndex ?? 0;
+                const sentenceIndex = getSentenceIndex(block);
                 const anchor: ReadingAnchor = {
                     chapterId: currentChapter.id,
                     blockId: block.parentId ?? block.id,
@@ -947,6 +1024,13 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     const languages = availableLanguages
         .map((l) => l.toLowerCase())
         .filter((l): l is Language => ['en', 'fr', 'es', 'de', 'ru'].includes(l));
+
+    const currentChapterFooterTitle = currentChapter
+        ? translatedChapterTitles.get(currentChapter.id)
+            || (activeLang && currentChapter.translations?.[activeLang.toUpperCase()])
+            || currentChapter.title
+        : `Ch. ${currentChapterIndex}`
+    ;
 
     // ─── Chrome visibility (header + footer toggle) ───────────────────────────
     const [chromeVisible, setChromeVisible] = useState(true);
@@ -1066,6 +1150,12 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                                         || (activeLang && c.translations?.[activeLang.toUpperCase()])
                                         || c.title,
                                     depth: c.depth,
+                                    isPending: isPendingChapterTitle(
+                                        c.id,
+                                        activeLang,
+                                        originalLanguage,
+                                        translatedChapterTitles,
+                                    ),
                                 })),
                             }}
                             currentChapter={currentChapterIndex}
@@ -1149,11 +1239,11 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                                         const isCoverImage = block.id === firstImageBlockId;
                                         // Skip image blocks that cannot be rendered to avoid empty divs in the DOM
                                         if (block.type === 'image') {
-                                            const src = (block as any).src as string | undefined;
+                                            const src = block.src;
                                             const isAbsolute = src?.startsWith('http://') || src?.startsWith('https://') || src?.startsWith('data:');
                                             if (!isAbsolute && !(isCoverImage && coverUrl)) return null;
                                         }
-                                        const isPending = block.is_pending || pendingBlockIds.has(blockId);
+                                        const isPending = isBlockPendingForActiveLang(block, pendingBlockIds);
                                         const showTranslatingLabel = isPending && !firstPendingFound;
                                         if (isPending && !firstPendingFound) firstPendingFound = true;
                                         return (
@@ -1188,12 +1278,16 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     <span className="truncate">← Previous page</span>
                 </Button>
 
-                <span className="text-center tabular-nums">
-                    Ch.&nbsp;{currentChapterIndex}
+                <div className="min-w-0 max-w-[70vw] md:max-w-[50vw] flex items-center gap-2 text-center">
+                    <span className="min-w-0 truncate text-center">
+                        {currentChapterFooterTitle}
+                    </span>
                     {pagesReady && displayBlocks.length > 0 && (
-                        <>&nbsp;·&nbsp;{blockProgressPct}%</>
+                        <span className="shrink-0 tabular-nums">
+                            {blockProgressPct}%
+                        </span>
                     )}
-                </span>
+                </div>
 
                 <Button
                     variant="ghost"

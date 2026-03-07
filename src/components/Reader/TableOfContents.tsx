@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { List, X, Loader2 } from 'lucide-react';
 
@@ -8,6 +8,7 @@ interface Chapter {
     number: number;
     title: string;
     depth?: number;
+    isPending?: boolean;
 }
 
 interface TableOfContentsProps {
@@ -32,11 +33,11 @@ export default function TableOfContents({
     const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
     const setIsOpen = setExternalOpen !== undefined ? setExternalOpen : setInternalOpen;
 
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = useSyncExternalStore(
+        () => () => {},
+        () => true,
+        () => false,
+    );
 
     // Close on escape
     useEffect(() => {
@@ -107,16 +108,22 @@ export default function TableOfContents({
                                         {chapter.number}
                                     </span>
                                 )}
-                                <span className={`
-                                    ${depth === 1 ? 'text-[17px]' : depth === 2 ? 'text-[16px]' : 'text-[15px]'}
-                                    ${isActive
-                                        ? 'text-[var(--system-blue)] font-semibold'
-                                        : depth === 1
-                                            ? 'text-[var(--label-primary)]'
-                                            : 'text-[var(--label-secondary)]'
-                                    }
-                                `}>
-                                    {chapter.title}
+                                <span className="relative flex-1 min-w-0">
+                                    <span
+                                        className={`
+                                            block
+                                            ${depth === 1 ? 'text-[17px]' : depth === 2 ? 'text-[16px]' : 'text-[15px]'}
+                                            ${isActive
+                                                ? 'text-[var(--system-blue)] font-semibold'
+                                                : depth === 1
+                                                    ? 'text-[var(--label-primary)]'
+                                                    : 'text-[var(--label-secondary)]'
+                                            }
+                                            ${chapter.isPending ? 'blur-[3px] opacity-40' : ''}
+                                        `}
+                                    >
+                                        {chapter.title}
+                                    </span>
                                 </span>
                             </button>
                         );

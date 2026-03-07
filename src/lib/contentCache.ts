@@ -7,7 +7,7 @@ import type { ReadingAnchor } from '@/lib/store'
 type CacheKey = string
 
 const DB_NAME = 'globoox-cache'
-const DB_VERSION = 4
+const DB_VERSION = 5
 const STORE_CHAPTER_CONTENT_V1 = 'chapter_content'
 const STORE_CHAPTER_SKELETON = 'chapter_skeleton'
 const STORE_BLOCK_TEXT = 'block_text'
@@ -83,9 +83,9 @@ function openDb(): Promise<IDBDatabase> {
         store.createIndex('by_fetchedAt', 'fetchedAt')
       }
 
-      // v4: clear chapter translation caches once to remove mixed-language data
-      // written by older buggy streaming context handling.
-      if (oldVersion < 4 && tx) {
+      // v5: clear chapter translation caches once to remove mixed-language data
+      // and old skeletons that did not preserve fallback content.
+      if (oldVersion < 5 && tx) {
         if (db.objectStoreNames.contains(STORE_CHAPTER_CONTENT_V1)) {
           tx.objectStore(STORE_CHAPTER_CONTENT_V1).clear()
         }
@@ -129,9 +129,9 @@ function withStore<T>(storeName: string, mode: IDBTransactionMode, fn: (store: I
 }
 
 type SkeletonBlock =
-  | { id: string; position: number; type: 'paragraph' | 'quote' }
-  | { id: string; position: number; type: 'heading'; level: 1 | 2 | 3 }
-  | { id: string; position: number; type: 'list'; ordered: boolean }
+  | { id: string; position: number; type: 'paragraph' | 'quote'; fallbackText: string }
+  | { id: string; position: number; type: 'heading'; level: 1 | 2 | 3; fallbackText: string }
+  | { id: string; position: number; type: 'list'; ordered: boolean; fallbackItems: string[] }
   | { id: string; position: number; type: 'image'; src: string; alt: string; caption?: string }
   | { id: string; position: number; type: 'hr' }
 
@@ -217,7 +217,7 @@ export async function setCachedBooksList(scope: string, status: string, books: A
     books,
     fetchedAt: Date.now(),
   }
-  await withStore(STORE_BOOKS_LIST, 'readwrite', (store) => store.put(entry as any))
+  await withStore(STORE_BOOKS_LIST, 'readwrite', (store) => store.put(entry))
 }
 
 export async function clearCachedBooksList(scope?: string): Promise<void> {
@@ -261,7 +261,7 @@ export async function setCachedBookMeta(scope: string, book: ApiBook): Promise<v
     book,
     fetchedAt: Date.now(),
   }
-  await withStore(STORE_BOOK_META, 'readwrite', (store) => store.put(entry as any))
+  await withStore(STORE_BOOK_META, 'readwrite', (store) => store.put(entry))
 }
 
 export async function clearCachedBookMeta(scope?: string): Promise<void> {
@@ -311,7 +311,7 @@ export async function setCachedReadingPosition(scope: string, bookId: string, en
     pendingAnchor: entry.pendingAnchor,
     fetchedAt: Date.now(),
   }
-  await withStore(STORE_READING_POSITIONS, 'readwrite', (store) => store.put(full as any))
+  await withStore(STORE_READING_POSITIONS, 'readwrite', (store) => store.put(full))
 }
 
 export async function clearCachedReadingPositions(scope?: string): Promise<void> {
@@ -358,7 +358,7 @@ export async function setCachedTocTitles(scope: string, bookId: string, lang: st
     titles,
     fetchedAt: Date.now(),
   }
-  await withStore(STORE_TOC_TITLES, 'readwrite', (store) => store.put(entry as any))
+  await withStore(STORE_TOC_TITLES, 'readwrite', (store) => store.put(entry))
 }
 
 export async function clearCachedTocTitles(scope?: string): Promise<void> {
@@ -388,37 +388,67 @@ export async function clearCachedTocTitles(scope?: string): Promise<void> {
   }
 }
 
-function assembleBlock(skel: SkeletonBlock, text: CachedBlockText | undefined, lang: string): ContentBlock {
-  const base = { id: skel.id, position: skel.position } as any
+function assembleBlock(skel: SkeletonBlock, text: CachedBlockText | undefined): ContentBlock {
+  const base = { id: skel.id, position: skel.position }
 
   if (skel.type === 'heading') {
     const hasText = typeof text?.text === 'string'
-    return { ...base, type: 'heading', level: skel.level, text: text?.text ?? '', isTranslated: hasText, is_pending: !hasText, } as any
+    return {
+      ...base,
+      type: 'heading',
+      level: skel.level,
+      text: text?.text ?? skel.fallbackText,
+      targetLangReady: hasText,
+      isTranslated: hasText,
+      is_pending: !hasText,
+    }
   }
   if (skel.type === 'paragraph') {
     const hasText = typeof text?.text === 'string'
-    return { ...base, type: 'paragraph', text: text?.text ?? '', isTranslated: hasText, is_pending: !hasText } as any
+    return {
+      ...base,
+      type: 'paragraph',
+      text: text?.text ?? skel.fallbackText,
+      targetLangReady: hasText,
+      isTranslated: hasText,
+      is_pending: !hasText,
+    }
   }
   if (skel.type === 'quote') {
     const hasText = typeof text?.text === 'string'
-    return { ...base, type: 'quote', text: text?.text ?? '', isTranslated: hasText, is_pending: !hasText } as any
+    return {
+      ...base,
+      type: 'quote',
+      text: text?.text ?? skel.fallbackText,
+      targetLangReady: hasText,
+      isTranslated: hasText,
+      is_pending: !hasText,
+    }
   }
   if (skel.type === 'list') {
     const hasItems = Array.isArray(text?.items) && text!.items!.length > 0
-    return { ...base, type: 'list', ordered: skel.ordered, items: text?.items ?? [], isTranslated: hasItems, is_pending: !hasItems } as any
+    return {
+      ...base,
+      type: 'list',
+      ordered: skel.ordered,
+      items: text?.items ?? skel.fallbackItems,
+      targetLangReady: hasItems,
+      isTranslated: hasItems,
+      is_pending: !hasItems,
+    }
   }
   if (skel.type === 'image') {
-    return { ...base, type: 'image', src: skel.src, alt: skel.alt, caption: skel.caption, isTranslated: true, is_pending: false } as any
+    return { ...base, type: 'image', src: skel.src, alt: skel.alt, caption: skel.caption, targetLangReady: true, isTranslated: true, is_pending: false }
   }
-  return { ...base, type: 'hr', isTranslated: true, is_pending: false } as any
+  return { ...base, type: 'hr', targetLangReady: true, isTranslated: true, is_pending: false }
 }
 
 function toSkeleton(blocks: ContentBlock[]): SkeletonBlock[] {
   return blocks.map((b) => {
-    if (b.type === 'heading') return { id: b.id, position: b.position, type: 'heading', level: b.level }
-    if (b.type === 'paragraph') return { id: b.id, position: b.position, type: 'paragraph' }
-    if (b.type === 'quote') return { id: b.id, position: b.position, type: 'quote' }
-    if (b.type === 'list') return { id: b.id, position: b.position, type: 'list', ordered: b.ordered }
+    if (b.type === 'heading') return { id: b.id, position: b.position, type: 'heading', level: b.level, fallbackText: b.text ?? '' }
+    if (b.type === 'paragraph') return { id: b.id, position: b.position, type: 'paragraph', fallbackText: b.text ?? '' }
+    if (b.type === 'quote') return { id: b.id, position: b.position, type: 'quote', fallbackText: b.text ?? '' }
+    if (b.type === 'list') return { id: b.id, position: b.position, type: 'list', ordered: b.ordered, fallbackItems: b.items ?? [] }
     if (b.type === 'image') return { id: b.id, position: b.position, type: 'image', src: b.src, alt: b.alt, caption: b.caption }
     return { id: b.id, position: b.position, type: 'hr' }
   })
@@ -499,12 +529,29 @@ export async function getCachedChapterContent(chapterId: string, lang?: string):
     const assembled = skeleton.blocks
       .slice()
       .sort((a, b) => a.position - b.position)
-      .map((skel) => assembleBlock(skel, textMap.get(skel.id), normalizedLang))
+      .map((skel) => assembleBlock(skel, textMap.get(skel.id)))
 
     const missing = assembled.filter((b) => b.is_pending === true).length
     return { blocks: assembled, hasPending: missing > 0, missingCount: missing, fetchedAt: skeleton.fetchedAt }
   } catch {
     return null
+  }
+}
+
+export async function getCachedChapterBlockIds(chapterId: string): Promise<string[]> {
+  try {
+    const skeleton = await withStore<CachedChapterSkeleton | undefined>(
+      STORE_CHAPTER_SKELETON,
+      'readonly',
+      (store) => store.get(chapterId),
+    )
+    if (!skeleton?.blocks?.length) return []
+    return skeleton.blocks
+      .slice()
+      .sort((a, b) => a.position - b.position)
+      .map((block) => block.id)
+  } catch {
+    return []
   }
 }
 
@@ -533,8 +580,8 @@ export async function setCachedChapterContent(
       for (const block of blocks) {
         const entry = toBlockText(chapterId, normalizedLang, block)
         if (!entry) continue
-        // Skip writing empty strings/arrays for "pending" blocks if server marks them as pending.
-        if (block.is_pending === true) continue
+        // Only persist text for the requested lang when that lang is actually ready.
+        if (!(block.targetLangReady ?? block.isTranslated)) continue
         textStore.put(entry)
       }
 

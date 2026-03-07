@@ -1,4 +1,5 @@
 import type { ContentBlock } from '@/lib/api'
+import { hasTargetLangText } from '@/lib/translationState'
 
 export function mergeDisplayBlocksPreservingTranslations(
   prev: ContentBlock[],
@@ -13,13 +14,13 @@ export function mergeDisplayBlocksPreservingTranslations(
     const prior = prevById.get(block.id)
     if (!prior) return block
 
-    if (!prior.isTranslated) return block
-    if (block.isTranslated) return block
+    if (!hasTargetLangText(prior)) return block
+    if (hasTargetLangText(block)) return block
 
     if (block.type === 'paragraph' || block.type === 'quote' || block.type === 'heading') {
       const priorText = (prior as typeof block).text
       if (typeof priorText === 'string' && priorText.length > 0) {
-        return { ...block, text: priorText, isTranslated: true, is_pending: false }
+        return { ...block, text: priorText, targetLangReady: true, isTranslated: true, is_pending: false }
       }
       return block
     }
@@ -27,7 +28,7 @@ export function mergeDisplayBlocksPreservingTranslations(
     if (block.type === 'list') {
       const priorItems = (prior as typeof block).items
       if (Array.isArray(priorItems) && priorItems.length > 0) {
-        return { ...block, items: priorItems, isTranslated: true, is_pending: false }
+        return { ...block, items: priorItems, targetLangReady: true, isTranslated: true, is_pending: false }
       }
       return block
     }

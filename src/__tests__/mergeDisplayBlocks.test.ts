@@ -11,7 +11,7 @@ describe('mergeDisplayBlocksPreservingTranslations', () => {
       { id: 'p1', position: 1, type: 'paragraph', text: 'Hello', isTranslated: false, is_pending: true },
     ]
     expect(mergeDisplayBlocksPreservingTranslations(prev, next)).toEqual([
-      { id: 'p1', position: 1, type: 'paragraph', text: 'Bonjour', isTranslated: true, is_pending: false },
+      { id: 'p1', position: 1, type: 'paragraph', text: 'Bonjour', targetLangReady: true, isTranslated: true, is_pending: false },
     ])
   })
 
@@ -25,4 +25,3 @@ describe('mergeDisplayBlocksPreservingTranslations', () => {
     expect(mergeDisplayBlocksPreservingTranslations(prev, next)).toEqual(next)
   })
 })
-

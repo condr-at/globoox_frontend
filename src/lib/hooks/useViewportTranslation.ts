@@ -1,9 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ContentBlock, getTranslateStatus, TranslatedBlockResult, TranslateDoneEvent, translateBlocksStreaming } from '@/lib/api'
+import { ContentBlock, fetchBlockTexts, TranslatedBlockResult, translateBlocksStreaming } from '@/lib/api'
 import { trackTranslationBatch } from '@/lib/posthog'
 import { setCachedTranslatedBlockText } from '@/lib/contentCache'
+import { hasTargetLangText } from '@/lib/translationState'
 
 interface UseViewportTranslationOptions {
   bookId: string
@@ -28,13 +29,55 @@ const SKIP_TYPES = new Set(['image', 'hr'])
 /** Merge a translatedText string into the appropriate field(s) of a ContentBlock. */
 function applyTranslation(block: ContentBlock, translatedText: string): ContentBlock | null {
   if (block.type === 'paragraph' || block.type === 'quote' || block.type === 'heading') {
-    return { ...block, text: translatedText, isTranslated: true, is_pending: false }
+    return { ...block, text: translatedText, targetLangReady: true, isTranslated: true, is_pending: false }
   }
   if (block.type === 'list') {
-    return { ...block, items: translatedText.split('\n').filter(Boolean), isTranslated: true, is_pending: false }
+    return { ...block, items: translatedText.split('\n').filter(Boolean), targetLangReady: true, isTranslated: true, is_pending: false }
   }
   // image / hr — no text translation
   return null
+}
+
+function buildRecoveredTranslatedBlock(
+  payload: Awaited<ReturnType<typeof fetchBlockTexts>>['ok'][number],
+  fallbackType: ContentBlock['type'],
+): ContentBlock {
+  if (payload.type === 'list') {
+    return {
+      id: payload.blockId,
+      position: 0,
+      type: 'list',
+      ordered: false,
+      items: payload.items,
+      targetLangReady: true,
+      isTranslated: true,
+      is_pending: false,
+    }
+  }
+
+  const type = fallbackType === 'heading' || fallbackType === 'quote' ? fallbackType : 'paragraph'
+  if (type === 'heading') {
+    return {
+      id: payload.blockId,
+      position: 0,
+      type,
+      level: 1,
+      text: payload.text,
+      targetLangReady: true,
+      isTranslated: true,
+      is_pending: false,
+    }
+  }
+
+  return {
+    id: payload.blockId,
+    position: 0,
+    type,
+    text: payload.text,
+    targetLangReady: true,
+    isTranslated: true,
+    is_pending: false,
+  }
 }
 
 export function useViewportTranslation({
@@ -114,8 +157,7 @@ export function useViewportTranslation({
   // IMPORTANT: do NOT depend on `blocks` here — `blocks` is `displayBlocks` which
   // gets a new reference on every single translation callback. Depending on it would
   // cause a reset→abort→re-enqueue cascade producing dozens of canceled API calls.
-  // Pre-translated blocks are already handled by enqueueBlock() which checks
-  // block.isTranslated via blocksRef before sending any request.
+  // Pre-translated blocks are already handled by enqueueBlock() via hasTargetLangText().
   useEffect(() => {
     // Abort any in-flight request for the old context
     if (abortControllerRef.current) {
@@ -245,7 +287,8 @@ export function useViewportTranslation({
           updatePendingBlockIds()
 
           if (result.status === 'ok') {
-            result.cache === 'hit' ? hits++ : misses++
+            if (result.cache === 'hit') hits += 1
+            else misses += 1
           } else {
             errors++
           }
@@ -319,7 +362,7 @@ export function useViewportTranslation({
         if (isMountedRef.current) setIsTranslatingAny(false)
       }
     }
-  }, [])
+  }, [updatePendingBlockIds])
 
   // Schedule a debounced flush
   const scheduleFlush = useCallback((isHighPriority = false) => {
@@ -339,6 +382,48 @@ export function useViewportTranslation({
     }
   }, [flushPending])
 
+  const reconcileBlocks = useCallback(async (ids: string[]) => {
+    if (!canTranslateRef.current) return
+    const requestChapterId = chapterIdRef.current
+    const requestLang = langRef.current
+    if (!requestChapterId || !requestLang || ids.length === 0) return
+
+    const uniqueIds = Array.from(new Set(ids)).filter((blockId) => {
+      const block = blocksRef.current.find((b) => b.id === blockId)
+      if (!block) return false
+      if (SKIP_TYPES.has(block.type)) return false
+      return !hasTargetLangText(block)
+    })
+    if (uniqueIds.length === 0) return
+
+    try {
+      const res = await fetchBlockTexts(requestChapterId, requestLang, uniqueIds)
+      const translated: ContentBlock[] = []
+      const blocksById = new Map(blocksRef.current.map((block) => [block.id, block] as const))
+
+      for (const payload of res.ok) {
+        const original = blocksById.get(payload.blockId)
+        if (!original) continue
+        const merged =
+          payload.type === 'list'
+            ? applyTranslation(original, payload.items.join('\n'))
+            : applyTranslation(original, payload.text)
+        if (!merged) continue
+        translated.push(merged)
+        void setCachedTranslatedBlockText(requestChapterId, requestLang, merged)
+      }
+
+      const sameRequestContext =
+        chapterIdRef.current === requestChapterId &&
+        langRef.current === requestLang
+      if (sameRequestContext && translated.length > 0 && isMountedRef.current) {
+        onBlocksTranslatedRef.current(translated)
+      }
+    } catch {
+      // best-effort reconcile
+    }
+  }, [])
+
   // Enqueue a single block for translation.
   // triggerFlush: when false, caller is responsible for calling scheduleFlush after
   // batching multiple blocks. This avoids an abort cascade where each block in a
@@ -356,7 +441,7 @@ export function useViewportTranslation({
 
       // Skip if block is already translated (from content endpoint)
       const block = blocksRef.current.find((b) => b.id === blockId)
-      if (block?.isTranslated) {
+      if (block && hasTargetLangText(block)) {
         translatedIds.current.add(blockId)
         return false
       }
@@ -532,21 +617,16 @@ export function useViewportTranslation({
         if (ids.length === 0) continue
 
         try {
-          const res = await getTranslateStatus(recoveryChapterId, recoveryLang, ids)
-          for (const r of res.results) {
-            if (r.status === 'ok') {
-              const type = idToType.get(r.blockId)
-              if (type && r.translatedText) {
-                const translatedBlock: ContentBlock =
-                  type === 'list'
-                    ? ({ id: r.blockId, type: 'list', items: r.translatedText.split('\n').filter(Boolean) } as any)
-                    : ({ id: r.blockId, type, text: r.translatedText } as any)
-                void setCachedTranslatedBlockText(recoveryChapterId, recoveryLang, translatedBlock)
-              }
-              idToType.delete(r.blockId)
-            } else if (r.status === 'missing') {
-              idToType.delete(r.blockId)
-            }
+          const res = await fetchBlockTexts(recoveryChapterId, recoveryLang, ids)
+          for (const payload of res.ok) {
+            const type = idToType.get(payload.blockId)
+            if (!type) continue
+            const translatedBlock = buildRecoveredTranslatedBlock(payload, type as ContentBlock['type'])
+            void setCachedTranslatedBlockText(recoveryChapterId, recoveryLang, translatedBlock)
+            idToType.delete(payload.blockId)
+          }
+          for (const missingId of res.missing) {
+            idToType.delete(missingId)
           }
           if (idToType.size === 0) recoveryRef.current.delete(key)
         } catch {
@@ -612,5 +692,5 @@ export function useViewportTranslation({
     }
   }, [enqueueBlock, scheduleFlush])
 
-  return { getRefCallback, isTranslatingAny, abortAll, enqueueBlocks, enqueueBlocksImmediate, pendingBlockIds }
+  return { getRefCallback, isTranslatingAny, abortAll, enqueueBlocks, enqueueBlocksImmediate, pendingBlockIds, reconcileBlocks }
 }
