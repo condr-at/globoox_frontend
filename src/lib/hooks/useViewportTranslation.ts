@@ -22,6 +22,8 @@ const ROOT_MARGIN = '50% 0px'
 const MAX_BATCH_SIZE = 10 // Smaller batches to reduce duplicate requests and improve responsiveness
 const RECOVERY_POLL_MS = 1500
 const RECOVERY_BATCH_SIZE = 50
+const RECONCILE_COALESCE_MS = 120
+const RECENT_BLOCK_TEXT_TTL_MS = 2000
 
 // Block types that don't need translation
 const SKIP_TYPES = new Set(['image', 'hr'])
@@ -115,6 +117,9 @@ export function useViewportTranslation({
   // Key: `${chapterId}::${LANG}` -> blockId -> blockType
   const recoveryRef = useRef(new Map<string, Map<string, string>>())
   const recoveryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const reconcileQueueRef = useRef(new Map<string, Set<string>>())
+  const reconcileTimerRef = useRef(new Map<string, ReturnType<typeof setTimeout>>())
+  const recentBlockTextFetchRef = useRef(new Map<string, number>())
 
   // Helper to sync pendingBlockIds state with current queues
   const updatePendingBlockIds = useCallback(() => {
@@ -126,6 +131,32 @@ export function useViewportTranslation({
       ...highPriorityQueuedIds.current,
     ])
     if (isMountedRef.current) setPendingBlockIds(allPending)
+  }, [])
+
+  const getRecentFetchKey = useCallback((requestChapterId: string, requestLang: string, blockId: string) => {
+    return `${requestChapterId}::${requestLang.toUpperCase()}::${blockId}`
+  }, [])
+
+  const wasRecentlyChecked = useCallback((requestChapterId: string, requestLang: string, blockId: string) => {
+    const key = getRecentFetchKey(requestChapterId, requestLang, blockId)
+    const timestamp = recentBlockTextFetchRef.current.get(key)
+    return timestamp !== undefined && Date.now() - timestamp < RECENT_BLOCK_TEXT_TTL_MS
+  }, [getRecentFetchKey])
+
+  const markRecentlyChecked = useCallback((requestChapterId: string, requestLang: string, ids: string[]) => {
+    const now = Date.now()
+    for (const blockId of ids) {
+      recentBlockTextFetchRef.current.set(getRecentFetchKey(requestChapterId, requestLang, blockId), now)
+    }
+  }, [getRecentFetchKey])
+
+  const pruneRecentChecked = useCallback(() => {
+    const threshold = Date.now() - RECENT_BLOCK_TEXT_TTL_MS
+    for (const [key, timestamp] of recentBlockTextFetchRef.current) {
+      if (timestamp < threshold) {
+        recentBlockTextFetchRef.current.delete(key)
+      }
+    }
   }, [])
 
   // Debounce timer
@@ -183,6 +214,13 @@ export function useViewportTranslation({
       clearTimeout(debounceTimer.current)
       debounceTimer.current = null
     }
+
+    for (const timer of reconcileTimerRef.current.values()) {
+      clearTimeout(timer)
+    }
+    reconcileTimerRef.current.clear()
+    reconcileQueueRef.current.clear()
+    recentBlockTextFetchRef.current.clear()
   }, [lang, chapterId])
 
   // Check if translation is needed (not source language)
@@ -388,41 +426,73 @@ export function useViewportTranslation({
     const requestLang = langRef.current
     if (!requestChapterId || !requestLang || ids.length === 0) return
 
+    pruneRecentChecked()
     const uniqueIds = Array.from(new Set(ids)).filter((blockId) => {
       const block = blocksRef.current.find((b) => b.id === blockId)
       if (!block) return false
       if (SKIP_TYPES.has(block.type)) return false
       return !hasTargetLangText(block)
     })
-    if (uniqueIds.length === 0) return
+    const idsToQueue = uniqueIds.filter((blockId) => !wasRecentlyChecked(requestChapterId, requestLang, blockId))
+    if (idsToQueue.length === 0) return
 
-    try {
-      const res = await fetchBlockTexts(requestChapterId, requestLang, uniqueIds)
-      const translated: ContentBlock[] = []
-      const blocksById = new Map(blocksRef.current.map((block) => [block.id, block] as const))
+    const queueKey = `${requestChapterId}::${requestLang.toUpperCase()}`
+    const queuedIds = reconcileQueueRef.current.get(queueKey) ?? new Set<string>()
+    idsToQueue.forEach((blockId) => queuedIds.add(blockId))
+    reconcileQueueRef.current.set(queueKey, queuedIds)
 
-      for (const payload of res.ok) {
-        const original = blocksById.get(payload.blockId)
-        if (!original) continue
-        const merged =
-          payload.type === 'list'
-            ? applyTranslation(original, payload.items.join('\n'))
-            : applyTranslation(original, payload.text)
-        if (!merged) continue
-        translated.push(merged)
-        void setCachedTranslatedBlockText(requestChapterId, requestLang, merged)
+    if (reconcileTimerRef.current.has(queueKey)) return
+
+    const timer = setTimeout(async () => {
+      reconcileTimerRef.current.delete(queueKey)
+      const pendingQueue = reconcileQueueRef.current.get(queueKey)
+      if (!pendingQueue || pendingQueue.size === 0) {
+        reconcileQueueRef.current.delete(queueKey)
+        return
       }
 
-      const sameRequestContext =
-        chapterIdRef.current === requestChapterId &&
-        langRef.current === requestLang
-      if (sameRequestContext && translated.length > 0 && isMountedRef.current) {
-        onBlocksTranslatedRef.current(translated)
+      const batchIds = Array.from(pendingQueue).filter((blockId) => {
+        const block = blocksRef.current.find((candidate) => candidate.id === blockId)
+        if (!block) return false
+        if (SKIP_TYPES.has(block.type)) return false
+        if (hasTargetLangText(block)) return false
+        return !wasRecentlyChecked(requestChapterId, requestLang, blockId)
+      })
+      reconcileQueueRef.current.delete(queueKey)
+      if (batchIds.length === 0) return
+
+      markRecentlyChecked(requestChapterId, requestLang, batchIds)
+
+      try {
+        const res = await fetchBlockTexts(requestChapterId, requestLang, batchIds)
+        const translated: ContentBlock[] = []
+        const blocksById = new Map(blocksRef.current.map((block) => [block.id, block] as const))
+
+        for (const payload of res.ok) {
+          const original = blocksById.get(payload.blockId)
+          if (!original) continue
+          const merged =
+            payload.type === 'list'
+              ? applyTranslation(original, payload.items.join('\n'))
+              : applyTranslation(original, payload.text)
+          if (!merged) continue
+          translated.push(merged)
+          void setCachedTranslatedBlockText(requestChapterId, requestLang, merged)
+        }
+
+        const sameRequestContext =
+          chapterIdRef.current === requestChapterId &&
+          langRef.current === requestLang
+        if (sameRequestContext && translated.length > 0 && isMountedRef.current) {
+          onBlocksTranslatedRef.current(translated)
+        }
+      } catch {
+        // best-effort reconcile
       }
-    } catch {
-      // best-effort reconcile
-    }
-  }, [])
+    }, RECONCILE_COALESCE_MS)
+
+    reconcileTimerRef.current.set(queueKey, timer)
+  }, [markRecentlyChecked, pruneRecentChecked, wasRecentlyChecked])
 
   // Enqueue a single block for translation.
   // triggerFlush: when false, caller is responsible for calling scheduleFlush after
@@ -613,8 +683,12 @@ export function useViewportTranslation({
           continue
         }
 
-        const ids = Array.from(idToType.keys()).slice(0, RECOVERY_BATCH_SIZE)
+        pruneRecentChecked()
+        const ids = Array.from(idToType.keys())
+          .filter((blockId) => !wasRecentlyChecked(recoveryChapterId, recoveryLang, blockId))
+          .slice(0, RECOVERY_BATCH_SIZE)
         if (ids.length === 0) continue
+        markRecentlyChecked(recoveryChapterId, recoveryLang, ids)
 
         try {
           const res = await fetchBlockTexts(recoveryChapterId, recoveryLang, ids)
@@ -639,11 +713,13 @@ export function useViewportTranslation({
       if (recoveryTimerRef.current) clearInterval(recoveryTimerRef.current)
       recoveryTimerRef.current = null
     }
-  }, [])
+  }, [markRecentlyChecked, pruneRecentChecked, wasRecentlyChecked])
 
   // Cleanup on unmount
   useEffect(() => {
     isMountedRef.current = true
+    const reconcileTimers = reconcileTimerRef.current
+    const reconcileQueues = reconcileQueueRef.current
     return () => {
       isMountedRef.current = false
       if (debounceTimer.current) {
@@ -653,6 +729,11 @@ export function useViewportTranslation({
         clearInterval(recoveryTimerRef.current)
         recoveryTimerRef.current = null
       }
+      for (const timer of reconcileTimers.values()) {
+        clearTimeout(timer)
+      }
+      reconcileTimers.clear()
+      reconcileQueues.clear()
       // Intentionally keep in-flight request alive across reader unmount,
       // so translated blocks can still be persisted to IndexedDB.
       observerRef.current?.disconnect()

@@ -857,7 +857,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         currentPageBlocksRef.current = currentPageBlocks;
     }, [currentPageBlocks]);
 
-    const goToChapter = useCallback((index: number) => {
+    const goToChapter = useCallback((index: number, options?: { targetPage?: 'start' | 'end' }) => {
         if (index >= 1 && index <= chapters.length) {
             // Save current anchor before switching chapters
             if (currentPageBlocksRef.current.length > 0) {
@@ -865,6 +865,9 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                 const blockId = currentBlock.parentId ?? currentBlock.id;
                 saveAnchor(blockId, currentBlock.position, getSentenceIndex(currentBlock));
             }
+
+            pendingAnchorBlockId.current = options?.targetPage === 'end' ? LAST_PAGE_SENTINEL : null;
+            pendingAnchorSentenceIndex.current = 0;
 
             setCurrentPageIdx(0);
             setPagesReady(false);
@@ -888,14 +891,22 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     const goToNextPage = useCallback(() => {
         if (currentPageIdx < pages.length - 1) {
             goToPage(currentPageIdx + 1);
+            return;
         }
-    }, [currentPageIdx, pages.length, goToPage]);
+        if (currentChapterIndex < chapters.length) {
+            goToChapter(currentChapterIndex + 1, { targetPage: 'start' });
+        }
+    }, [currentPageIdx, pages.length, goToPage, currentChapterIndex, chapters.length, goToChapter]);
 
     const goToPrevPage = useCallback(() => {
         if (currentPageIdx > 0) {
             goToPage(currentPageIdx - 1);
+            return;
         }
-    }, [currentPageIdx, goToPage]);
+        if (currentChapterIndex > 1) {
+            goToChapter(currentChapterIndex - 1, { targetPage: 'end' });
+        }
+    }, [currentPageIdx, goToPage, currentChapterIndex, goToChapter]);
 
     // ─── Navigation intent API ────────────────────────────────────────────────
     // Single entry point for all navigation events. Any source other than
@@ -1040,7 +1051,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     }, []);
 
     // ─── Gesture handler ──────────────────────────────────────────────────────
-    const allowInternalScroll = true;
+    const allowInternalScroll = false;
     const gestures = usePageGestures({
         onPrev: goToPrevPage,
         onNext: goToNextPage,
@@ -1204,6 +1215,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                         {normalizedBlocks.map((block) => (
                             <div
                                 key={block.id}
+                                className="flow-root"
                                 ref={(el) => {
                                     if (el) blockMeasureRefs.current.set(block.id, el);
                                     else blockMeasureRefs.current.delete(block.id);
@@ -1247,7 +1259,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                                         const showTranslatingLabel = isPending && !firstPendingFound;
                                         if (isPending && !firstPendingFound) firstPendingFound = true;
                                         return (
-                                            <div key={block.id} ref={getRefCallback(blockId, block.type)}>
+                                            <div key={block.id} className="flow-root" ref={getRefCallback(blockId, block.type)}>
                                                 <ContentBlockRenderer block={block} fontSize={settings.fontSize} isPending={isPending} showTranslatingLabel={showTranslatingLabel} coverUrl={coverUrl} isCoverImage={isCoverImage} />
                                             </div>
                                         );
@@ -1272,7 +1284,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     variant="ghost"
                     size="sm"
                     onClick={goToPrevPage}
-                    disabled={currentPageIdx === 0}
+                    disabled={currentPageIdx === 0 && currentChapterIndex === 1}
                     className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
                 >
                     <span className="truncate">← Previous page</span>
@@ -1293,7 +1305,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
                     variant="ghost"
                     size="sm"
                     onClick={goToNextPage}
-                    disabled={currentPageIdx >= pages.length - 1}
+                    disabled={currentPageIdx >= pages.length - 1 && currentChapterIndex === chapters.length}
                     className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
                 >
                     <span className="truncate">Next page →</span>

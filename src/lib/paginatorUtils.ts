@@ -14,6 +14,10 @@ const hyphenators: Record<string, (text: string) => string> = {
   es: hyphenEs,
 }
 
+const PAGE_HEIGHT_BUFFER_PX = 6
+const PARAGRAPH_FRAGMENT_LAST_CLASS = 'mb-2 leading-relaxed'
+const PARAGRAPH_FRAGMENT_MIDDLE_CLASS = 'mb-0 leading-relaxed'
+
 function hyphenateWord(word: string, lang: string): string[] {
   const hyphenator = hyphenators[lang] ?? hyphenators['en']
   return hyphenator(word).split('\u00AD')
@@ -51,9 +55,42 @@ interface SplitResult {
   restPart: string
 }
 
+type SentenceIndexedBlock = ContentBlock & { sentenceIndex?: number }
+
 function measureTextHeight(text: string, tempEl: HTMLElement): number {
   tempEl.textContent = text
   return tempEl.offsetHeight
+}
+
+function applyParagraphMeasureStyles(
+  tempEl: HTMLElement,
+  fontSize: number,
+  lang: string,
+  isLastPart: boolean,
+) {
+  tempEl.className = isLastPart ? PARAGRAPH_FRAGMENT_LAST_CLASS : PARAGRAPH_FRAGMENT_MIDDLE_CLASS
+  if (fontSize) tempEl.style.fontSize = `${fontSize}px`
+  tempEl.setAttribute('lang', lang)
+  tempEl.style.hyphens = 'auto'
+  tempEl.style.setProperty('-webkit-hyphens', 'auto')
+  tempEl.style.position = 'absolute'
+  tempEl.style.visibility = 'hidden'
+  tempEl.style.width = '100%'
+}
+
+function measureParagraphFragmentHeight(
+  text: string,
+  fontSize: number,
+  lang: string,
+  containerRef: HTMLElement,
+  isLastPart: boolean,
+): number {
+  const temp = document.createElement('p')
+  applyParagraphMeasureStyles(temp, fontSize, lang, isLastPart)
+  containerRef.appendChild(temp)
+  const height = measureTextHeight(text, temp)
+  containerRef.removeChild(temp)
+  return height
 }
 
 /**
@@ -63,7 +100,6 @@ function measureTextHeight(text: string, tempEl: HTMLElement): number {
 function splitParagraphByHeight(
   text: string,
   availableHeight: number,
-  blockId: string,
   fontSize: number,
   lang: string,
   containerRef: HTMLElement
@@ -74,14 +110,7 @@ function splitParagraphByHeight(
   }
 
   const temp = document.createElement('p')
-  temp.className = 'mb-0 leading-relaxed' // No bottom margin for fragments except last, but we measure tight!
-  if (fontSize) temp.style.fontSize = `${fontSize}px`
-  temp.setAttribute('lang', lang)
-  temp.style.hyphens = 'auto'
-  temp.style.setProperty('-webkit-hyphens', 'auto')
-  temp.style.position = 'absolute'
-  temp.style.visibility = 'hidden'
-  temp.style.width = '100%'
+  applyParagraphMeasureStyles(temp, fontSize, lang, false)
 
   containerRef.appendChild(temp)
 
@@ -92,6 +121,7 @@ function splitParagraphByHeight(
   while (low <= high) {
     const mid = Math.floor((low + high) / 2)
     const testText = words.slice(0, mid).join(' ')
+    temp.className = mid === words.length ? PARAGRAPH_FRAGMENT_LAST_CLASS : PARAGRAPH_FRAGMENT_MIDDLE_CLASS
     const h = measureTextHeight(testText, temp)
 
     if (h <= availableHeight) {
@@ -103,7 +133,7 @@ function splitParagraphByHeight(
   }
 
   let firstPart = words.slice(0, best).join(' ')
-  let restWords = words.slice(best)
+  const restWords = words.slice(best)
 
   // Try to hyphenate the very next word to fit slightly more on the page
   if (best < words.length && best > 0) {
@@ -184,8 +214,9 @@ export function findPageForBlockAndSentence(
   const sentenceMap = new Map<string, number>()
   for (const block of finalBlocks) {
     const parentId = block.parentId ?? block.id
-    if (parentId === blockId && (block as any).sentenceIndex != null) {
-      sentenceMap.set(block.id, (block as any).sentenceIndex as number)
+    const sentenceIndexedBlock = block as SentenceIndexedBlock
+    if (parentId === blockId && sentenceIndexedBlock.sentenceIndex != null) {
+      sentenceMap.set(block.id, sentenceIndexedBlock.sentenceIndex)
     }
   }
 
@@ -231,9 +262,9 @@ export function computePages(
     return { pages: [], finalBlocks: [], fragmentMap: new Map() }
   }
 
-  const effectiveHeight = pageHeight
-
-
+  const effectiveHeight = containerRef
+    ? Math.max(1, pageHeight - PAGE_HEIGHT_BUFFER_PX)
+    : pageHeight
   const pages: string[][] = []
   let currentPage: string[] = []
   let currentHeight = 0
@@ -243,7 +274,7 @@ export function computePages(
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]
     const originalH = blockHeights.get(block.id) ?? 48
-    let h = originalH
+    const h = originalH
 
     // Heading keep-with-next logic:
     // If it's a heading and it fits, check if next block fits too
@@ -297,7 +328,6 @@ export function computePages(
         const split = splitParagraphByHeight(
           remainingText,
           freshAvailHeight,
-          block.id,
           fontSize,
           lang,
           containerRef
@@ -358,20 +388,7 @@ export function computePages(
           currentPage = []
           currentHeight = 0
         } else {
-          const temp = document.createElement('p')
-          const mbClass = isLastPart ? 'mb-5' : 'mb-0'
-          temp.className = `${mbClass} leading-relaxed`
-          if (fontSize) temp.style.fontSize = `${fontSize}px`
-          temp.setAttribute('lang', lang)
-          temp.style.hyphens = 'auto'
-          temp.style.setProperty('-webkit-hyphens', 'auto')
-          temp.style.position = 'absolute'
-          temp.style.visibility = 'hidden'
-          temp.style.width = '100%'
-          containerRef.appendChild(temp)
-          const finalH = measureTextHeight(firstText, temp)
-          containerRef.removeChild(temp)
-
+          const finalH = measureParagraphFragmentHeight(firstText, fontSize, lang, containerRef, isLastPart)
           currentHeight += finalH
         }
 
