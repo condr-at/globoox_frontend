@@ -60,8 +60,14 @@ export default function ReaderPage({ params }: ReaderPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+      <div className="min-h-screen flex items-center justify-center p-6 text-center">
+        <div className="max-w-sm">
+          <div className="mx-auto mb-4 h-8 w-8 rounded-full bg-muted animate-pulse" />
+          <p className="text-lg font-semibold">Loading your book...</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Downloading the file and checking compatibility.
+          </p>
+        </div>
       </div>
     );
   }

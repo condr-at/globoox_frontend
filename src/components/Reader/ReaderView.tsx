@@ -946,6 +946,7 @@ export default function ReaderView({ bookId, title, availableLanguages, original
         });
         return !hasAnyReady;
     }, [isLanguageSwitching, pagesReady, visiblePagesReady, currentPageBlocks, pendingBlockIds]);
+    const shouldShowTranslationNotice = shouldShowGlow;
 
     useEffect(() => {
         setIsTranslatingForBook(bookId, shouldShowGlow);
@@ -1237,6 +1238,13 @@ export default function ReaderView({ bookId, title, availableLanguages, original
     return (
         <div className="bg-background" style={{ position: 'fixed', inset: 0, overflow: 'hidden', overscrollBehavior: 'none' } as React.CSSProperties}>
             <AppleIntelligenceGlow bookId={bookId} />
+            {shouldShowTranslationNotice && (
+                <div className="fixed inset-x-4 top-[calc(env(safe-area-inset-top)+76px)] z-50 pointer-events-none">
+                    <div className="mx-auto max-w-md rounded-2xl border border-white/15 bg-black/55 px-4 py-3 text-center text-sm leading-5 text-white shadow-2xl backdrop-blur-xl">
+                        Translating the first pages can take about 30 seconds. After that, the rest will continue quietly in the background. You can safely leave the reader and come back later.
+                    </div>
+                </div>
+            )}
 
             {/* ── Header (fixed, slides out upward) ── */}
             <header

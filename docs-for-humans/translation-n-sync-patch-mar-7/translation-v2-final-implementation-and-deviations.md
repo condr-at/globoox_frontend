@@ -186,7 +186,13 @@
 - фронт на возврате делает reconcile через `blocks/text`;
 - если сервер уже успел сохранить target text, вернётся `ok`;
 - если translation task реально ещё в работе, вернётся `pending`;
-- если старый `pending` застрял и протух, backend очистит его и вернёт `missing`, чтобы фронт мог безопасно заново enqueue translation.
+- если старый `pending` застрял и протух, backend очистит его и вернёт `missing`;
+- recovery loop на фронте теперь не просто забывает такие блоки, а запускает background retry translate и продолжает добирать результат через тот же `blocks/text` + stream path.
+
+Практический контракт в текущей реализации:
+- если приложение живо, abandoned translate request должен дойти либо через background completion сервера, либо через recovery retry на фронте;
+- если серверный процесс умирает полностью во время перевода, durable queue всё ещё отсутствует, поэтому абсолютная гарантия completion между перезапусками процесса не заявляется;
+- но вечный `pending` и потерянный `missing` в обычном runtime path больше не являются нормальным состоянием.
 
 ## Локальные замеры latency (localhost, Mar 7)
 
