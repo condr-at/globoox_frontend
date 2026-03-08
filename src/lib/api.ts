@@ -366,6 +366,28 @@ export function translateBookMetadata(
   return promise
 }
 
+export function translateReaderMetadata(
+  bookId: string,
+  lang: string,
+): Promise<{ title: string; author: string | null; chapterTitles: { id: string; title: string }[] }> {
+  const normalizedLang = lang.toUpperCase()
+  const key = `reader_metadata::${bookId}::${normalizedLang}`
+  const inflight = inflightChromeTranslationRequests.get(key)
+  if (inflight) {
+    return inflight as Promise<{ title: string; author: string | null; chapterTitles: { id: string; title: string }[] }>
+  }
+
+  const promise = request<{ title: string; author: string | null; chapterTitles: { id: string; title: string }[] }>(
+    `/api/books/${bookId}/reader-metadata/translate`,
+    { method: 'POST', body: JSON.stringify({ lang: normalizedLang }) },
+  ).finally(() => {
+    inflightChromeTranslationRequests.delete(key)
+  })
+
+  inflightChromeTranslationRequests.set(key, promise)
+  return promise
+}
+
 export function fetchContent(chapterId: string, lang?: string, signal?: AbortSignal): Promise<ContentBlock[]> {
   const params = lang ? `?lang=${encodeURIComponent(lang.toUpperCase())}` : ''
   return request<ContentBlock[]>(`/api/chapters/${chapterId}/content${params}`, { signal }).then((blocks) =>

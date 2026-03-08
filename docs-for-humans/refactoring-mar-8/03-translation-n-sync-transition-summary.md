@@ -63,11 +63,17 @@
 - chapter titles и book metadata теперь считаются частью одного `reader metadata + TOC translation` surface;
 - на фронте добавлен отдельный hook layer:
   - `src/lib/hooks/useReaderMetadataTranslations.ts`
-- `translate-meta` и `translate-titles` получили frontend in-flight dedupe через `src/lib/api.ts`
-- `translate-meta` больше не полностью “прямой LLM call каждый раз”:
-  - добавлен server-side cache через существующий `translation_cache`
-  - helper:
-    - `globoox/server/utils/chrome-translations.ts`
+- runtime path теперь может идти одним bundle-запросом:
+  - `POST /api/books/:id/reader-metadata/translate`
+- bundle включает:
+  - `title`
+  - `author`
+  - `chapterTitles[]`
+- результат bundle кэшируется в IDB как одна сущность, а не как два разрозненных кэша
+- backend использует:
+  - уже сохранённые `chapters.translations`
+  - server-side cache для `book metadata`
+  - и, если нужно, один LLM вызов для missing частей bundle
 
 Важно:
 
@@ -81,7 +87,7 @@
 Итог:
 
 - block text остается самым зрелым translation path;
-- chapter titles и book metadata теперь заметно ближе к той же модели, а не живут как два разрозненных механизма.
+- chapter titles и book metadata теперь живут как один logical bundle, а не как два разрозненных механизма.
 
 ## 2. Reading position
 
@@ -135,9 +141,8 @@
 
 Для reader metadata + TOC это теперь тоже частично верно:
 
-- translated chapter titles могут подниматься из IDB;
-- translated book metadata может подниматься из IDB;
-- server-side cache для book metadata уменьшает повторные LLM calls.
+- translated bundle (`title + author + chapter titles`) может подниматься из IDB;
+- server-side cache для metadata уменьшает повторные LLM calls.
 
 ## 5. Что еще остается transitional
 
@@ -158,8 +163,8 @@
 - `epubjs` path
 
 5. reader metadata + TOC translations
-- chapter titles и book metadata уже частично выровнены;
-- но это еще не полностью общий server abstraction layer.
+- bundle-модель уже есть;
+- но это еще не полностью общий server abstraction layer уровня block text.
 
 ## 6. Что считать новой базой
 
@@ -171,4 +176,4 @@
 - `translate` — push;
 - `targetLangReady` — primary frontend ready flag;
 - reading position и layout cache уже интегрированы в новую модель;
-- reader metadata + TOC translations (book meta + chapter titles) теперь тоже живут по единому translation contract, а не как полностью отдельные ad-hoc flows.
+- reader metadata + TOC translations (book meta + chapter titles) теперь живут как один bundle и по единому translation contract, а не как полностью отдельные ad-hoc flows.

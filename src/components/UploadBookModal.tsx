@@ -190,7 +190,6 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
       open={isOpen}
       onOpenChange={(nextOpen) => !nextOpen && handleClose()}
       className="bg-card sm:max-w-md"
-      mobileLayout="sheet"
     >
       <div className="relative p-6">
         <button

@@ -153,7 +153,13 @@
 7. Reader metadata + TOC translations:
 - chapter titles и book metadata внутри Reader приведены к общей pending/ready модели;
 - этот слой больше не рендерится как набор независимых translation hacks;
-- book metadata и chapter titles имеют:
+- runtime path теперь может идти одним bundle-запросом:
+  - `POST /api/books/:id/reader-metadata/translate`
+- bundle включает:
+  - `title`
+  - `author`
+  - `chapterTitles[]`
+- bundle имеет:
   - local cache reuse,
   - in-flight dedupe,
   - единые pending semantics.
@@ -188,17 +194,23 @@
 - `translate.post.ts` использует service-role data path для server-side persistence и cleanup;
 - это снижает риск того, что уже принятая команда на перевод останется в полу-состоянии из-за клиентского disconnect.
 
-6. Book metadata translation cache:
-- `translate-meta.post.ts` больше не является purely direct-to-LLM path;
-- для book title/author добавлен server-side persistent cache через существующий `translation_cache`;
-- helper вынесен в:
-  - `server/utils/chrome-translations.ts`
+6. Reader metadata bundle path:
+- добавлен bundle endpoint:
+  - `server/api/books/[id]/reader-metadata/translate.post.ts`
+- он возвращает одним payload:
+  - book title
+  - author
+  - chapter titles
+- backend использует:
+  - уже сохранённые `chapters.translations`
+  - server-side persistent cache для book metadata через `translation_cache`
+  - и при необходимости один LLM вызов для missing частей bundle
 
-Это подтягивает book metadata translation ближе к общему Translation v2 contract:
-- translate once
+Это подтягивает reader metadata + TOC ближе к общему Translation v2 contract:
+- reconcile/reuse first
+- translate only missing
 - cache/persist
-- reuse later
-- не долбить LLM на каждый reopen.
+- не долбить LLM и не держать разрозненные paths
 
 ## Финальная рабочая модель
 
@@ -266,23 +278,21 @@ Reader metadata + TOC пока не буквально используют bloc
 - server-side persistence/cache where possible
 - in-flight dedupe
 - ready/pending based on existence
+- bundle-style translation/reconcile for the whole reader metadata surface
 
 Текущее состояние по зрелости:
 
 1. block text
 - самый зрелый path
 
-2. chapter titles
-- отдельный bulk path
-- server-persisted через `chapters.translations`
-
-3. book metadata
-- отдельный path
-- теперь с server-side persistent cache через `translation_cache`
+2. reader metadata + TOC
+- один logical bundle path
+- chapter titles переиспользуют `chapters.translations`
+- book metadata переиспользует server-side persistent cache через `translation_cache`
 
 Следующий логичный этап, если система будет развиваться дальше:
 
-- довести chapter titles и book metadata до полностью общего `reader metadata + TOC translation abstraction layer` на сервере.
+- довести этот bundle до полностью общего reconcile-first abstraction layer уровня block text.
 
 ## Локальные замеры latency (localhost, Mar 7)
 

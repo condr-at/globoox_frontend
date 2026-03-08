@@ -7,7 +7,7 @@ import type { ReadingAnchor } from '@/lib/store'
 type CacheKey = string
 
 const DB_NAME = 'globoox-cache'
-const DB_VERSION = 7
+const DB_VERSION = 8
 const STORE_CHAPTER_CONTENT_V1 = 'chapter_content'
 const STORE_CHAPTER_SKELETON = 'chapter_skeleton'
 const STORE_BLOCK_TEXT = 'block_text'
@@ -17,6 +17,7 @@ const STORE_BOOK_META = 'book_meta'
 const STORE_READING_POSITIONS = 'reading_positions'
 const STORE_TOC_TITLES = 'toc_titles'
 const STORE_BOOK_TRANSLATIONS = 'book_translations'
+const STORE_READER_METADATA_BUNDLES = 'reader_metadata_bundles'
 
 const DEFAULT_TTL_MS = 10 * 60 * 1000 // 10 minutes
 const PENDING_TTL_MS = 3 * 1000 // 3 seconds
@@ -93,6 +94,12 @@ function openDb(): Promise<IDBDatabase> {
 
       if (!db.objectStoreNames.contains(STORE_BOOK_TRANSLATIONS)) {
         const store = db.createObjectStore(STORE_BOOK_TRANSLATIONS, { keyPath: 'key' })
+        store.createIndex('by_scope_book_lang', ['scope', 'bookId', 'lang'])
+        store.createIndex('by_fetchedAt', 'fetchedAt')
+      }
+
+      if (!db.objectStoreNames.contains(STORE_READER_METADATA_BUNDLES)) {
+        const store = db.createObjectStore(STORE_READER_METADATA_BUNDLES, { keyPath: 'key' })
         store.createIndex('by_scope_book_lang', ['scope', 'bookId', 'lang'])
         store.createIndex('by_fetchedAt', 'fetchedAt')
       }
@@ -220,6 +227,17 @@ interface CachedBookTranslation {
   lang: string
   title: string
   author: string | null
+  fetchedAt: number
+}
+
+interface CachedReaderMetadataBundle {
+  key: CacheKey
+  scope: string
+  bookId: string
+  lang: string
+  title: string
+  author: string | null
+  chapterTitles: Record<string, string>
   fetchedAt: number
 }
 
@@ -443,6 +461,50 @@ export async function setCachedBookTranslation(
     fetchedAt: Date.now(),
   }
   await withStore(STORE_BOOK_TRANSLATIONS, 'readwrite', (store) => store.put(entry))
+}
+
+export async function getCachedReaderMetadataBundle(
+  scope: string,
+  bookId: string,
+  lang: string,
+): Promise<{ title: string; author: string | null; chapterTitles: Record<string, string> } | null> {
+  try {
+    const normalizedLang = normalizeLang(lang)
+    const key = makeScopedKey(scope, bookId, 'reader-metadata', normalizedLang)
+    const entry = await withStore<CachedReaderMetadataBundle | undefined>(
+      STORE_READER_METADATA_BUNDLES,
+      'readonly',
+      (store) => store.get(key),
+    )
+    if (!entry) return null
+    return {
+      title: entry.title,
+      author: entry.author,
+      chapterTitles: entry.chapterTitles,
+    }
+  } catch {
+    return null
+  }
+}
+
+export async function setCachedReaderMetadataBundle(
+  scope: string,
+  bookId: string,
+  lang: string,
+  data: { title: string; author: string | null; chapterTitles: Record<string, string> },
+): Promise<void> {
+  const normalizedLang = normalizeLang(lang)
+  const entry: CachedReaderMetadataBundle = {
+    key: makeScopedKey(scope, bookId, 'reader-metadata', normalizedLang),
+    scope,
+    bookId,
+    lang: normalizedLang,
+    title: data.title,
+    author: data.author,
+    chapterTitles: data.chapterTitles,
+    fetchedAt: Date.now(),
+  }
+  await withStore(STORE_READER_METADATA_BUNDLES, 'readwrite', (store) => store.put(entry))
 }
 
 export async function getCachedChapterLayout(layoutKey: string): Promise<CachedChapterLayoutEntry | null> {

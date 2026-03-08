@@ -1477,10 +1477,11 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                                         }
                                         const isPending = isBlockPendingForActiveLang(block, pendingBlockIds);
                                         const showTranslatingLabel = isPending && !firstPendingFound;
+                                        const pendingLabel = isSourceLang ? 'Loading...' : 'Translating...';
                                         if (isPending && !firstPendingFound) firstPendingFound = true;
                                         return (
                                             <div key={block.id} className="flow-root" ref={getRefCallback(blockId, block.type)}>
-                                                <ContentBlockRenderer block={block} fontSize={settings.fontSize} isPending={isPending} showTranslatingLabel={showTranslatingLabel} coverUrl={coverUrl} isCoverImage={isCoverImage} />
+                                                <ContentBlockRenderer block={block} fontSize={settings.fontSize} isPending={isPending} showTranslatingLabel={showTranslatingLabel} pendingLabel={pendingLabel} coverUrl={coverUrl} isCoverImage={isCoverImage} />
                                             </div>
                                         );
                                     });

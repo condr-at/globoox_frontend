@@ -1,12 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { translateBookMetadata, translateChapterTitles } from '@/lib/api'
+import { translateReaderMetadata } from '@/lib/api'
 import {
-  getCachedBookTranslation,
-  getCachedTocTitles,
-  setCachedBookTranslation,
-  setCachedTocTitles,
+  getCachedReaderMetadataBundle,
+  setCachedReaderMetadataBundle,
 } from '@/lib/contentCache'
 
 interface ReaderMetadataTranslationsInput {
@@ -24,10 +22,7 @@ interface ReaderMetadataTranslationsInput {
 }
 
 export interface ReaderMetadataState {
-  translatedBookMeta: { title: string; author: string | null } | null
-  translatedChapterTitles: Map<string, string>
   isTargetLanguageReaderMetadata: boolean
-  areAllChapterTitlesReady: boolean
   isBookMetaPending: boolean
   isTocContentPending: boolean
   readerBookTitle: string
@@ -45,9 +40,9 @@ export function useReaderMetadataTranslations({
   author,
   chapters,
 }: ReaderMetadataTranslationsInput): ReaderMetadataState {
-  const [translatedChapterTitles, setTranslatedChapterTitles] = useState<Map<string, string>>(new Map())
-  const [translatedBookMeta, setTranslatedBookMeta] = useState<{ title: string; author: string | null } | null>(null)
-  const translatingTitlesLangRef = useRef<string | null>(null)
+  const [bundleMeta, setBundleMeta] = useState<{ title: string; author: string | null } | null>(null)
+  const [bundleChapterTitles, setBundleChapterTitles] = useState<Map<string, string>>(new Map())
+  const inflightLangRef = useRef<string | null>(null)
 
   const normalizedActiveLang = activeLang.toUpperCase()
   const normalizedOriginalLanguage = originalLanguage?.toUpperCase() ?? null
@@ -55,42 +50,39 @@ export function useReaderMetadataTranslations({
     && normalizedOriginalLanguage !== normalizedActiveLang
 
   useEffect(() => {
-    setTranslatedChapterTitles(new Map())
-    translatingTitlesLangRef.current = null
-    setTranslatedBookMeta(null)
+    setBundleMeta(null)
+    setBundleChapterTitles(new Map())
+    inflightLangRef.current = null
   }, [activeLang])
-
-  useEffect(() => {
-    let cancelled = false
-    void getCachedTocTitles(userScope, bookId, activeLang).then((titles) => {
-      if (cancelled || !titles) return
-      setTranslatedChapterTitles(new Map(Object.entries(titles)))
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [userScope, bookId, activeLang])
 
   useEffect(() => {
     let cancelled = false
 
     if (!isTargetLanguageReaderMetadata) {
-      setTranslatedBookMeta({ title, author: author ?? null })
+      setBundleMeta({ title, author: author ?? null })
+      setBundleChapterTitles(new Map())
       return () => {
         cancelled = true
       }
     }
 
-    void getCachedBookTranslation(userScope, bookId, normalizedActiveLang).then((cached) => {
+    void getCachedReaderMetadataBundle(userScope, bookId, normalizedActiveLang).then((cached) => {
       if (cancelled || !cached) return
-      setTranslatedBookMeta(cached)
+      setBundleMeta({ title: cached.title, author: cached.author })
+      setBundleChapterTitles(new Map(Object.entries(cached.chapterTitles)))
     })
 
-    void translateBookMetadata(bookId, normalizedActiveLang)
+    void translateReaderMetadata(bookId, normalizedActiveLang)
       .then((result) => {
         if (cancelled) return
-        setTranslatedBookMeta(result)
-        void setCachedBookTranslation(userScope, bookId, normalizedActiveLang, result)
+        const chapterTitles = Object.fromEntries(result.chapterTitles.map((item) => [item.id, item.title]))
+        setBundleMeta({ title: result.title, author: result.author })
+        setBundleChapterTitles(new Map(Object.entries(chapterTitles)))
+        void setCachedReaderMetadataBundle(userScope, bookId, normalizedActiveLang, {
+          title: result.title,
+          author: result.author,
+          chapterTitles,
+        })
       })
       .catch(() => {
         if (cancelled) return
@@ -102,62 +94,66 @@ export function useReaderMetadataTranslations({
   }, [userScope, bookId, normalizedActiveLang, isTargetLanguageReaderMetadata, title, author])
 
   const getResolvedChapterTitle = useCallback((chapter: { id: string; title: string; translations?: Record<string, string> }) => {
-    return translatedChapterTitles.get(chapter.id)
+    return bundleChapterTitles.get(chapter.id)
       || chapter.translations?.[normalizedActiveLang]
       || chapter.title
-  }, [translatedChapterTitles, normalizedActiveLang])
+  }, [bundleChapterTitles, normalizedActiveLang])
 
   const areAllChapterTitlesReady = useMemo(() => {
     if (!isTargetLanguageReaderMetadata) return true
     return chapters.every((chapter) =>
-      translatedChapterTitles.has(chapter.id) || !!chapter.translations?.[normalizedActiveLang],
+      !chapter.title?.trim()
+      || bundleChapterTitles.has(chapter.id)
+      || !!chapter.translations?.[normalizedActiveLang],
     )
-  }, [isTargetLanguageReaderMetadata, chapters, translatedChapterTitles, normalizedActiveLang])
+  }, [isTargetLanguageReaderMetadata, chapters, bundleChapterTitles, normalizedActiveLang])
 
   const ensureTocTranslations = useCallback(async () => {
     if (!isTargetLanguageReaderMetadata || !chapters.length) return
-    if (translatingTitlesLangRef.current === normalizedActiveLang) return
+    if (inflightLangRef.current === normalizedActiveLang) return
 
-    const missing = chapters.some((chapter) => {
+    const missing = !bundleMeta || chapters.some((chapter) => {
       if (!chapter.title?.trim()) return false
-      return !translatedChapterTitles.has(chapter.id) && !chapter.translations?.[normalizedActiveLang]
+      return !bundleChapterTitles.has(chapter.id) && !chapter.translations?.[normalizedActiveLang]
     })
     if (!missing) return
 
-    translatingTitlesLangRef.current = normalizedActiveLang
+    inflightLangRef.current = normalizedActiveLang
     try {
-      const { results } = await translateChapterTitles(bookId, normalizedActiveLang)
-      const map = new Map<string, string>()
-      for (const result of results) map.set(result.id, result.title)
-      setTranslatedChapterTitles(map)
-      void setCachedTocTitles(userScope, bookId, normalizedActiveLang, Object.fromEntries(map.entries()))
+      const result = await translateReaderMetadata(bookId, normalizedActiveLang)
+      const chapterTitles = Object.fromEntries(result.chapterTitles.map((item) => [item.id, item.title]))
+      setBundleMeta({ title: result.title, author: result.author })
+      setBundleChapterTitles(new Map(Object.entries(chapterTitles)))
+      void setCachedReaderMetadataBundle(userScope, bookId, normalizedActiveLang, {
+        title: result.title,
+        author: result.author,
+        chapterTitles,
+      })
     } catch {
-      // keep fallback titles visible
+      // keep fallback content visible
     } finally {
-      translatingTitlesLangRef.current = null
+      inflightLangRef.current = null
     }
   }, [
     isTargetLanguageReaderMetadata,
     chapters,
-    translatedChapterTitles,
+    bundleMeta,
+    bundleChapterTitles,
     normalizedActiveLang,
     bookId,
     userScope,
   ])
 
-  const isBookMetaPending = isTargetLanguageReaderMetadata && !translatedBookMeta
+  const isBookMetaPending = isTargetLanguageReaderMetadata && !bundleMeta
   const isTocContentPending = isTargetLanguageReaderMetadata
-    && (!translatedBookMeta || !areAllChapterTitlesReady)
+    && (!bundleMeta || !areAllChapterTitlesReady)
 
   return {
-    translatedBookMeta,
-    translatedChapterTitles,
     isTargetLanguageReaderMetadata,
-    areAllChapterTitlesReady,
     isBookMetaPending,
     isTocContentPending,
-    readerBookTitle: translatedBookMeta?.title ?? title,
-    readerBookAuthor: translatedBookMeta?.author ?? author ?? null,
+    readerBookTitle: bundleMeta?.title ?? title,
+    readerBookAuthor: bundleMeta?.author ?? author ?? null,
     getResolvedChapterTitle,
     ensureTocTranslations,
   }
