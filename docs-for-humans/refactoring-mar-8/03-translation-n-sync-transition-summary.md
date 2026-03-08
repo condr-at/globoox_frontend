@@ -40,9 +40,9 @@
 - server-side persist path чище, чем раньше;
 - no separate alternative truth для ready-state на сервере.
 
-## 1.1. Reader Chrome Translations
+## 1.1. Reader Metadata + TOC Translations
 
-Поверх основного block translation path был добавлен отдельный слой для `reader chrome`:
+Поверх основного block translation path был добавлен отдельный слой для `reader metadata + TOC`:
 
 - book title
 - book author
@@ -60,9 +60,9 @@
 
 Что сделано:
 
-- chapter titles и book metadata теперь считаются частью одного `reader chrome translation` surface;
-- на фронте добавлен общий helper layer:
-  - `src/lib/readerChromeTranslations.ts`
+- chapter titles и book metadata теперь считаются частью одного `reader metadata + TOC translation` surface;
+- на фронте добавлен отдельный hook layer:
+  - `src/lib/hooks/useReaderMetadataTranslations.ts`
 - `translate-meta` и `translate-titles` получили frontend in-flight dedupe через `src/lib/api.ts`
 - `translate-meta` больше не полностью “прямой LLM call каждый раз”:
   - добавлен server-side cache через существующий `translation_cache`
@@ -133,7 +133,7 @@
 - reading position хранится локально;
 - но новая книга/новый перевод без сети не гарантируются.
 
-Для reader chrome это теперь тоже частично верно:
+Для reader metadata + TOC это теперь тоже частично верно:
 
 - translated chapter titles могут подниматься из IDB;
 - translated book metadata может подниматься из IDB;
@@ -157,7 +157,7 @@
 - Nuxt/Vue reader/upload UI
 - `epubjs` path
 
-5. reader chrome translations
+5. reader metadata + TOC translations
 - chapter titles и book metadata уже частично выровнены;
 - но это еще не полностью общий server abstraction layer.
 
@@ -171,4 +171,4 @@
 - `translate` — push;
 - `targetLangReady` — primary frontend ready flag;
 - reading position и layout cache уже интегрированы в новую модель;
-- reader chrome translations (book meta + chapter titles) теперь тоже живут по единому translation contract, а не как полностью отдельные ad-hoc flows.
+- reader metadata + TOC translations (book meta + chapter titles) теперь тоже живут по единому translation contract, а не как полностью отдельные ad-hoc flows.

@@ -150,13 +150,15 @@
 6. Translation hook:
 - recovery и reconcile используют `blocks/text`, а не `translate-status`.
 
-7. Reader chrome translations:
+7. Reader metadata + TOC translations:
 - chapter titles и book metadata внутри Reader приведены к общей pending/ready модели;
-- Reader chrome больше не рендерится как набор независимых translation hacks;
+- этот слой больше не рендерится как набор независимых translation hacks;
 - book metadata и chapter titles имеют:
   - local cache reuse,
   - in-flight dedupe,
   - единые pending semantics.
+- на фронте это вынесено в отдельный hook:
+  - `src/lib/hooks/useReaderMetadataTranslations.ts`
 
 8. TOC drawer pending UX:
 - не используется blur по отдельным строкам;
@@ -224,11 +226,11 @@
 - если серверный процесс умирает полностью во время перевода, durable queue всё ещё отсутствует, поэтому абсолютная гарантия completion между перезапусками процесса не заявляется;
 - но вечный `pending` и потерянный `missing` в обычном runtime path больше не являются нормальным состоянием.
 
-## Reader chrome: book metadata and TOC
+## Reader metadata + TOC
 
-Дополнительно к block translation сейчас действует отдельный, но уже выровненный contract для Reader chrome.
+Дополнительно к block translation сейчас действует отдельный, но уже выровненный contract для Reader metadata + TOC.
 
-### Что входит в Reader chrome
+### Что входит в этот слой
 
 - book title
 - book author
@@ -256,7 +258,7 @@
 
 ### Server-side maturity level
 
-Reader chrome пока не буквально использует block translation pipeline.
+Reader metadata + TOC пока не буквально используют block translation pipeline.
 
 Но текущая модель уже сознательно выровнена в ту же сторону:
 
@@ -280,7 +282,7 @@ Reader chrome пока не буквально использует block transl
 
 Следующий логичный этап, если система будет развиваться дальше:
 
-- довести chapter titles и book metadata до полностью общего `reader chrome translation abstraction layer` на сервере.
+- довести chapter titles и book metadata до полностью общего `reader metadata + TOC translation abstraction layer` на сервере.
 
 ## Локальные замеры latency (localhost, Mar 7)
 

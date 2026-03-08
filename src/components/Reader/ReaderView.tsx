@@ -4,9 +4,10 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useAppStore, Language, ReadingAnchor } from '@/lib/store';
-import { fetchContent, fetchReadingPosition, saveReadingPosition, updateBookLanguage, translateBookMetadata, translateChapterTitles } from '@/lib/api';
+import { fetchContent, fetchReadingPosition, saveReadingPosition, updateBookLanguage } from '@/lib/api';
 import { useChapters } from '@/lib/hooks/useChapters';
 import { useChapterContent } from '@/lib/hooks/useChapterContent';
+import { useReaderMetadataTranslations } from '@/lib/hooks/useReaderMetadataTranslations';
 import { useViewportTranslation } from '@/lib/hooks/useViewportTranslation';
 import { usePageGestures } from '@/lib/hooks/usePageGestures';
 import { computePages, findPageForBlock, findPageForBlockAndSentence, findPageByBlockPosition, normalizeBlocks } from '@/lib/paginatorUtils';
@@ -16,16 +17,11 @@ import {
     getCachedChapterBlockIds,
     getCachedChapterLayout,
     getCachedReadingPosition,
-    getCachedBookTranslation,
     setCachedChapterContent,
     setCachedChapterLayout,
     setCachedReadingPosition,
-    setCachedBookTranslation,
-    getCachedTocTitles,
-    setCachedTocTitles,
 } from '@/lib/contentCache';
 import { mergeDisplayBlocksPreservingTranslations } from '@/lib/reader/mergeDisplayBlocks';
-import { isReaderChromeContentPending } from '@/lib/readerChromeTranslations';
 import { isBlockPendingForActiveLang, isTranslatableBlock } from '@/lib/translationState';
 import {
   trackReadingSessionStarted,
@@ -134,64 +130,26 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     const currentChapter = chapters[currentChapterIndex - 1] ?? null;
     const currentChapterId = currentChapter?.id ?? null;
 
-    // Chapter title translation state
-    const [translatedChapterTitles, setTranslatedChapterTitles] = useState<Map<string, string>>(new Map());
-    const translatingTitlesLangRef = useRef<string | null>(null);
-    const [translatedBookMeta, setTranslatedBookMeta] = useState<{ title: string; author: string | null } | null>(null);
-
-    // Reset translated titles when active language changes
-    useEffect(() => {
-        setTranslatedChapterTitles(new Map());
-        translatingTitlesLangRef.current = null;
-        setTranslatedBookMeta(null);
-    }, [activeLang]);
-
-    // Best-effort: hydrate translated chapter titles from IndexedDB for fast reloads.
-    useEffect(() => {
-        let cancelled = false;
-        const scopeKey = user?.id ?? 'guest';
-        void getCachedTocTitles(scopeKey, bookId, activeLang).then((titles) => {
-            if (cancelled) return;
-            if (!titles) return;
-            setTranslatedChapterTitles(new Map(Object.entries(titles)));
-        });
-        return () => {
-            cancelled = true;
-        };
-    }, [bookId, activeLang, user?.id]);
-
-    useEffect(() => {
-        let cancelled = false;
-        const scopeKey = user?.id ?? 'guest';
-        const targetLang = activeLang.toUpperCase();
-        const sourceLang = originalLanguage?.toUpperCase() ?? null;
-
-        if (!sourceLang || sourceLang === targetLang) {
-            setTranslatedBookMeta({ title, author: author ?? null });
-            return () => {
-                cancelled = true;
-            };
-        }
-
-        void getCachedBookTranslation(scopeKey, bookId, targetLang).then((cached) => {
-            if (cancelled || !cached) return;
-            setTranslatedBookMeta(cached);
-        });
-
-        void translateBookMetadata(bookId, targetLang)
-            .then((result) => {
-                if (cancelled) return;
-                setTranslatedBookMeta(result);
-                void setCachedBookTranslation(scopeKey, bookId, targetLang, result);
-            })
-            .catch(() => {
-                if (cancelled) return;
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [activeLang, originalLanguage, bookId, title, author, user?.id]);
+    const {
+        isBookMetaPending,
+        isTocContentPending,
+        readerBookTitle,
+        readerBookAuthor,
+        getResolvedChapterTitle,
+        ensureTocTranslations,
+    } = useReaderMetadataTranslations({
+        userScope: user?.id ?? 'guest',
+        bookId,
+        activeLang,
+        originalLanguage,
+        title,
+        author,
+        chapters: chapters.map((chapter) => ({
+            id: chapter.id,
+            title: chapter.title,
+            translations: chapter.translations,
+        })),
+    });
 
     const { blocks, loading: contentLoading, error: contentError, isStale, blocksLang, hasServerSnapshot } = useChapterContent(
         currentChapterId,
@@ -1215,27 +1173,9 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
 
     // ─── TOC open: translate chapter titles if needed ─────────────────────────
     const handleTocOpen = useCallback(async () => {
-        const lang = activeLang.toUpperCase();
         if (isSourceLang || !chapters.length) return;
-        // Skip if already translated or in progress for this lang
-        if (translatingTitlesLangRef.current === lang) return;
-        const missing = chapters.some((c) => c.title && !translatedChapterTitles.has(c.id) && !c.translations?.[lang]);
-        if (!missing) return;
-
-        translatingTitlesLangRef.current = lang;
-        try {
-            const { results } = await translateChapterTitles(bookId, lang);
-            const map = new Map<string, string>();
-            for (const r of results) map.set(r.id, r.title);
-            setTranslatedChapterTitles(map);
-            const scopeKey = user?.id ?? 'guest';
-            void setCachedTocTitles(scopeKey, bookId, lang, Object.fromEntries(map.entries()));
-        } catch {
-            // silently fail — original titles remain visible
-        } finally {
-            translatingTitlesLangRef.current = null;
-        }
-    }, [activeLang, isSourceLang, chapters, bookId, translatedChapterTitles, user?.id]);
+        await ensureTocTranslations();
+    }, [isSourceLang, chapters.length, ensureTocTranslations]);
 
     // ─── Language switch (lock anchor before, restore after) ─────────────────
     const handleLanguageChange = (lang: Language) => {
@@ -1301,28 +1241,9 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
         .filter((l): l is Language => ['en', 'fr', 'es', 'de', 'ru'].includes(l));
 
     const currentChapterFooterTitle = currentChapter
-        ? translatedChapterTitles.get(currentChapter.id)
-            || (activeLang && currentChapter.translations?.[activeLang.toUpperCase()])
-            || currentChapter.title
+        ? getResolvedChapterTitle(currentChapter)
         : `Ch. ${currentChapterIndex}`
     ;
-    const isBookMetaPending = !!originalLanguage
-        && originalLanguage.toUpperCase() !== activeLang.toUpperCase()
-        && !translatedBookMeta;
-    const isTargetLanguageReaderChrome = !!originalLanguage
-        && originalLanguage.toUpperCase() !== activeLang.toUpperCase();
-    const areAllChapterTitlesReady = !isTargetLanguageReaderChrome
-        || chapters.every((chapter) =>
-            translatedChapterTitles.has(chapter.id)
-            || !!chapter.translations?.[activeLang.toUpperCase()],
-        );
-    const isTocContentPending = isReaderChromeContentPending({
-        translatedBookMeta,
-        isTargetLanguage: isTargetLanguageReaderChrome,
-        areAllChapterTitlesReady,
-    });
-    const readerBookTitle = translatedBookMeta?.title ?? title;
-    const readerBookAuthor = translatedBookMeta?.author ?? author ?? null;
 
     // ─── Chrome visibility (header + footer toggle) ───────────────────────────
     const [chromeVisible, setChromeVisible] = useState(true);
@@ -1464,9 +1385,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                                 languages,
                                 chapters: chapters.map((c) => ({
                                     number: c.index,
-                                    title: translatedChapterTitles.get(c.id)
-                                        || (activeLang && c.translations?.[activeLang.toUpperCase()])
-                                        || c.title,
+                                    title: getResolvedChapterTitle(c),
                                     depth: c.depth,
                                 })),
                             }}
