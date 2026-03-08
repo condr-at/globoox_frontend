@@ -62,6 +62,32 @@ type PaginationCacheEntry = {
     savedAt: number;
 };
 
+async function waitForMeasuredImages(container: HTMLElement | null): Promise<void> {
+    if (!container) return;
+
+    const images = Array.from(container.querySelectorAll('img'));
+    if (images.length === 0) return;
+
+    await Promise.all(images.map((img) => {
+        if (img.complete) return Promise.resolve();
+
+        return new Promise<void>((resolve) => {
+            const cleanup = () => {
+                img.removeEventListener('load', handleDone);
+                img.removeEventListener('error', handleDone);
+            };
+
+            const handleDone = () => {
+                cleanup();
+                resolve();
+            };
+
+            img.addEventListener('load', handleDone, { once: true });
+            img.addEventListener('error', handleDone, { once: true });
+        });
+    }));
+}
+
 function getSentenceIndex(block: ContentBlock): number {
     return 'sentenceIndex' in block && typeof block.sentenceIndex === 'number' ? block.sentenceIndex : 0;
 }
@@ -468,6 +494,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             if (document.fonts && document.fonts.ready) {
                 await document.fonts.ready;
             }
+            await waitForMeasuredImages(measureContainerRef.current);
             if (cancelled) return;
 
             prevBlockStructureKey.current = blockStructureKey;

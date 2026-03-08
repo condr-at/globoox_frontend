@@ -24,6 +24,7 @@ export default function ReaderSettings({
     const { settings, setFontSize } = useAppStore();
     const fontSizeBeforeRef = useRef(settings.fontSize);
     const fontSizeSliderProgress = `${((settings.fontSize - 14) / (32 - 14)) * 100}%`;
+    const sliderEdgeBoxClassName = 'flex h-5 w-5 shrink-0 items-center justify-center';
 
     return (
         <>
@@ -57,7 +58,9 @@ export default function ReaderSettings({
                             <span className="text-[15px] text-[var(--label-secondary)]">Font Size</span>
                         </div>
                         <div className="flex items-center gap-[16px]">
-                            <span className="text-[13px] text-[var(--label-secondary)]">A</span>
+                            <span className={sliderEdgeBoxClassName}>
+                                <span className="text-[13px] text-[var(--label-secondary)]">A</span>
+                            </span>
                             <input
                                 type="range"
                                 min="14"
@@ -96,12 +99,15 @@ export default function ReaderSettings({
                                     [&::-moz-range-thumb]:cursor-pointer
                                 "
                             />
-                            <span className="text-[20px] text-[var(--label-secondary)]">A</span>
+                            <span className={sliderEdgeBoxClassName}>
+                                <span className="text-[20px] text-[var(--label-secondary)]">A</span>
+                            </span>
                         </div>
                         <p className="text-center text-[13px] text-[var(--label-tertiary)] mt-[8px]">
                             {settings.fontSize}px
                         </p>
                     </div>
+
                 </div>
             </IOSSheet>
         </>
