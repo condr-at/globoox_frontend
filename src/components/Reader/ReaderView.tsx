@@ -1311,11 +1311,16 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
         && !translatedBookMeta;
     const isTargetLanguageReaderChrome = !!originalLanguage
         && originalLanguage.toUpperCase() !== activeLang.toUpperCase();
+    const areAllChapterTitlesReady = !isTargetLanguageReaderChrome
+        || chapters.every((chapter) =>
+            translatedChapterTitles.has(chapter.id)
+            || !!chapter.translations?.[activeLang.toUpperCase()],
+        );
     const isTocContentPending = isReaderChromeContentPending({
         translatedBookMeta,
-        translatedChapterTitles,
         isTargetLanguage: isTargetLanguageReaderChrome,
-    }, chapters.map((chapter) => chapter.id));
+        areAllChapterTitlesReady,
+    });
     const readerBookTitle = translatedBookMeta?.title ?? title;
     const readerBookAuthor = translatedBookMeta?.author ?? author ?? null;
 

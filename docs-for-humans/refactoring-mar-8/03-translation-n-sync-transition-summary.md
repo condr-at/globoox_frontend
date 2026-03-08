@@ -40,6 +40,49 @@
 - server-side persist path чище, чем раньше;
 - no separate alternative truth для ready-state на сервере.
 
+## 1.1. Reader Chrome Translations
+
+Поверх основного block translation path был добавлен отдельный слой для `reader chrome`:
+
+- book title
+- book author
+- chapter titles
+
+Цель:
+
+- перестать держать их как три случайных разных UI-потока;
+- привести их к общему contract:
+  - translated value exists -> ready
+  - no translated value -> fallback under blur
+  - local cache reuse
+  - server-side cache/persist where possible
+  - dedupe in-flight requests
+
+Что сделано:
+
+- chapter titles и book metadata теперь считаются частью одного `reader chrome translation` surface;
+- на фронте добавлен общий helper layer:
+  - `src/lib/readerChromeTranslations.ts`
+- `translate-meta` и `translate-titles` получили frontend in-flight dedupe через `src/lib/api.ts`
+- `translate-meta` больше не полностью “прямой LLM call каждый раз”:
+  - добавлен server-side cache через существующий `translation_cache`
+  - helper:
+    - `globoox/server/utils/chrome-translations.ts`
+
+Важно:
+
+- это еще не буквальное переиспользование block text pipeline;
+- но это уже abstraction layer того же класса:
+  - cache
+  - ready/pending semantics
+  - fallback rendering
+  - reuse on reload/open
+
+Итог:
+
+- block text остается самым зрелым translation path;
+- chapter titles и book metadata теперь заметно ближе к той же модели, а не живут как два разрозненных механизма.
+
 ## 2. Reading position
 
 Сделано:
@@ -90,6 +133,12 @@
 - reading position хранится локально;
 - но новая книга/новый перевод без сети не гарантируются.
 
+Для reader chrome это теперь тоже частично верно:
+
+- translated chapter titles могут подниматься из IDB;
+- translated book metadata может подниматься из IDB;
+- server-side cache для book metadata уменьшает повторные LLM calls.
+
 ## 5. Что еще остается transitional
 
 1. compat fields `isTranslated` / `is_pending`
@@ -108,6 +157,10 @@
 - Nuxt/Vue reader/upload UI
 - `epubjs` path
 
+5. reader chrome translations
+- chapter titles и book metadata уже частично выровнены;
+- но это еще не полностью общий server abstraction layer.
+
 ## 6. Что считать новой базой
 
 После этого перехода базой считать:
@@ -117,4 +170,5 @@
 - `blocks/text` — reconcile;
 - `translate` — push;
 - `targetLangReady` — primary frontend ready flag;
-- reading position и layout cache уже интегрированы в новую модель.
+- reading position и layout cache уже интегрированы в новую модель;
+- reader chrome translations (book meta + chapter titles) теперь тоже живут по единому translation contract, а не как полностью отдельные ad-hoc flows.

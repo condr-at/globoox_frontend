@@ -150,6 +150,22 @@
 6. Translation hook:
 - recovery и reconcile используют `blocks/text`, а не `translate-status`.
 
+7. Reader chrome translations:
+- chapter titles и book metadata внутри Reader приведены к общей pending/ready модели;
+- Reader chrome больше не рендерится как набор независимых translation hacks;
+- book metadata и chapter titles имеют:
+  - local cache reuse,
+  - in-flight dedupe,
+  - единые pending semantics.
+
+8. TOC drawer pending UX:
+- не используется blur по отдельным строкам;
+- drawer content имеет один общий pending state;
+- cover и close button не блюрятся;
+- переводимый content drawer (book title, author, chapter subtitle, chapter list) блюрится как единый слой;
+- поверх него висит один centered `Translating...` тем же мерцающим стилем, что и в text blocks;
+- blur снимается только когда готовы и book metadata, и chapter titles.
+
 ### Backend (`globoox`)
 
 1. Новый endpoint:
@@ -169,6 +185,18 @@
 5. Persist path:
 - `translate.post.ts` использует service-role data path для server-side persistence и cleanup;
 - это снижает риск того, что уже принятая команда на перевод останется в полу-состоянии из-за клиентского disconnect.
+
+6. Book metadata translation cache:
+- `translate-meta.post.ts` больше не является purely direct-to-LLM path;
+- для book title/author добавлен server-side persistent cache через существующий `translation_cache`;
+- helper вынесен в:
+  - `server/utils/chrome-translations.ts`
+
+Это подтягивает book metadata translation ближе к общему Translation v2 contract:
+- translate once
+- cache/persist
+- reuse later
+- не долбить LLM на каждый reopen.
 
 ## Финальная рабочая модель
 
@@ -195,6 +223,64 @@
 - если приложение живо, abandoned translate request должен дойти либо через background completion сервера, либо через recovery retry на фронте;
 - если серверный процесс умирает полностью во время перевода, durable queue всё ещё отсутствует, поэтому абсолютная гарантия completion между перезапусками процесса не заявляется;
 - но вечный `pending` и потерянный `missing` в обычном runtime path больше не являются нормальным состоянием.
+
+## Reader chrome: book metadata and TOC
+
+Дополнительно к block translation сейчас действует отдельный, но уже выровненный contract для Reader chrome.
+
+### Что входит в Reader chrome
+
+- book title
+- book author
+- chapter titles
+
+### Library vs Reader
+
+Важно:
+
+- в Library остается canonical/original book identity;
+- внутри Reader title/author/toc показываются на `activeLang`.
+
+То есть:
+
+- Library = original metadata
+- Reader = active-language projection
+
+### Pending semantics
+
+Если `activeLang !== originalLanguage`:
+
+- translated book title/author отсутствуют -> original metadata показываются под blur;
+- translated chapter titles отсутствуют -> original titles показываются под blur в TOC;
+- один общий pending state управляет всем TOC drawer content.
+
+### Server-side maturity level
+
+Reader chrome пока не буквально использует block translation pipeline.
+
+Но текущая модель уже сознательно выровнена в ту же сторону:
+
+- local cache
+- server-side persistence/cache where possible
+- in-flight dedupe
+- ready/pending based on existence
+
+Текущее состояние по зрелости:
+
+1. block text
+- самый зрелый path
+
+2. chapter titles
+- отдельный bulk path
+- server-persisted через `chapters.translations`
+
+3. book metadata
+- отдельный path
+- теперь с server-side persistent cache через `translation_cache`
+
+Следующий логичный этап, если система будет развиваться дальше:
+
+- довести chapter titles и book metadata до полностью общего `reader chrome translation abstraction layer` на сервере.
 
 ## Локальные замеры latency (localhost, Mar 7)
 
