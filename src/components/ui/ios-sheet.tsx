@@ -14,6 +14,7 @@ interface IOSSheetProps {
   describedBy?: string;
   dragHandle?: React.ReactNode;
   enableDragDismiss?: boolean;
+  dragRegion?: React.ReactNode;
 }
 
 const sideClassName: Record<NonNullable<IOSSheetProps['side']>, string> = {
@@ -50,6 +51,7 @@ export default function IOSSheet({
   describedBy,
   dragHandle,
   enableDragDismiss = false,
+  dragRegion,
 }: IOSSheetProps) {
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -57,7 +59,7 @@ export default function IOSSheet({
   const pointerIdRef = useRef<number | null>(null);
   const startYRef = useRef(0);
 
-  const canDrag = enableDragDismiss && side === 'bottom';
+  const canDrag = enableDragDismiss && side === 'bottom' && !isDesktop;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -143,6 +145,28 @@ export default function IOSSheet({
                 {dragHandle}
               </div>
             </div>
+          </div>
+          {dragRegion ? (
+            <>
+              <div
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={(event) => finishDrag(event.pointerId)}
+                onPointerCancel={(event) => finishDrag(event.pointerId)}
+                className="relative z-10 touch-none"
+              >
+                {dragRegion}
+              </div>
+              {children}
+            </>
+          ) : (
+            children
+          )}
+        </>
+      ) : dragRegion ? (
+        <>
+          <div className="relative z-10">
+            {dragRegion}
           </div>
           {children}
         </>

@@ -42,12 +42,14 @@ export default function ReaderSettings({
                 side="bottom"
                 enableDragDismiss
                 dragHandle={<div className="h-1 w-12 rounded-full bg-black/12 dark:bg-white/16" />}
+                dragRegion={(
+                    <IOSSheetHeader
+                        title="Themes & Settings"
+                        onClose={() => setIsOpen(false)}
+                    />
+                )}
                 className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] border-0 bg-[var(--bg-grouped-secondary)] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:rounded-[24px] sm:border sm:border-[var(--separator)]"
             >
-                <IOSSheetHeader
-                    title="Themes & Settings"
-                    onClose={() => setIsOpen(false)}
-                />
                 <div className="p-5 pt-0">
                     <div>
                         <div className="flex items-center gap-[8px] mb-[12px]">
