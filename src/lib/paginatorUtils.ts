@@ -1,4 +1,5 @@
 import { ContentBlock, ParagraphBlock } from './api'
+import { getLineHeightStyle } from './readerTypography'
 import { hyphenateSync as hyphenRu } from 'hyphen/ru'
 import { hyphenateSync as hyphenEn } from 'hyphen/en-us'
 import { hyphenateSync as hyphenFr } from 'hyphen/fr'
@@ -14,8 +15,8 @@ const hyphenators: Record<string, (text: string) => string> = {
 }
 
 const PAGE_HEIGHT_BUFFER_PX = 6
-const PARAGRAPH_FRAGMENT_LAST_CLASS = 'mb-2 leading-relaxed'
-const PARAGRAPH_FRAGMENT_MIDDLE_CLASS = 'mb-0 leading-relaxed'
+const PARAGRAPH_FRAGMENT_LAST_CLASS = 'mb-2'
+const PARAGRAPH_FRAGMENT_MIDDLE_CLASS = 'mb-0'
 
 interface SplitResult {
   firstPart: string
@@ -73,19 +74,20 @@ export function splitSentences(text: string): string[] {
   return sentences.length > 0 ? sentences : [text]
 }
 
-function applyParagraphStyles(el: HTMLElement, fontSize: number, lang: string, isLastPart: boolean) {
+function applyParagraphStyles(el: HTMLElement, fontSize: number, lang: string, isLastPart: boolean, lineHeightScale: number) {
   el.className = isLastPart ? PARAGRAPH_FRAGMENT_LAST_CLASS : PARAGRAPH_FRAGMENT_MIDDLE_CLASS
   if (fontSize) el.style.fontSize = `${fontSize}px`
+  el.style.lineHeight = getLineHeightStyle(fontSize, lineHeightScale)
   el.setAttribute('lang', lang)
   el.style.hyphens = 'auto'
   el.style.setProperty('-webkit-hyphens', 'auto')
 }
 
-function createBlockElement(block: ContentBlock, fontSize: number, lang: string): HTMLElement {
+function createBlockElement(block: ContentBlock, fontSize: number, lang: string, lineHeightScale: number): HTMLElement {
   switch (block.type) {
     case 'paragraph': {
       const el = document.createElement('p')
-      applyParagraphStyles(el, fontSize, lang, block.isLastPart ?? true)
+      applyParagraphStyles(el, fontSize, lang, block.isLastPart ?? true, lineHeightScale)
       el.textContent = block.text
       return el
     }
@@ -119,7 +121,7 @@ function createBlockElement(block: ContentBlock, fontSize: number, lang: string)
       }
       for (const item of block.items) {
         const li = document.createElement('li')
-        li.className = 'leading-relaxed'
+        li.style.lineHeight = getLineHeightStyle(fontSize, lineHeightScale)
         li.style.hyphens = 'auto'
         li.style.setProperty('-webkit-hyphens', 'auto')
         li.textContent = item
@@ -160,9 +162,10 @@ function createMeasuredWrapper(
   block: ContentBlock,
   fontSize: number,
   lang: string,
+  lineHeightScale: number,
   measuredBlockRoots?: MeasuredBlockRoots,
 ): HTMLDivElement {
-  return cloneMeasuredWrapper(block.id, measuredBlockRoots) ?? wrapMeasuredElement(createBlockElement(block, fontSize, lang))
+  return cloneMeasuredWrapper(block.id, measuredBlockRoots) ?? wrapMeasuredElement(createBlockElement(block, fontSize, lang, lineHeightScale))
 }
 
 function createParagraphMeasuredWrapper(
@@ -171,20 +174,21 @@ function createParagraphMeasuredWrapper(
   fontSize: number,
   lang: string,
   isLastPart: boolean,
+  lineHeightScale: number,
   measuredBlockRoots?: MeasuredBlockRoots,
 ): HTMLDivElement {
   const clone = cloneMeasuredWrapper(sourceBlockId, measuredBlockRoots)
   if (clone) {
     const paragraph = clone.querySelector('p')
     if (paragraph) {
-      applyParagraphStyles(paragraph, fontSize, lang, isLastPart)
+      applyParagraphStyles(paragraph, fontSize, lang, isLastPart, lineHeightScale)
       paragraph.textContent = text
       return clone
     }
   }
 
   const paragraph = document.createElement('p')
-  applyParagraphStyles(paragraph, fontSize, lang, isLastPart)
+  applyParagraphStyles(paragraph, fontSize, lang, isLastPart, lineHeightScale)
   paragraph.textContent = text
   return wrapMeasuredElement(paragraph)
 }
@@ -268,6 +272,7 @@ function fitParagraphByDom(
   effectiveHeight: number,
   fontSize: number,
   lang: string,
+  lineHeightScale: number,
   sourceBlockId: string,
   measuredBlockRoots?: MeasuredBlockRoots,
 ): SplitResult {
@@ -276,7 +281,7 @@ function fitParagraphByDom(
     return { firstPart: '', restPart: '' }
   }
 
-  const wrapper = createParagraphMeasuredWrapper(sourceBlockId, '', fontSize, lang, false, measuredBlockRoots)
+  const wrapper = createParagraphMeasuredWrapper(sourceBlockId, '', fontSize, lang, false, lineHeightScale, measuredBlockRoots)
   const candidate = wrapper.querySelector('p') as HTMLParagraphElement | null
   if (!candidate) {
     return { firstPart: '', restPart: normalizedText }
@@ -373,6 +378,7 @@ function computePagesDom(
   containerRef: HTMLElement,
   fontSize: number,
   lang: string,
+  lineHeightScale: number,
   minBlocksPerPage: number,
   measuredBlockRoots?: MeasuredBlockRoots,
 ): ComputedPagesResult {
@@ -400,7 +406,7 @@ function computePagesDom(
   try {
     for (const block of blocks) {
       if (block.type !== 'paragraph') {
-        const node = createMeasuredWrapper(block, fontSize, lang, measuredBlockRoots)
+        const node = createMeasuredWrapper(block, fontSize, lang, lineHeightScale, measuredBlockRoots)
         probe.appendChild(node)
         if (fitsProbe(probe, effectiveHeight) || currentPage.length < minBlocksPerPage) {
           currentPage.push(block.id)
@@ -427,6 +433,7 @@ function computePagesDom(
           fontSize,
           lang,
           block.isLastPart ?? true,
+          lineHeightScale,
           measuredBlockRoots,
         )
         probe.appendChild(wholeNode)
@@ -459,6 +466,7 @@ function computePagesDom(
           effectiveHeight,
           fontSize,
           lang,
+          lineHeightScale,
           block.id,
           measuredBlockRoots,
         )
@@ -514,6 +522,7 @@ function computePagesDom(
           fontSize,
           lang,
           fragmentBlock.isLastPart ?? false,
+          lineHeightScale,
           measuredBlockRoots,
         )
         probe.appendChild(fragmentNode)
@@ -549,11 +558,12 @@ function measureParagraphFragmentHeight(
   text: string,
   fontSize: number,
   lang: string,
+  lineHeightScale: number,
   containerRef: HTMLElement,
   isLastPart: boolean,
 ): number {
   const temp = document.createElement('p')
-  applyParagraphStyles(temp, fontSize, lang, isLastPart)
+  applyParagraphStyles(temp, fontSize, lang, isLastPart, lineHeightScale)
   temp.style.position = 'absolute'
   temp.style.visibility = 'hidden'
   temp.style.width = '100%'
@@ -568,6 +578,7 @@ function splitParagraphByHeight(
   availableHeight: number,
   fontSize: number,
   lang: string,
+  lineHeightScale: number,
   containerRef: HTMLElement,
 ): SplitResult {
   const words = text.split(/\s+/)
@@ -576,7 +587,7 @@ function splitParagraphByHeight(
   }
 
   const temp = document.createElement('p')
-  applyParagraphStyles(temp, fontSize, lang, false)
+  applyParagraphStyles(temp, fontSize, lang, false, lineHeightScale)
   temp.style.position = 'absolute'
   temp.style.visibility = 'hidden'
   temp.style.width = '100%'
@@ -640,6 +651,7 @@ function computePagesFallback(
   containerRef: HTMLElement | null,
   fontSize: number,
   lang: string,
+  lineHeightScale: number,
   minBlocksPerPage: number,
 ): ComputedPagesResult {
   const effectiveHeight = containerRef ? Math.max(1, pageHeight - PAGE_HEIGHT_BUFFER_PX) : pageHeight
@@ -693,6 +705,7 @@ function computePagesFallback(
           effectiveHeight - currentHeight,
           fontSize,
           lang,
+          lineHeightScale,
           containerRef,
         )
 
@@ -751,7 +764,7 @@ function computePagesFallback(
           currentPage = []
           currentHeight = 0
         } else {
-          currentHeight += measureParagraphFragmentHeight(firstText, fontSize, lang, containerRef, isLastPart)
+          currentHeight += measureParagraphFragmentHeight(firstText, fontSize, lang, lineHeightScale, containerRef, isLastPart)
         }
 
         remainingText = restText
@@ -779,6 +792,7 @@ export function computePages(
   containerRef: HTMLElement | null,
   fontSize: number,
   lang: string,
+  lineHeightScale = 1,
   minBlocksPerPage = 1,
   measuredBlockRoots?: MeasuredBlockRoots,
 ): ComputedPagesResult {
@@ -787,10 +801,10 @@ export function computePages(
   }
 
   if (containerRef) {
-    return computePagesDom(blocks, pageHeight, containerRef, fontSize, lang, minBlocksPerPage, measuredBlockRoots)
+    return computePagesDom(blocks, pageHeight, containerRef, fontSize, lang, lineHeightScale, minBlocksPerPage, measuredBlockRoots)
   }
 
-  return computePagesFallback(blocks, blockHeights, pageHeight, containerRef, fontSize, lang, minBlocksPerPage)
+  return computePagesFallback(blocks, blockHeights, pageHeight, containerRef, fontSize, lang, lineHeightScale, minBlocksPerPage)
 }
 
 export function findPageForBlockAndSentence(

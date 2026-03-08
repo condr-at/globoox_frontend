@@ -423,9 +423,9 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     const blockStructureKey = useMemo(
         () => {
             const contentSignature = getLayoutContentSignature(normalizedBlocks);
-            return `${contentSignature}__${pageWidth}__${pageHeight}__${settings.fontSize}__${displayBlocksLang}`;
+            return `${contentSignature}__${pageWidth}__${pageHeight}__${settings.fontSize}__${settings.lineHeightScale}__${displayBlocksLang}`;
         },
-        [normalizedBlocks, pageWidth, pageHeight, settings.fontSize, displayBlocksLang]
+        [normalizedBlocks, pageWidth, pageHeight, settings.fontSize, settings.lineHeightScale, displayBlocksLang]
     );
     const prevBlockStructureKey = useRef('');
     const lastProgressFetchAtRef = useRef<Map<string, number>>(new Map());
@@ -482,6 +482,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                 measureContainerRef.current,
                 settings.fontSize,
                 displayBlocksLang ?? activeLang,
+                settings.lineHeightScale,
                 1,
                 blockMeasureRefs.current,
             );
@@ -519,7 +520,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
         return () => {
             cancelled = true;
         };
-    }, [layoutCacheReadyKey, paginationCacheKey, blockStructureKey, pageHeight, pageWidth, normalizedBlocks, settings.fontSize, displayBlocksLang, activeLang, currentChapter?.id, bookId]);
+    }, [layoutCacheReadyKey, paginationCacheKey, blockStructureKey, pageHeight, pageWidth, normalizedBlocks, settings.fontSize, settings.lineHeightScale, displayBlocksLang, activeLang, currentChapter?.id, bookId]);
 
     // ─── Anchor restore ──────────────────────────────────────────────────────
     // Set by language-switch handler: blockId + sentenceIndex to jump to on next page recompute
@@ -1447,6 +1448,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                                     coverUrl={coverUrl}
                                     isCoverImage={block.id === firstImageBlockId}
                                     imageMaxHeight={pageHeight}
+                                    lineHeightScale={settings.lineHeightScale}
                                 />
                             </div>
                         ))}
@@ -1496,6 +1498,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                                                     coverUrl={coverUrl}
                                                     isCoverImage={isCoverImage}
                                                     imageMaxHeight={pageHeight}
+                                                    lineHeightScale={settings.lineHeightScale}
                                                 />
                                             </div>
                                         );

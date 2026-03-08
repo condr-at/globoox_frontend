@@ -1,4 +1,5 @@
 import { ContentBlock } from '@/lib/api'
+import { getLineHeightStyle } from '@/lib/readerTypography'
 
 interface ContentBlockRendererProps {
   block: ContentBlock
@@ -9,6 +10,7 @@ interface ContentBlockRendererProps {
   coverUrl?: string | null // Book cover URL to use for images with relative paths
   isCoverImage?: boolean // True only for the first image block (the actual book cover)
   imageMaxHeight?: number
+  lineHeightScale?: number
 }
 
 // Wrapper component for pending translation overlay
@@ -50,8 +52,12 @@ export default function ContentBlockRenderer({
   coverUrl,
   isCoverImage,
   imageMaxHeight,
+  lineHeightScale = 1,
 }: ContentBlockRendererProps) {
   const style = fontSize ? { fontSize: `${fontSize}px` } : undefined
+  const textStyle = fontSize
+    ? { ...style, lineHeight: getLineHeightStyle(fontSize, lineHeightScale) }
+    : style
   const resolvedImageMaxHeight = imageMaxHeight ? Math.max(160, imageMaxHeight - 24) : undefined
 
   if (block.type === 'hr') {
@@ -109,8 +115,8 @@ export default function ContentBlockRenderer({
     return (
       <PendingWrapper isPending={isPending} showLabel={showTranslatingLabel} pendingLabel={pendingLabel}>
         <p
-          className={`${mbClass} leading-relaxed`}
-          style={{ ...style, hyphens: 'auto', WebkitHyphens: 'auto' }}
+          className={mbClass}
+          style={{ ...textStyle, hyphens: 'auto', WebkitHyphens: 'auto' }}
         >
           {block.text}
         </p>
@@ -139,7 +145,7 @@ export default function ContentBlockRenderer({
       <PendingWrapper isPending={isPending} showLabel={showTranslatingLabel} pendingLabel={pendingLabel}>
         <Tag className={`${listClass} pl-6 ${mbClass} space-y-1`} style={style} start={startProp}>
           {block.items.map((item, i) => (
-            <li key={i} className="leading-relaxed" style={{ hyphens: 'auto', WebkitHyphens: 'auto' }}>{item}</li>
+            <li key={i} style={{ ...textStyle, hyphens: 'auto', WebkitHyphens: 'auto' }}>{item}</li>
           ))}
         </Tag>
       </PendingWrapper>
