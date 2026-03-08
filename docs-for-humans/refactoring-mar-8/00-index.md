@@ -40,6 +40,15 @@
 - IDB/layout cache
 - recovery/reconcile
 
+4. `04-supabase-signup-audit-checklist.md`
+
+Отдельный audit checklist по живой Supabase схеме и signup path:
+
+- что уже проверено;
+- какой drift уже найден между репо и живой БД;
+- что именно нужно проверить в auth/signup path перед любым fix;
+- какие выводы уже можно делать, а какие пока нельзя.
+
 ## Связанные старые документы
 
 Основные документы прошлого прохода:

@@ -25,6 +25,7 @@ import {
     setCachedTocTitles,
 } from '@/lib/contentCache';
 import { mergeDisplayBlocksPreservingTranslations } from '@/lib/reader/mergeDisplayBlocks';
+import { isReaderChromeContentPending } from '@/lib/readerChromeTranslations';
 import { isBlockPendingForActiveLang, isTranslatableBlock } from '@/lib/translationState';
 import {
   trackReadingSessionStarted,
@@ -1310,10 +1311,11 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
         && !translatedBookMeta;
     const isTargetLanguageReaderChrome = !!originalLanguage
         && originalLanguage.toUpperCase() !== activeLang.toUpperCase();
-    const areAllChapterTitlesReady = !isTargetLanguageReaderChrome
-        || chapters.every((chapter) => translatedChapterTitles.has(chapter.id));
-    const isTocContentPending = isTargetLanguageReaderChrome
-        && (!translatedBookMeta || !areAllChapterTitlesReady);
+    const isTocContentPending = isReaderChromeContentPending({
+        translatedBookMeta,
+        translatedChapterTitles,
+        isTargetLanguage: isTargetLanguageReaderChrome,
+    }, chapters.map((chapter) => chapter.id));
     const readerBookTitle = translatedBookMeta?.title ?? title;
     const readerBookAuthor = translatedBookMeta?.author ?? author ?? null;
 

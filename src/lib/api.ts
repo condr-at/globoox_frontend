@@ -198,6 +198,7 @@ export interface BookReadingProgress {
 const GET_CACHE_TTL_MS = 2000
 const inflightGetRequests = new Map<string, Promise<unknown>>()
 const recentGetResponses = new Map<string, { expiresAt: number; value: unknown }>()
+const inflightChromeTranslationRequests = new Map<string, Promise<unknown>>()
 
 // Reading position cache with TTL (30 seconds)
 const POSITION_CACHE_TTL_MS = 30000
@@ -329,20 +330,40 @@ export function translateChapterTitles(
   bookId: string,
   lang: string,
 ): Promise<{ results: { id: string; title: string }[] }> {
-  return request<{ results: { id: string; title: string }[] }>(
+  const normalizedLang = lang.toUpperCase()
+  const key = `chapter_titles::${bookId}::${normalizedLang}`
+  const inflight = inflightChromeTranslationRequests.get(key)
+  if (inflight) return inflight as Promise<{ results: { id: string; title: string }[] }>
+
+  const promise = request<{ results: { id: string; title: string }[] }>(
     `/api/books/${bookId}/chapters/translate-titles`,
-    { method: 'POST', body: JSON.stringify({ lang: lang.toUpperCase() }) },
-  )
+    { method: 'POST', body: JSON.stringify({ lang: normalizedLang }) },
+  ).finally(() => {
+    inflightChromeTranslationRequests.delete(key)
+  })
+
+  inflightChromeTranslationRequests.set(key, promise)
+  return promise
 }
 
 export function translateBookMetadata(
   bookId: string,
   lang: string,
 ): Promise<{ title: string; author: string | null }> {
-  return request<{ title: string; author: string | null }>(
+  const normalizedLang = lang.toUpperCase()
+  const key = `book_meta::${bookId}::${normalizedLang}`
+  const inflight = inflightChromeTranslationRequests.get(key)
+  if (inflight) return inflight as Promise<{ title: string; author: string | null }>
+
+  const promise = request<{ title: string; author: string | null }>(
     `/api/books/${bookId}/translate-meta`,
-    { method: 'POST', body: JSON.stringify({ lang: lang.toUpperCase() }) },
-  )
+    { method: 'POST', body: JSON.stringify({ lang: normalizedLang }) },
+  ).finally(() => {
+    inflightChromeTranslationRequests.delete(key)
+  })
+
+  inflightChromeTranslationRequests.set(key, promise)
+  return promise
 }
 
 export function fetchContent(chapterId: string, lang?: string, signal?: AbortSignal): Promise<ContentBlock[]> {
