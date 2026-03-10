@@ -747,10 +747,21 @@ export function useViewportTranslation({
         return false
       }
 
-      // Skip if block is already translated (from content endpoint)
+      // Skip if block is already translated (from content endpoint or IndexedDB cache)
       const block = blocksRef.current.find((b) => b.id === blockId)
       if (block && hasTargetLangText(block)) {
         translatedIds.current.add(blockId)
+        // User is viewing a translated block — fire book_translation_started if not yet recorded
+        const currentLang = langRef.current
+        const lsKey = `ph_bts_${bookIdRef.current}_${currentLang}`
+        if (typeof localStorage !== 'undefined' && !localStorage.getItem(lsKey)) {
+          localStorage.setItem(lsKey, '1')
+          trackBookTranslationStarted({
+            book_id: bookIdRef.current,
+            source_language: sourceLanguageRef.current,
+            target_language: currentLang,
+          })
+        }
         return false
       }
 
