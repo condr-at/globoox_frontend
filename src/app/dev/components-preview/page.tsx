@@ -557,15 +557,19 @@ export default function ComponentsPreviewPage() {
         onOpenChange={(open) => !open && closeOverlay()}
         labelledBy={sheetTitleId}
         describedBy={sheetDescriptionId}
-        dragHandle={<div className="h-1 w-10 rounded-full bg-[var(--label-tertiary)]/40" />}
+        side="bottom"
         enableDragDismiss
+        dragHandle={<div className="h-1 w-12 rounded-full bg-black/12 dark:bg-white/16" />}
+        dragRegion={(
+          <IOSSheetHeader
+            title={<span id={sheetTitleId}>Appearance</span>}
+            subtitle={<span id={sheetDescriptionId}>Reader controls and grouped content.</span>}
+            onClose={closeOverlay}
+          />
+        )}
+        className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] border-0 bg-[var(--bg-grouped-secondary)] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:rounded-[24px] sm:border sm:border-[var(--separator)]"
       >
-        <IOSSheetHeader
-          title={<span id={sheetTitleId}>Appearance</span>}
-          subtitle={<span id={sheetDescriptionId}>Reader controls and grouped content.</span>}
-          onClose={closeOverlay}
-        />
-        <div className="px-5 pb-6">
+        <div className="p-5 pt-0">
           <SchematicPlaceholder
             label="Reader sheet content"
             items={['Grouped setting rows', 'Reader-specific controls', 'Chapter list or appearance controls']}

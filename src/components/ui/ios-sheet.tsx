@@ -134,16 +134,8 @@ export default function IOSSheet({
             'absolute inset-x-0 top-0 z-20',
             shouldDisableSlide ? 'hidden' : 'block',
           )}>
-            <div
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={(event) => finishDrag(event.pointerId)}
-              onPointerCancel={(event) => finishDrag(event.pointerId)}
-              className="touch-none h-10"
-            >
-              <div className="flex justify-center pt-2">
-                {dragHandle}
-              </div>
+            <div className="pointer-events-none flex justify-center pt-2">
+              {dragHandle}
             </div>
           </div>
           {dragRegion ? (
@@ -153,8 +145,13 @@ export default function IOSSheet({
                 onPointerMove={handlePointerMove}
                 onPointerUp={(event) => finishDrag(event.pointerId)}
                 onPointerCancel={(event) => finishDrag(event.pointerId)}
-                className="relative z-10 touch-none"
-              >
+                className={cn(
+                  'absolute left-0 right-16 top-0 z-20 touch-none',
+                  shouldDisableSlide ? 'hidden' : 'block',
+                )}
+                style={{ height: '84px' }}
+              />
+              <div className="relative z-10">
                 {dragRegion}
               </div>
               {children}
