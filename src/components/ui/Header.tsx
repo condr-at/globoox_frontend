@@ -26,16 +26,19 @@ export default function Header() {
                 {/* Store — disabled, coming soon */}
                 <Button
                     variant="ghost"
-                    disabled
-                    className="flex-1 flex-col gap-0.5 h-full rounded-none opacity-40 cursor-not-allowed select-none px-3"
+                    type="button"
+                    aria-disabled="true"
+                    className="flex-1 flex-col gap-0.5 h-full rounded-none cursor-not-allowed select-none px-3 hover:bg-transparent hover:text-inherit"
                 >
                     <div className="relative">
-                        <ShoppingBag className="w-6 h-6" strokeWidth={1.5} />
-                        <span className="absolute -top-0.5 -right-3 text-[8px] font-semibold text-white leading-none px-1 py-0.5 rounded-full bg-primary opacity-100">
+                        <div className="opacity-40">
+                            <ShoppingBag className="w-6 h-6" strokeWidth={1.5} />
+                        </div>
+                        <span className="absolute -top-0.5 -right-3 text-[8px] font-semibold text-white leading-none px-1 py-0.5 rounded-full bg-primary">
                             soon
                         </span>
                     </div>
-                    <span className="text-[10px] font-medium">Store</span>
+                    <span className="text-[10px] font-medium opacity-40">Store</span>
                 </Button>
 
                 {/* Library — center, main tab */}

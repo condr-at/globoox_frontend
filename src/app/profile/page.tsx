@@ -112,14 +112,24 @@ export default function ProfilePage() {
                         {/* Menu Items */}
                         <Card>
                             <CardContent className="p-0">
-                                <Button variant="ghost" className="w-full justify-start h-12 px-4 rounded-none">
-                                    <Settings className="w-5 h-5 mr-3" />
-                                    Settings
+                                <Button
+                                    variant="ghost"
+                                    type="button"
+                                    aria-disabled="true"
+                                    className="w-full justify-start h-12 px-4 rounded-none cursor-not-allowed hover:bg-transparent hover:text-inherit"
+                                >
+                                    <Settings className="w-5 h-5 mr-3 opacity-60" />
+                                    <span className="opacity-60">Settings</span>
+                                    <span className="ml-auto text-[8px] font-semibold text-white leading-none px-1 py-0.5 rounded-full bg-primary">
+                                        soon
+                                    </span>
                                 </Button>
                                 <Separator />
-                                <Button variant="ghost" className="w-full justify-start h-12 px-4 rounded-none">
-                                    <HelpCircle className="w-5 h-5 mr-3" />
-                                    Help & Support
+                                <Button variant="ghost" asChild className="w-full justify-start h-12 px-4 rounded-none">
+                                    <a href="mailto:support@globoox.co">
+                                        <HelpCircle className="w-5 h-5 mr-3" />
+                                        Help & Support
+                                    </a>
                                 </Button>
                                 <Separator />
                                 <Button

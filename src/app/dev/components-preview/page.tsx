@@ -341,11 +341,11 @@ export default function ComponentsPreviewPage() {
     {
       title: 'IOSFlowDialog',
       layer: 'Pattern',
-      builtOn: 'IOSDialog',
-      useWhen: 'Sign in gates, upload flows, and richer modal content with custom body layout.',
-      avoidWhen: 'Anything that should look like an alert row stack.',
+      builtOn: 'IOSSheet + IOSFlowDialogHeader + IOSDialogFooter',
+      useWhen: 'Bottom-sheet flows with richer task content, like upload and multi-step actions.',
+      avoidWhen: 'Short alerts or compact feature prompts.',
       openKey: 'ios-flow',
-      notes: 'Feature modals should use this instead of importing IOSDialog directly.',
+      notes: 'Header drag-dismiss is built in. Use this instead of composing IOSSheet directly in feature code.',
     },
     {
       title: 'IOSFeaturePromptDialog',
@@ -378,8 +378,8 @@ export default function ComponentsPreviewPage() {
     {
       title: 'UnlimitedAccessModal',
       layer: 'Example',
-      builtOn: 'IOSAlertDialog + IOSFlowDialog',
-      useWhen: 'Translation limit alert and alpha-access flow.',
+      builtOn: 'IOSAlertDialog',
+      useWhen: 'Translation limit and alpha-access request prompts with alert-style actions.',
       avoidWhen: 'Creating new modal types without mapping to an existing pattern.',
       openKey: 'unlimited-alpha',
     },
@@ -454,6 +454,36 @@ export default function ComponentsPreviewPage() {
               <p className="mt-2 text-[var(--label-secondary)]">
                 Use regular by default. `font-medium` is allowed only for a single primary action in light theme.
               </p>
+            </div>
+            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
+              <p className="font-medium">Do not hand-roll chrome</p>
+              <p className="mt-2 text-[var(--label-secondary)]">
+                Reuse `IOSSheetHeader`, `IOSFeaturePromptHeader`, and `IOSDialogFooter`. Do not rebuild modal chrome locally in feature files.
+              </p>
+            </div>
+          </div>
+        </Section>
+
+        <Section
+          title="Which One"
+          description="Pick the pattern by interaction shape first, then by content density."
+        >
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm">
+              <p className="font-medium text-[var(--label-primary)]">IOSAlertDialog</p>
+              <p className="mt-2 text-[var(--label-secondary)]">Use for short blocking decisions, warnings, confirmations, and simple access requests.</p>
+            </div>
+            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm">
+              <p className="font-medium text-[var(--label-primary)]">IOSFeaturePromptDialog</p>
+              <p className="mt-2 text-[var(--label-secondary)]">Use for compact prompts with richer copy or benefits lists, but not full flows.</p>
+            </div>
+            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm">
+              <p className="font-medium text-[var(--label-primary)]">IOSFlowDialog</p>
+              <p className="mt-2 text-[var(--label-secondary)]">Use for sheet-based tasks with custom body layout, inputs, uploads, and drag-to-dismiss.</p>
+            </div>
+            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm">
+              <p className="font-medium text-[var(--label-primary)]">Reader Sheet Pattern</p>
+              <p className="mt-2 text-[var(--label-secondary)]">Use only inside the reader for Chapters, Appearance, and other reader-specific drawers.</p>
             </div>
           </div>
         </Section>
