@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ContentBlock, fetchBlockTexts, TranslatedBlockResult, translateBlocksStreaming } from '@/lib/api'
-import { trackTranslationBatch } from '@/lib/posthog'
+import { trackTranslationBatch, trackTranslationSessionSummary, trackBookTranslationStarted } from '@/lib/posthog'
 import { setCachedTranslatedBlockText } from '@/lib/contentCache'
 import { hasTargetLangText } from '@/lib/translationState'
 
@@ -142,6 +142,8 @@ export function useViewportTranslation({
   const isMountedRef = useRef(true)
   const bookIdRef = useRef(bookId)
   bookIdRef.current = bookId
+  const sourceLanguageRef = useRef(sourceLanguage)
+  sourceLanguageRef.current = sourceLanguage
   const [isTranslatingAny, setIsTranslatingAny] = useState(false)
   // Expose pending block IDs as state for blur effect
   const [pendingBlockIds, setPendingBlockIds] = useState<Set<string>>(new Set())
@@ -250,6 +252,59 @@ export function useViewportTranslation({
       }
     }
   }, [])
+
+  // ── Translation session tracking ─────────────────────────────────────────
+  // Session = same book + language. Spans multiple chapters and flushes.
+  // Ends after SESSION_INACTIVITY_MS of no LLM activity, or on book/lang change.
+  const SESSION_INACTIVITY_MS = 30 * 60 * 1000
+  const sessionIdRef = useRef<string>(crypto.randomUUID())
+  const sessionStartRef = useRef<number>(Date.now())
+  const sessionLlmCallsRef = useRef(0)
+  const sessionRequestCountRef = useRef(0)
+  const sessionTokensInRef = useRef(0)
+  const sessionTokensOutRef = useRef(0)
+  const sessionCostRef = useRef(0)
+  const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const flushSession = useCallback(() => {
+    if (sessionLlmCallsRef.current === 0) return
+    const durationSeconds = Math.round((Date.now() - sessionStartRef.current) / 1000)
+    trackTranslationSessionSummary({
+      session_id: sessionIdRef.current,
+      book_id: bookIdRef.current,
+      language: langRef.current,
+      source_language: sourceLanguageRef.current,
+      llm_calls: sessionLlmCallsRef.current,
+      tokens_in: sessionTokensInRef.current,
+      tokens_out: sessionTokensOutRef.current,
+      estimated_cost: sessionCostRef.current,
+      duration_seconds: durationSeconds,
+      request_count: sessionRequestCountRef.current,
+    })
+  }, [])
+
+  const resetSession = useCallback(() => {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current)
+      inactivityTimerRef.current = null
+    }
+    sessionIdRef.current = crypto.randomUUID()
+    sessionStartRef.current = Date.now()
+    sessionLlmCallsRef.current = 0
+    sessionRequestCountRef.current = 0
+    sessionTokensInRef.current = 0
+    sessionTokensOutRef.current = 0
+    sessionCostRef.current = 0
+  }, [])
+
+  // Flush + reset session when book or language changes (not on chapter change)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    return () => {
+      flushSession()
+      resetSession()
+    }
+  }, [bookId, lang])
 
   // Debounce timer
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -402,6 +457,7 @@ export function useViewportTranslation({
 
     const flushStart = performance.now()
     let hits = 0, misses = 0, errors = 0
+    let bookTranslationFiredThisFlush = false
     console.log(JSON.stringify({ event: 'flush_start', chapterId: requestChapterId, lang: requestLang, batchSize: ids.length, overflowSize: overflow.length }))
 
     try {
@@ -420,6 +476,19 @@ export function useViewportTranslation({
           if (result.status === 'ok') {
             if (result.cache === 'hit') hits += 1
             else misses += 1
+            // Fire book_translation_started once per book+lang (localStorage-deduped)
+            if (!bookTranslationFiredThisFlush) {
+              const lsKey = `ph_bts_${bookIdRef.current}_${requestLang}`
+              if (typeof localStorage !== 'undefined' && !localStorage.getItem(lsKey)) {
+                localStorage.setItem(lsKey, '1')
+                bookTranslationFiredThisFlush = true
+                trackBookTranslationStarted({
+                  book_id: bookIdRef.current,
+                  source_language: sourceLanguageRef.current,
+                  target_language: requestLang,
+                })
+              }
+            }
           } else {
             errors++
           }
@@ -444,8 +513,21 @@ export function useViewportTranslation({
         },
         controller.signal,
         (doneEvent) => {
-          // Server sent translate_done event with final metrics
           console.log(JSON.stringify(doneEvent))
+          // Accumulate session-level LLM usage (session spans multiple chapters/flushes)
+          if (doneEvent.llmCalls > 0) {
+            sessionLlmCallsRef.current += doneEvent.llmCalls
+            sessionRequestCountRef.current += 1
+            sessionTokensInRef.current += doneEvent.tokensIn ?? 0
+            sessionTokensOutRef.current += doneEvent.tokensOut ?? 0
+            sessionCostRef.current += doneEvent.estimatedCost ?? 0
+            // Reset 30-min inactivity timer
+            if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
+            inactivityTimerRef.current = setTimeout(() => {
+              flushSession()
+              resetSession()
+            }, SESSION_INACTIVITY_MS)
+          }
         },
       )
       abortControllerRef.current = null
@@ -665,10 +747,21 @@ export function useViewportTranslation({
         return false
       }
 
-      // Skip if block is already translated (from content endpoint)
+      // Skip if block is already translated (from content endpoint or IndexedDB cache)
       const block = blocksRef.current.find((b) => b.id === blockId)
       if (block && hasTargetLangText(block)) {
         translatedIds.current.add(blockId)
+        // User is viewing a translated block — fire book_translation_started if not yet recorded
+        const currentLang = langRef.current
+        const lsKey = `ph_bts_${bookIdRef.current}_${currentLang}`
+        if (typeof localStorage !== 'undefined' && !localStorage.getItem(lsKey)) {
+          localStorage.setItem(lsKey, '1')
+          trackBookTranslationStarted({
+            book_id: bookIdRef.current,
+            source_language: sourceLanguageRef.current,
+            target_language: currentLang,
+          })
+        }
         return false
       }
 
@@ -885,6 +978,8 @@ export function useViewportTranslation({
     const reconcileQueues = reconcileQueueRef.current
     return () => {
       isMountedRef.current = false
+      flushSession()
+      if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current)
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current)
       }
