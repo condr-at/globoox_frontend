@@ -49,7 +49,7 @@ export default function ReaderSettings({
                         onClose={() => setIsOpen(false)}
                     />
                 )}
-                className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] border-0 bg-[var(--bg-grouped-secondary)] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:rounded-[24px] sm:border sm:border-[var(--separator)]"
+                className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] bg-[var(--bg-grouped-secondary)] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:rounded-[24px]"
             >
                 <div className="p-5 pt-0">
                     <div>

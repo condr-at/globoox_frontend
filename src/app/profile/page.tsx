@@ -48,7 +48,7 @@ export default function ProfilePage() {
 
             <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(1rem+env(safe-area-inset-top)+76px)] pb-4 space-y-4">
                 {loading ? (
-                    <Card>
+                    <Card className="shadow-none">
                         <CardContent className="flex items-center justify-center p-12">
                             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                         </CardContent>
@@ -56,7 +56,7 @@ export default function ProfilePage() {
                 ) : user ? (
                     <>
                         {/* User Info */}
-                        <Card>
+                        <Card className="shadow-none">
                             <CardContent className="p-6">
                                 <div className="flex items-center gap-4">
                                     {avatarUrl ? (
@@ -88,7 +88,7 @@ export default function ProfilePage() {
 
                         {/* Alpha Tester */}
                         {!isAlpha && (
-                            <Card>
+                            <Card className="shadow-none">
                                 <CardContent className="p-4 flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
                                         <FlaskConical className="w-5 h-5 text-violet-500 shrink-0" />
@@ -110,7 +110,7 @@ export default function ProfilePage() {
                         )}
 
                         {/* Menu Items */}
-                        <Card>
+                        <Card className="shadow-none">
                             <CardContent className="p-0">
                                 <Button
                                     variant="ghost"
@@ -126,14 +126,18 @@ export default function ProfilePage() {
                                         </span>
                                     </span>
                                 </Button>
-                                <Separator />
+                                <div className="pl-12 pr-4">
+                                    <Separator />
+                                </div>
                                 <Button variant="ghost" asChild className="w-full justify-start h-12 px-4 rounded-none">
                                     <a href="mailto:support@globoox.co">
                                         <HelpCircle className="w-5 h-5 mr-3" />
                                         Help & Support
                                     </a>
                                 </Button>
-                                <Separator />
+                                <div className="pl-12 pr-4">
+                                    <Separator />
+                                </div>
                                 <Button
                                     variant="ghost"
                                     className="w-full justify-start h-12 px-4 rounded-none text-destructive hover:text-destructive"
@@ -152,7 +156,7 @@ export default function ProfilePage() {
                     </>
                 ) : (
                     /* Guest state */
-                    <Card>
+                    <Card className="shadow-none">
                         <CardContent className="p-6">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">

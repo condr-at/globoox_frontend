@@ -102,7 +102,7 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
             <span className="text-[15px]">{hideLabel}</span>
           </button>
 
-          <div className="h-[0.5px] bg-[var(--separator)] mx-4" />
+          <div className="ml-[44px] mr-4 h-[0.5px] bg-[var(--separator)]" />
 
           <button
             type="button"

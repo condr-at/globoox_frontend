@@ -73,17 +73,21 @@ export default function LanguageSwitch({
           className="fixed py-[8px] w-[192px] bg-[var(--bg-grouped-secondary)] rounded-[12px] shadow-lg border border-[var(--separator)] overflow-hidden z-[100]"
           style={externalOpen === undefined ? menuStyle : { top: 'calc(env(safe-area-inset-top) + 60px)', right: '16px' }}
         >
-          {availableLanguages.map((lang) => (
-            <button
-              key={lang}
-              onClick={() => handleSelect(lang)}
-              className="w-full flex items-center justify-between px-[16px] py-[12px] text-left transition-colors active:bg-[var(--fill-tertiary)]"
-            >
-              <span className="text-[17px]">{languageNames[lang]}</span>
-              {activeLanguage === lang && (
-                <Check className="w-[20px] h-[20px] text-[var(--system-blue)]" />
-              )}
-            </button>
+          {availableLanguages.map((lang, index) => (
+            <div key={lang}>
+              <button
+                onClick={() => handleSelect(lang)}
+                className="w-full flex items-center justify-between px-[16px] py-[12px] text-left transition-colors active:bg-[var(--fill-tertiary)]"
+              >
+                <span className="text-[17px]">{languageNames[lang]}</span>
+                {activeLanguage === lang && (
+                  <Check className="w-[20px] h-[20px] text-[var(--system-blue)]" />
+                )}
+              </button>
+              {index < availableLanguages.length - 1 ? (
+                <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />
+              ) : null}
+            </div>
           ))}
         </div>
       )}

@@ -81,7 +81,7 @@ export default function ReaderActionsMenu({
             <ChevronRight className="w-4 h-4 text-[var(--label-tertiary)]" />
           </button>
 
-          <div className="h-[0.5px] bg-[var(--separator)] mx-4" />
+          <div className="ml-12 mr-4 h-[0.5px] bg-[var(--separator)]" />
 
           <button
             onClick={() => handleAction('settings')}

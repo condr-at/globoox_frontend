@@ -83,7 +83,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[28px] border border-[var(--separator)] bg-[var(--bg-grouped-secondary)] p-6 shadow-sm">
+    <section className="rounded-[28px] bg-[var(--bg-grouped-secondary)] p-6">
       <div className="mb-5">
         <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-[var(--label-primary)]">{title}</h2>
         <p className="mt-1 text-sm leading-relaxed text-[var(--label-secondary)]">{description}</p>
@@ -101,7 +101,7 @@ function CatalogCard({
   onOpen: (key: Exclude<OverlayKey, null>) => void;
 }) {
   return (
-    <div className="rounded-[24px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-5">
+    <div className="rounded-[24px] bg-[var(--bg-grouped)] p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="break-words text-[17px] font-semibold text-[var(--label-primary)]">{item.title}</h3>
@@ -446,25 +446,25 @@ export default function ComponentsPreviewPage() {
           description="These are the constraints for how modal code should be composed in product code."
         >
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
               <p className="font-medium">Allowed in feature code</p>
               <p className="mt-2 text-[var(--label-secondary)]">
                 `IOSAlertDialog`, `IOSFlowDialog`, and reader-specific sheet components built on `IOSBottomDrawer`.
               </p>
             </div>
-            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
               <p className="font-medium">Do not use directly</p>
               <p className="mt-2 text-[var(--label-secondary)]">
                 `IOSModalShell` and `IOSDialog` should stay in the UI layer unless you are defining a new canonical pattern.
               </p>
             </div>
-            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
               <p className="font-medium">Action weight</p>
               <p className="mt-2 text-[var(--label-secondary)]">
                 Use regular by default. `font-medium` is allowed only for a single primary action in light theme.
               </p>
             </div>
-            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
               <p className="font-medium">Do not hand-roll chrome</p>
               <p className="mt-2 text-[var(--label-secondary)]">
                 Reuse `IOSBottomDrawerHeader`, `IOSDialogHeaderCenterLarge`, and `IOSDialogFooter`. Do not rebuild modal chrome locally in feature files.
@@ -478,19 +478,19 @@ export default function ComponentsPreviewPage() {
           description="Pick the pattern by interaction shape first, then by content density."
         >
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
               <p className="font-medium text-[var(--label-primary)]">IOSAlertDialog</p>
               <p className="mt-2 text-[var(--label-secondary)]">Use for short blocking decisions, warnings, confirmations, and simple access requests.</p>
             </div>
-            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
               <p className="font-medium text-[var(--label-primary)]">IOSFeatureDialog</p>
               <p className="mt-2 text-[var(--label-secondary)]">Use for compact prompts with richer copy or benefits lists, but not full flows.</p>
             </div>
-            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
               <p className="font-medium text-[var(--label-primary)]">IOSFlowDialog</p>
               <p className="mt-2 text-[var(--label-secondary)]">Use for sheet-based tasks with custom body layout, inputs, uploads, and drag-to-dismiss.</p>
             </div>
-            <div className="rounded-[22px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-4 text-sm">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
               <p className="font-medium text-[var(--label-primary)]">Reader BottomDrawer Pattern</p>
               <p className="mt-2 text-[var(--label-secondary)]">Use only inside the reader for Chapters, Appearance, and other reader-specific drawers.</p>
             </div>
@@ -625,7 +625,7 @@ export default function ComponentsPreviewPage() {
             onClose={closeOverlay}
           />
         )}
-        className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] border-0 bg-[var(--bg-grouped-secondary)] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:rounded-[24px] sm:border sm:border-[var(--separator)]"
+        className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] bg-[var(--bg-grouped-secondary)] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:rounded-[24px]"
       >
         <div className="p-5 pt-0">
           <SchematicPlaceholder

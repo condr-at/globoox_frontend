@@ -79,7 +79,7 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadHelp = getUploadHelp(error)
-  const sectionClassName = 'rounded-[20px] border border-[var(--separator)] bg-[var(--bg-grouped)] p-5'
+  const sectionClassName = 'rounded-[20px] bg-[var(--bg-grouped)] p-5'
 
   const isLikelyEpub = async (selectedFile: File): Promise<boolean> => {
     const normalizedName = selectedFile.name.trim().toLowerCase();
