@@ -404,11 +404,27 @@ function computePagesDom(
   }
 
   try {
-    for (const block of blocks) {
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i]
       if (block.type !== 'paragraph') {
         const node = createMeasuredWrapper(block, fontSize, lang, lineHeightScale, measuredBlockRoots)
         probe.appendChild(node)
         if (fitsProbe(probe, effectiveHeight) || currentPage.length < minBlocksPerPage) {
+          // Heading lookahead: if heading fits but the next block won't, push heading to next page
+          if (block.type === 'heading' && currentPage.length >= minBlocksPerPage) {
+            const nextBlock = blocks[i + 1]
+            if (nextBlock && (nextBlock.type === 'paragraph' || nextBlock.type === 'quote')) {
+              const nextNode = createMeasuredWrapper(nextBlock, fontSize, lang, lineHeightScale, measuredBlockRoots)
+              probe.appendChild(nextNode)
+              const nextFits = fitsProbe(probe, effectiveHeight)
+              probe.removeChild(nextNode)
+              if (!nextFits) {
+                probe.removeChild(node)
+                pushCurrentPage()
+                probe.appendChild(node)
+              }
+            }
+          }
           currentPage.push(block.id)
           finalBlocks.push(block)
           continue
