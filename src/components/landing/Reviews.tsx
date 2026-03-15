@@ -91,8 +91,6 @@ export function Reviews() {
             gap: '32px',
             animation: 'scroll 60s linear infinite',
             width: 'max-content',
-            paddingLeft: 'calc(50vw - 200px)',
-            paddingRight: 'calc(50vw - 200px)',
           }}
         >
           {/* First set */}
