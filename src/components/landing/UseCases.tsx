@@ -12,7 +12,7 @@ interface UseCase {
 
 const useCases: UseCase[] = [
   {
-    icon: '📚',
+    icon: '',
     title: 'Literature Students',
     subtitle: 'Dive deeper into world literature',
     description:
@@ -20,15 +20,7 @@ const useCases: UseCase[] = [
     benefits: ['Preserve original meaning', 'Learn language naturally', 'Analyze literary style', 'Academic research'],
   },
   {
-    icon: '🌍',
-    title: 'Language Learners',
-    subtitle: 'Immerse yourself in authentic content',
-    description:
-      'Access contemporary books, news, and literature in your target language at your own pace. Build vocabulary and reading comprehension through engaging stories, not textbooks.',
-    benefits: ['Real-world language', 'Contextual learning', 'Self-paced progression', 'Engaging content'],
-  },
-  {
-    icon: '🔬',
+    icon: '',
     title: 'Researchers & Academics',
     subtitle: 'Access global knowledge without limits',
     description:
@@ -36,7 +28,7 @@ const useCases: UseCase[] = [
     benefits: ['Break language barriers', 'Access global research', 'Maintain academic rigor', 'Faster comprehension'],
   },
   {
-    icon: '❤️',
+    icon: '',
     title: 'Book Lovers',
     subtitle: 'Expand your literary horizons',
     description:
@@ -122,15 +114,6 @@ export function UseCases() {
               gap: '20px',
             }}
           >
-            {/* Icon */}
-            <div
-              style={{
-                fontSize: '48px',
-              }}
-            >
-              {useCase.icon}
-            </div>
-
             {/* Title */}
             <div>
               <h3
