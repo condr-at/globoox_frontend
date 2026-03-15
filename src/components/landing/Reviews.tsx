@@ -83,7 +83,6 @@ export function Reviews() {
           position: 'relative',
           width: '100vw',
           marginLeft: 'calc(-50vw + 50%)',
-          overflow: 'hidden',
         }}
       >
         <div
