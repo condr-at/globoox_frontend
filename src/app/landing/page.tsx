@@ -3,6 +3,7 @@
 import { Hero } from '@/components/landing/Hero';
 import { FeaturesGrid } from '@/components/landing/FeaturesGrid';
 import { UseCases } from '@/components/landing/UseCases';
+import { QualityAssurance } from '@/components/landing/QualityAssurance';
 import { QualityAssuranceV2 } from '@/components/landing/QualityAssuranceV2';
 import { Reviews } from '@/components/landing/Reviews';
 import { SectionLabel } from '@/components/landing/SectionLabel';
@@ -28,6 +29,9 @@ export default function LandingPage() {
       <UseCases />
 
       {/* Quality Assurance section */}
+      <QualityAssurance />
+
+      {/* Quality Assurance V2 section */}
       <QualityAssuranceV2 />
 
       {/* Reviews section */}
