@@ -49,7 +49,7 @@ const reviews: Review[] = [
 export function Reviews() {
 
   return (
-    <section style={{ padding: '120px 0', overflow: 'hidden' }}>
+    <section style={{ padding: '120px 0' }}>
       <div style={{ marginBottom: '60px', textAlign: 'center' }}>
         <span
           style={{
