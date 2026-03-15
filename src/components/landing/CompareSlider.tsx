@@ -41,6 +41,17 @@ export function CompareSlider() {
     };
   }, []);
 
+  const readerHeader: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '10px 24px',
+    borderBottom: '1px solid rgba(0,0,0,0.06)',
+    fontSize: '11px',
+    fontFamily: "'Inter', sans-serif",
+    letterSpacing: '0.02em',
+  };
+
   return (
     <div style={{ marginTop: '40px', width: '100%' }}>
       <div
@@ -63,39 +74,75 @@ export function CompareSlider() {
           cursor: 'col-resize',
         }}
       >
+        {/* Layer 1: Original (left) */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
-            padding: '32px',
-            fontSize: '14px',
-            lineHeight: 1.8,
+            display: 'flex',
+            flexDirection: 'column',
             fontFamily: "'Lora', serif",
             background: '#fcfcfc',
             color: '#1A1F2B',
           }}
         >
-          <span style={{ maxWidth: '480px', display: 'block', margin: '0 auto' }}>
-
-            Около 70 000 лет назад организмы, принадлежащие к виду Homo sapiens, начали формировать ещё более крупные и сложные структуры, называемые культурами. Последующее развитие этих культур называется историей.
-          </span>
+          <div style={{ ...readerHeader, color: '#999' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+            <span>Sapiens · Chapter 1</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div style={{ flex: 1, overflow: 'hidden', padding: '28px 32px' }}>
+            <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 400, marginBottom: '16px', fontFamily: "'Lora', serif" }}>
+                Когнитивная революция
+              </h3>
+              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '14px' }}>
+                Около 70 000 лет назад организмы вида Homo sapiens начали формировать сложные структуры, называемые культурами. Последующее развитие этих культур называется историей.
+              </p>
+              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '14px' }}>
+                До когнитивной революции люди жили исключительно в Афро-Евразии. Они переплывали короткие проливы, но не могли пересечь открытый океан и добраться до Америки или Австралии.
+              </p>
+              <p style={{ fontSize: '14px', lineHeight: 1.8, margin: 0 }}>
+                Вымышленные реальности становились всё могущественнее. Сегодня они — самые сильные силы в мире. Выживание рек, деревьев и львов зависит от воображаемых сущностей вроде государств и корпораций.
+              </p>
+            </div>
+          </div>
         </div>
+
+        {/* Layer 2: Translation (right, revealed by slider) */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
-            padding: '32px',
-            fontSize: '14px',
-            lineHeight: 1.8,
+            display: 'flex',
+            flexDirection: 'column',
             fontFamily: "'Lora', serif",
             background: '#fffbf9',
             color: '#B25032',
             clipPath: `inset(0 ${100 - position}% 0 0)`,
           }}
         >
-          <span style={{ maxWidth: '480px', display: 'block', margin: '0 auto' }}>
-            About 70,000 years ago, organisms belonging to the species Homo sapiens started to form even larger and more complex structures called cultures. The subsequent development of these human cultures is called history.
-          </span>
+          <div style={{ ...readerHeader, color: '#C4856F', borderBottomColor: 'rgba(178,80,50,0.1)' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C4856F" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+            <span>Sapiens · Chapter 1</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C4856F" strokeWidth="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div style={{ flex: 1, overflow: 'hidden', padding: '28px 32px' }}>
+            <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 400, marginBottom: '16px', fontFamily: "'Lora', serif", color: '#B25032' }}>
+                The Cognitive Revolution
+              </h3>
+              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '14px' }}>
+                About 70,000 years ago, organisms of the species Homo sapiens started to form elaborate structures called cultures. The subsequent development of these cultures is called history.
+              </p>
+              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '14px' }}>
+                Prior to the Cognitive Revolution, humans lived exclusively in Afro-Eurasia. They could swim short stretches of sea, but were unable to cross the open ocean or reach America or Australia.
+              </p>
+              <p style={{ fontSize: '14px', lineHeight: 1.8, margin: 0 }}>
+                Fictional realities grew ever more powerful. Today they are the mightiest forces in the world. The survival of rivers, trees and lions depends on imagined entities such as states and corporations.
+              </p>
+            </div>
+          </div>
         </div>
 
         <span
