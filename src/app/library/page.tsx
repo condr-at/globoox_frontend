@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { Button } from '@/components/ui/button';
 import BookCard from '@/components/Store/BookCard';
 import DeleteBookConfirmDialog from '@/components/Store/DeleteBookConfirmDialog';
 import UploadBookModal from '@/components/UploadBookModal';
@@ -30,6 +31,7 @@ export default function LibraryPage() {
   const [justReadBookId, setJustReadBookId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const [isDeletingBook, setIsDeletingBook] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'visible' | 'hidden' | 'all'>('visible');
 
   useEffect(() => {
     try {
@@ -252,7 +254,13 @@ export default function LibraryPage() {
     )[0];
   }, [progressData, progress, isAuthenticated, progressFetchedOnce, justReadBookId]);
 
-      const lastBook = lastReadEntry ? books.find((b) => b.id === lastReadEntry[0]) : null;
+  const filteredBooks = useMemo(() => {
+    if (statusFilter === 'hidden') return books.filter((b) => b.status === 'hidden');
+    if (statusFilter === 'all') return books;
+    return books.filter((b) => b.status !== 'hidden');
+  }, [books, statusFilter]);
+
+      const lastBook = lastReadEntry ? filteredBooks.find((b) => b.id === lastReadEntry[0]) : null;
 
   return (
     <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
@@ -264,6 +272,20 @@ export default function LibraryPage() {
 
       <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top)+72px)] pb-4 space-y-6">
         {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <div className="flex gap-2">
+          {(['visible', 'hidden', 'all'] as const).map((f) => (
+            <Button
+              key={f}
+              variant={statusFilter === f ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter(f)}
+              className="rounded-full"
+            >
+              {f === 'visible' ? 'Visible' : f === 'hidden' ? 'Hidden' : 'All'}
+            </Button>
+          ))}
+        </div>
 
         {lastBook && lastReadEntry && (
           <section>
@@ -295,11 +317,11 @@ export default function LibraryPage() {
                 <div key={i} className="aspect-[2/3] rounded-md bg-muted animate-pulse" />
               ))}
             </div>
-          ) : books.length === 0 ? (
+          ) : filteredBooks.length === 0 ? (
             <p className="text-sm text-muted-foreground">No books yet.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {books.map((book) => (
+              {filteredBooks.map((book) => (
                 <BookCard
                   key={book.id}
                   id={book.id}
