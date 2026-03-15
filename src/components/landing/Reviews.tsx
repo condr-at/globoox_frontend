@@ -98,7 +98,8 @@ export function Reviews() {
             <div
               key={`first-${index}`}
               style={{
-                minWidth: '380px',
+                width: '380px',
+                flexShrink: 0,
                 padding: '32px',
                 backgroundColor: '#FFFFFF',
                 borderRadius: '12px',
@@ -179,7 +180,8 @@ export function Reviews() {
             <div
               key={`second-${index}`}
               style={{
-                minWidth: '380px',
+                width: '380px',
+                flexShrink: 0,
                 padding: '32px',
                 backgroundColor: '#FFFFFF',
                 borderRadius: '12px',
