@@ -1,4 +1,4 @@
-import { requireBackendProxy } from '@/app/api/_proxy'
+import { requireBackendProxy } from '@/app/(app)/api/_proxy'
 
 export async function PATCH(
   request: Request,

@@ -11,7 +11,10 @@ import { Footer } from '@/components/landing/Footer';
 export default function LandingPage() {
   return (
     <>
-      {/* Hero section with books */}
+      {/* Hero 1: Centered (intro) */}
+      <Hero variant="centered" withBooks={false} />
+
+      {/* Hero 2: Split with books */}
       <Hero variant="split" withBooks={true} />
 
       {/* Features grid with compare slider */}
