@@ -1,11 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
 interface Review {
   name: string;
   role: string;
-  avatar: string;
   text: string;
   rating: number;
 }
@@ -14,63 +11,46 @@ const reviews: Review[] = [
   {
     name: 'Sofia Martinez',
     role: 'Literature Student',
-    avatar: '👩‍🎓',
     text: 'Finally, I can read books in their original language without struggling. The translations maintain the poetic beauty that gets lost in traditional translations.',
     rating: 5,
   },
   {
     name: 'Marco Rossi',
-    role: 'Language Learner',
-    avatar: '👨‍💼',
+    role: 'Book Enthusiast',
     text: 'I\'m learning Italian and this app is incredible. I can read contemporary novels at my pace, with instant translations helping me understand context.',
     rating: 5,
   },
   {
     name: 'Yuki Tanaka',
-    role: 'Book Enthusiast',
-    avatar: '👩‍💻',
+    role: 'Reader',
     text: 'The synchronization across devices is seamless. Start reading on my phone during commute, continue on tablet at home. Perfect experience.',
     rating: 5,
   },
   {
     name: 'Emma Thompson',
     role: 'Book Club Organizer',
-    avatar: '👩‍🏫',
     text: 'Our international book club finally found the perfect solution. We can all read the same books in our native languages simultaneously.',
     rating: 5,
   },
   {
     name: 'Ahmed Al-Mansouri',
-    role: 'Graduate Researcher',
-    avatar: '👨‍🔬',
+    role: 'Researcher',
     text: 'Access to academic literature in Arabic without compromising the original meaning. This changes everything for my research workflow.',
     rating: 5,
   },
   {
     name: 'Lucia Verdi',
     role: 'Avid Reader',
-    avatar: '👩‍🎨',
     text: 'The offline reading feature is game-changing. I can read during flights without worrying about internet. Quality never suffers.',
     rating: 5,
   },
 ];
 
 export function Reviews() {
-  const [visibleIndices, setVisibleIndices] = useState<Set<number>>(new Set());
-
-  useEffect(() => {
-    reviews.forEach((_, index) => {
-      const timer = setTimeout(() => {
-        setVisibleIndices((prev) => new Set(prev).add(index));
-      }, index * 200);
-
-      return () => clearTimeout(timer);
-    });
-  }, []);
 
   return (
-    <section style={{ padding: '120px 0' }}>
-      <div style={{ marginBottom: '80px', textAlign: 'center' }}>
+    <section style={{ padding: '120px 0', overflow: 'hidden' }}>
+      <div style={{ marginBottom: '60px', textAlign: 'center' }}>
         <span
           style={{
             textTransform: 'uppercase',
@@ -95,105 +75,198 @@ export function Reviews() {
         >
           Loved by Readers Worldwide
         </h2>
-        <p
-          style={{
-            fontSize: '18px',
-            color: '#666',
-            maxWidth: '600px',
-            margin: '0 auto',
-            lineHeight: 1.6,
-          }}
-        >
-          Join thousands of readers who've transformed how they read
-        </p>
       </div>
 
+      {/* Scrolling container */}
       <div
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '32px',
+          position: 'relative',
+          width: '100%',
+          overflow: 'hidden',
         }}
       >
-        {reviews.map((review, index) => (
-          <div
-            key={index}
-            style={{
-              opacity: visibleIndices.has(index) ? 1 : 0,
-              transform: visibleIndices.has(index) ? 'translateY(0)' : 'translateY(20px)',
-              transition: 'all 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
-              padding: '32px',
-              backgroundColor: '#FFFFFF',
-              borderRadius: '12px',
-              boxShadow: '0 2px 12px rgba(0, 0, 0, 0.05)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-            }}
-          >
-            {/* Stars */}
-            <div style={{ display: 'flex', gap: '4px' }}>
-              {Array(review.rating)
-                .fill(null)
-                .map((_, i) => (
-                  <span key={i} style={{ fontSize: '16px' }}>
-                    ★
-                  </span>
-                ))}
-            </div>
-
-            {/* Text */}
-            <p
+        <div
+          style={{
+            display: 'flex',
+            gap: '32px',
+            animation: 'scroll 60s linear infinite',
+            width: 'max-content',
+          }}
+        >
+          {/* First set */}
+          {reviews.map((review, index) => (
+            <div
+              key={`first-${index}`}
               style={{
-                fontSize: '16px',
-                lineHeight: 1.7,
-                color: '#666',
-                margin: 0,
-                flex: 1,
+                minWidth: '380px',
+                padding: '32px',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '12px',
+                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.05)',
+                border: '1px solid #E0D9D0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
               }}
             >
-              "{review.text}"
-            </p>
+              {/* Stars */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {Array(review.rating)
+                  .fill(null)
+                  .map((_, i) => (
+                    <span key={i} style={{ fontSize: '16px' }}>
+                      ★
+                    </span>
+                  ))}
+              </div>
 
-            {/* Author */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '8px' }}>
-              <div
+              {/* Text */}
+              <p
                 style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  backgroundColor: '#F0E8E0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '24px',
+                  fontSize: '16px',
+                  lineHeight: 1.7,
+                  color: '#666',
+                  margin: 0,
+                  flex: 1,
                 }}
               >
-                {review.avatar}
-              </div>
-              <div>
+                "{review.text}"
+              </p>
+
+              {/* Author */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '8px' }}>
                 <div
                   style={{
-                    fontWeight: 600,
-                    color: '#1A1F2B',
-                    fontSize: '16px',
-                  }}
-                >
-                  {review.name}
-                </div>
-                <div
-                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    backgroundColor: '#F0E8E0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     fontSize: '14px',
-                    color: '#999',
+                    fontWeight: 600,
+                    color: '#B25032',
                   }}
                 >
-                  {review.role}
+                  {review.name[0]}
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontWeight: 600,
+                      color: '#1A1F2B',
+                      fontSize: '16px',
+                    }}
+                  >
+                    {review.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      color: '#999',
+                    }}
+                  >
+                    {review.role}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+
+          {/* Second set (duplicate for seamless loop) */}
+          {reviews.map((review, index) => (
+            <div
+              key={`second-${index}`}
+              style={{
+                minWidth: '380px',
+                padding: '32px',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '12px',
+                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.05)',
+                border: '1px solid #E0D9D0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+              }}
+            >
+              {/* Stars */}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {Array(review.rating)
+                  .fill(null)
+                  .map((_, i) => (
+                    <span key={i} style={{ fontSize: '16px' }}>
+                      ★
+                    </span>
+                  ))}
+              </div>
+
+              {/* Text */}
+              <p
+                style={{
+                  fontSize: '16px',
+                  lineHeight: 1.7,
+                  color: '#666',
+                  margin: 0,
+                  flex: 1,
+                }}
+              >
+                "{review.text}"
+              </p>
+
+              {/* Author */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '8px' }}>
+                <div
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    backgroundColor: '#F0E8E0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: '#B25032',
+                  }}
+                >
+                  {review.name[0]}
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontWeight: 600,
+                      color: '#1A1F2B',
+                      fontSize: '16px',
+                    }}
+                  >
+                    {review.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      color: '#999',
+                    }}
+                  >
+                    {review.role}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+
+      <style>{`
+        @keyframes scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(calc(-380px * ${reviews.length} - 32px * ${reviews.length}));
+          }
+        }
+      `}</style>
     </section>
   );
 }
