@@ -10,8 +10,10 @@ export function CTA() {
       style={{
         padding: '120px 0',
         textAlign: 'center',
+        background: '#1A2420',
       }}
     >
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <h2
         style={{
           fontFamily: "'Lora', serif",
@@ -19,7 +21,7 @@ export function CTA() {
           letterSpacing: '-0.01em',
           fontSize: '48px',
           marginBottom: '24px',
-          color: '#1A1F2B',
+          color: '#FFFFFF',
         }}
       >
         Begin your first chapter free.
@@ -27,7 +29,7 @@ export function CTA() {
       <p
         style={{
           fontSize: '20px',
-          color: '#5E6771',
+          color: 'rgba(255,255,255,0.8)',
           marginBottom: '40px',
           maxWidth: '600px',
           margin: '0 auto 40px',
@@ -38,14 +40,14 @@ export function CTA() {
       <button
         style={{
           display: 'inline-block',
-          background: isHovered ? '#963F26' : '#B25032',
-          color: 'white',
+          background: isHovered ? '#1A2420' : '#FFFFFF',
+          color: isHovered ? '#FFFFFF' : '#B25032',
           padding: '16px 32px',
           borderRadius: '8px',
-          fontWeight: 500,
+          fontWeight: 600,
           textDecoration: 'none',
           fontSize: '16px',
-          transition: 'background 0.2s ease',
+          transition: 'all 0.2s ease',
           border: 'none',
           cursor: 'pointer',
         }}
@@ -55,6 +57,7 @@ export function CTA() {
       >
         Get Started — It&apos;s Free
       </button>
+      </div>
     </section>
   );
 }

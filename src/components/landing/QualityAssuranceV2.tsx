@@ -3,6 +3,7 @@ import { CompareSlider } from './CompareSlider';
 export function QualityAssuranceV2() {
   return (
     <section style={{ padding: '120px 0' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px', textAlign: 'center' }}>
         <span
           style={{
@@ -22,7 +23,7 @@ export function QualityAssuranceV2() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#1A1F2B',
+            color: '#1A2420',
             marginBottom: '24px',
             margin: '0 auto 24px',
             maxWidth: '600px',
@@ -62,7 +63,7 @@ export function QualityAssuranceV2() {
               style={{
                 width: '100%',
                 height: '100%',
-                background: '#1A1F2B',
+                background: '#1A2420',
                 borderRadius: '10px',
                 overflow: 'hidden',
                 position: 'relative',
@@ -91,6 +92,7 @@ export function QualityAssuranceV2() {
             }}
           />
         </div>
+      </div>
       </div>
     </section>
   );

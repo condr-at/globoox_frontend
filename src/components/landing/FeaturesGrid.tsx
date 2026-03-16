@@ -3,6 +3,7 @@ import { SectionLabel } from './SectionLabel';
 export function FeaturesGrid() {
   return (
     <section style={{ padding: '120px 0' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px' }}>
         <span
           style={{
@@ -22,7 +23,7 @@ export function FeaturesGrid() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#1A1F2B',
+            color: '#1A2420',
             marginBottom: '24px',
           }}
         >
@@ -60,7 +61,7 @@ export function FeaturesGrid() {
                 letterSpacing: '-0.01em',
                 fontSize: '32px',
                 marginBottom: '16px',
-                color: '#1A1F2B',
+                color: '#1A2420',
               }}
             >
               Seamless by design.
@@ -77,7 +78,7 @@ export function FeaturesGrid() {
         <div
           style={{
             gridColumn: 'span 7',
-            background: '#1A1F2B',
+            background: '#1A2420',
             borderRadius: '12px',
             padding: '48px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
@@ -131,7 +132,7 @@ export function FeaturesGrid() {
                 letterSpacing: '-0.01em',
                 fontSize: '32px',
                 marginBottom: '16px',
-                color: '#1A1F2B',
+                color: '#1A2420',
               }}
             >
               Your library, kept private.
@@ -168,7 +169,7 @@ export function FeaturesGrid() {
                 letterSpacing: '-0.01em',
                 fontSize: '32px',
                 marginBottom: '16px',
-                color: '#1A1F2B',
+                color: '#1A2420',
               }}
             >
               Simple pricing.
@@ -179,7 +180,7 @@ export function FeaturesGrid() {
                 fontSize: '56px',
                 fontWeight: '700',
                 margin: '16px 0',
-                color: '#1A1F2B',
+                color: '#1A2420',
               }}
             >
               $4.99
@@ -190,6 +191,7 @@ export function FeaturesGrid() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );

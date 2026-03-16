@@ -39,6 +39,7 @@ export function FAQ() {
 
   return (
     <section style={{ padding: '120px 0' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px', textAlign: 'center' }}>
         <span
           style={{
@@ -58,7 +59,7 @@ export function FAQ() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#1A1F2B',
+            color: '#1A2420',
             marginBottom: '24px',
           }}
         >
@@ -100,7 +101,7 @@ export function FAQ() {
                 padding: 0,
                 fontSize: '18px',
                 fontWeight: 600,
-                color: '#1A1F2B',
+                color: '#1A2420',
                 fontFamily: 'Inter, sans-serif',
                 textAlign: 'left',
                 transition: 'color 0.2s ease',
@@ -109,7 +110,7 @@ export function FAQ() {
                 e.currentTarget.style.color = '#B25032';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#1A1F2B';
+                e.currentTarget.style.color = '#1A2420';
               }}
             >
               {item.question}
@@ -160,6 +161,7 @@ export function FAQ() {
           }
         }
       `}</style>
+      </div>
     </section>
   );
 }

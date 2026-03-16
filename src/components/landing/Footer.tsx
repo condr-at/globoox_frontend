@@ -2,14 +2,14 @@ export function Footer() {
   return (
     <footer
       style={{
-        marginTop: '60px',
         padding: '60px 0',
         textAlign: 'center',
-        borderTop: '1px solid rgba(0,0,0,0.05)',
-        color: '#5E6771',
+        background: '#1A2420',
+        color: '#6B7280',
         fontSize: '14px',
       }}
     >
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <p>© 2024 Globoox Inc. Curating the world&apos;s wisdom.</p>
       <div
         style={{
@@ -22,7 +22,7 @@ export function Footer() {
         <a
           href="#"
           style={{
-            color: '#5E6771',
+            color: '#6B7280',
             textDecoration: 'none',
             fontWeight: 500,
             transition: 'color 0.2s ease',
@@ -34,7 +34,7 @@ export function Footer() {
         <a
           href="#"
           style={{
-            color: '#5E6771',
+            color: '#6B7280',
             textDecoration: 'none',
             fontWeight: 500,
             transition: 'color 0.2s ease',
@@ -46,7 +46,7 @@ export function Footer() {
         <a
           href="#"
           style={{
-            color: '#5E6771',
+            color: '#6B7280',
             textDecoration: 'none',
             fontWeight: 500,
             transition: 'color 0.2s ease',
@@ -55,6 +55,7 @@ export function Footer() {
         >
           Contact Support
         </a>
+      </div>
       </div>
     </footer>
   );

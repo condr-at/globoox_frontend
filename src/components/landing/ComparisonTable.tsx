@@ -32,7 +32,7 @@ export function ComparisonTable() {
               fontSize: '18px',
               borderBottom: '1px solid rgba(0,0,0,0.05)',
               fontWeight: 400,
-              color: '#1A1F2B',
+              color: '#1A2420',
               width: '40%',
             }}
           >
@@ -47,7 +47,7 @@ export function ComparisonTable() {
               fontSize: '18px',
               borderBottom: '1px solid rgba(0,0,0,0.05)',
               fontWeight: 400,
-              color: '#1A1F2B',
+              color: '#1A2420',
               width: '20%',
             }}
           >
@@ -77,7 +77,7 @@ export function ComparisonTable() {
               fontSize: '18px',
               borderBottom: '1px solid rgba(0,0,0,0.05)',
               fontWeight: 400,
-              color: '#1A1F2B',
+              color: '#1A2420',
               width: '20%',
             }}
           >
@@ -93,7 +93,7 @@ export function ComparisonTable() {
                 padding: '20px 32px',
                 borderBottom: idx === rows.length - 1 ? 'none' : '1px solid rgba(0,0,0,0.05)',
                 fontSize: '15px',
-                color: '#1A1F2B',
+                color: '#1A2420',
                 fontWeight: 500,
                 width: '40%',
               }}

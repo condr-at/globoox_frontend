@@ -83,7 +83,7 @@ export function CompareSlider() {
             flexDirection: 'column',
             fontFamily: "'Lora', serif",
             background: '#fcfcfc',
-            color: '#1A1F2B',
+            color: '#1A2420',
           }}
         >
           <div style={{ ...readerHeader, color: '#999' }}>

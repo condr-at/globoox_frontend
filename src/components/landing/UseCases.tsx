@@ -51,14 +51,15 @@ export function UseCases() {
   }, []);
 
   return (
-    <section style={{ padding: '120px 0' }}>
+    <section style={{ padding: '120px 0', background: '#1A2420' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px', textAlign: 'center' }}>
         <span
           style={{
             textTransform: 'uppercase',
             fontSize: '12px',
             fontWeight: 600,
-            color: '#B25032',
+            color: '#C4826E',
             letterSpacing: '0.12em',
             marginBottom: '16px',
             display: 'block',
@@ -71,7 +72,7 @@ export function UseCases() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#1A1F2B',
+            color: '#F7F5F2',
             marginBottom: '24px',
           }}
         >
@@ -80,7 +81,7 @@ export function UseCases() {
         <p
           style={{
             fontSize: '18px',
-            color: '#666',
+            color: '#9CA3AF',
             maxWidth: '600px',
             margin: '0 auto',
             lineHeight: 1.6,
@@ -105,10 +106,9 @@ export function UseCases() {
               transform: visibleIndices.has(index) ? 'translateY(0)' : 'translateY(20px)',
               transition: 'all 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
               padding: '40px',
-              backgroundColor: '#FFFFFF',
+              backgroundColor: 'rgba(255,255,255,0.05)',
               borderRadius: '12px',
-              boxShadow: '0 2px 12px rgba(0, 0, 0, 0.05)',
-              border: '1px solid #E0D9D0',
+              border: '1px solid rgba(255,255,255,0.08)',
               display: 'flex',
               flexDirection: 'column',
               gap: '20px',
@@ -121,7 +121,7 @@ export function UseCases() {
                   fontFamily: 'Lora, serif',
                   fontSize: '24px',
                   fontWeight: 400,
-                  color: '#1A1F2B',
+                  color: '#F7F5F2',
                   marginBottom: '8px',
                 }}
               >
@@ -130,7 +130,7 @@ export function UseCases() {
               <p
                 style={{
                   fontSize: '14px',
-                  color: '#B25032',
+                  color: '#C4826E',
                   fontWeight: 600,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
@@ -146,7 +146,7 @@ export function UseCases() {
               style={{
                 fontSize: '16px',
                 lineHeight: 1.6,
-                color: '#666',
+                color: '#9CA3AF',
                 margin: 0,
               }}
             >
@@ -161,17 +161,18 @@ export function UseCases() {
                     style={{
                       width: '6px',
                       height: '6px',
-                      backgroundColor: '#B25032',
+                      backgroundColor: '#C4826E',
                       borderRadius: '50%',
                       flexShrink: 0,
                     }}
                   />
-                  <span style={{ fontSize: '14px', color: '#666' }}>{benefit}</span>
+                  <span style={{ fontSize: '14px', color: '#9CA3AF' }}>{benefit}</span>
                 </div>
               ))}
             </div>
           </div>
         ))}
+      </div>
       </div>
     </section>
   );

@@ -22,7 +22,7 @@ export function QualityAssurance() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#1A1F2B',
+            color: '#1A2420',
             marginBottom: '24px',
             maxWidth: '600px',
           }}

@@ -17,10 +17,28 @@ html {
   scroll-behavior: smooth;
 }
 
+:root {
+  --bg-light: #F7F5F2;
+  --bg-dark: #1A2420;
+  --bg-dark-card: #212D27;
+  --bg-dark-border: rgba(255,255,255,0.08);
+  --accent: #B25032;
+  --accent-hover: #963F26;
+  --accent-muted: #8B3D26;
+  --accent-on-dark: #C4826E;
+  --accent-glow: rgba(178,80,50,0.15);
+  --stars: #D4A574;
+  --text-heading: #1A2420;
+  --text-body: #5E6771;
+  --text-dark-heading: #F7F5F2;
+  --text-dark-body: #9CA3AF;
+  --text-dark-muted: #6B7280;
+}
+
 body {
   font-family: 'Inter', -apple-system, sans-serif;
-  background-color: #F7F5F2;
-  color: #1A1F2B;
+  background-color: var(--bg-light);
+  color: var(--text-heading);
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -33,7 +51,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Lora', serif;
   font-weight: 400;
   letter-spacing: -0.01em;
-  color: #1A1F2B;
+  color: #1A2420;
   margin: 0;
   padding: 0;
 }

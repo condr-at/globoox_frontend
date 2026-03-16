@@ -22,6 +22,6 @@ export default async function RootPage() {
     console.error('Auth check error:', error);
   }
 
-  // Unauthenticated users go to landing
-  redirect('/landing');
+  // Unauthenticated users go to library
+  redirect('/library');
 }

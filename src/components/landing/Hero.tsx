@@ -90,7 +90,9 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
           minHeight: '90vh',
           alignItems: 'center',
           gap: '60px',
-          padding: '60px 0',
+          padding: '60px 40px',
+          maxWidth: '1200px',
+          margin: '0 auto',
         }}
       >
         <div
@@ -110,7 +112,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
               marginBottom: '28px',
               fontWeight: 500,
               fontFamily: "'Lora', serif",
-              color: '#1A1F2B',
+              color: '#1A2420',
             }}
           >
             The world&apos;s library, in your native language.
@@ -187,10 +189,10 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
               History
             </FloatingScript>
 
-            <div style={{ display: 'flex', gap: '12px', transform: 'rotate(-5deg)' }}>
+            <div style={{ display: 'flex', gap: '12px', transform: 'rotate(-5deg)', alignItems: 'flex-end' }}>
               <BookSpine title="Moby Dick" height={320} bg="#E8E4DF" />
               <BookSpine title="Anna Karenina" height={280} bg="#DED9D2" />
-              <BookSpine title="Globoox Engine" height={340} bg="#1A1F2B" textColor="#D48B77" />
+              <BookSpine title="Globoox Engine" height={340} bg="#1A2420" textColor="#D48B77" />
               <BookSpine title="The Odyssey" height={280} bg="#DED9D2" />
               <BookSpine title="Don Quixote" height={320} bg="#E8E4DF" />
             </div>
@@ -209,8 +211,10 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
         justifyContent: 'center',
         alignItems: 'center',
         textAlign: 'center' as const,
-        padding: '80px 0',
+        padding: '80px 40px',
         minHeight: '80vh',
+        maxWidth: '1200px',
+        margin: '0 auto',
       }}
     >
       <SectionLabel>Introducing Globoox</SectionLabel>
@@ -223,7 +227,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
           lineHeight: 1.1,
           marginBottom: '24px',
           maxWidth: '900px',
-          color: '#1A1F2B',
+          color: '#1A2420',
         }}
       >
         The world&apos;s library, in your native language.

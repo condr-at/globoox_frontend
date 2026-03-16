@@ -49,14 +49,15 @@ const reviews: Review[] = [
 export function Reviews() {
 
   return (
-    <section style={{ padding: '120px 0' }}>
+    <section style={{ padding: '120px 0', background: '#1A2420' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '60px', textAlign: 'center' }}>
         <span
           style={{
             textTransform: 'uppercase',
             fontSize: '12px',
             fontWeight: 600,
-            color: '#B25032',
+            color: '#C4826E',
             letterSpacing: '0.12em',
             marginBottom: '16px',
             display: 'block',
@@ -69,12 +70,13 @@ export function Reviews() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#1A1F2B',
+            color: '#F7F5F2',
             marginBottom: '24px',
           }}
         >
           Loved by Readers Worldwide
         </h2>
+      </div>
       </div>
 
       {/* Scrolling container */}
@@ -101,10 +103,9 @@ export function Reviews() {
                 width: '380px',
                 flexShrink: 0,
                 padding: '32px',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: '#212D27',
                 borderRadius: '12px',
-                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.05)',
-                border: '1px solid #E0D9D0',
+                border: '1px solid rgba(255,255,255,0.08)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '16px',
@@ -115,7 +116,7 @@ export function Reviews() {
                 {Array(review.rating)
                   .fill(null)
                   .map((_, i) => (
-                    <span key={i} style={{ fontSize: '16px' }}>
+                    <span key={i} style={{ fontSize: '16px', color: '#D4A574' }}>
                       ★
                     </span>
                   ))}
@@ -126,7 +127,7 @@ export function Reviews() {
                 style={{
                   fontSize: '16px',
                   lineHeight: 1.7,
-                  color: '#666',
+                  color: '#9CA3AF',
                   margin: 0,
                   flex: 1,
                 }}
@@ -141,13 +142,13 @@ export function Reviews() {
                     width: '40px',
                     height: '40px',
                     borderRadius: '50%',
-                    backgroundColor: '#F0E8E0',
+                    backgroundColor: 'rgba(178,80,50,0.15)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: '#B25032',
+                    color: '#C4826E',
                   }}
                 >
                   {review.name[0]}
@@ -156,7 +157,7 @@ export function Reviews() {
                   <div
                     style={{
                       fontWeight: 600,
-                      color: '#1A1F2B',
+                      color: '#F7F5F2',
                       fontSize: '16px',
                     }}
                   >
@@ -165,7 +166,7 @@ export function Reviews() {
                   <div
                     style={{
                       fontSize: '14px',
-                      color: '#999',
+                      color: '#6B7280',
                     }}
                   >
                     {review.role}
@@ -183,10 +184,9 @@ export function Reviews() {
                 width: '380px',
                 flexShrink: 0,
                 padding: '32px',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: '#212D27',
                 borderRadius: '12px',
-                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.05)',
-                border: '1px solid #E0D9D0',
+                border: '1px solid rgba(255,255,255,0.08)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '16px',
@@ -197,7 +197,7 @@ export function Reviews() {
                 {Array(review.rating)
                   .fill(null)
                   .map((_, i) => (
-                    <span key={i} style={{ fontSize: '16px' }}>
+                    <span key={i} style={{ fontSize: '16px', color: '#D4A574' }}>
                       ★
                     </span>
                   ))}
@@ -208,7 +208,7 @@ export function Reviews() {
                 style={{
                   fontSize: '16px',
                   lineHeight: 1.7,
-                  color: '#666',
+                  color: '#9CA3AF',
                   margin: 0,
                   flex: 1,
                 }}
@@ -223,13 +223,13 @@ export function Reviews() {
                     width: '40px',
                     height: '40px',
                     borderRadius: '50%',
-                    backgroundColor: '#F0E8E0',
+                    backgroundColor: 'rgba(178,80,50,0.15)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '14px',
                     fontWeight: 600,
-                    color: '#B25032',
+                    color: '#C4826E',
                   }}
                 >
                   {review.name[0]}
@@ -238,7 +238,7 @@ export function Reviews() {
                   <div
                     style={{
                       fontWeight: 600,
-                      color: '#1A1F2B',
+                      color: '#F7F5F2',
                       fontSize: '16px',
                     }}
                   >
@@ -247,7 +247,7 @@ export function Reviews() {
                   <div
                     style={{
                       fontSize: '14px',
-                      color: '#999',
+                      color: '#6B7280',
                     }}
                   >
                     {review.role}
@@ -268,10 +268,10 @@ export function Reviews() {
             bottom: 0,
             pointerEvents: 'none',
             background: `linear-gradient(to right,
-              #F7F5F2 0%,
+              #1A2420 0%,
               transparent 100px,
               transparent calc(100% - 100px),
-              #F7F5F2 100%)`,
+              #1A2420 100%)`,
           }}
         />
       </div>

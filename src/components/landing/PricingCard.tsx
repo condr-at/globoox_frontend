@@ -93,7 +93,7 @@ export function PricingCard({
           padding: '14px',
           borderRadius: '8px',
           border: '1px solid #DED9D2',
-          color: '#1A1F2B',
+          color: '#1A2420',
           textDecoration: 'none',
           fontWeight: 500,
           transition: 'all 0.2s ease',
@@ -133,7 +133,7 @@ export function PricingCard({
           fontSize: '24px',
           marginBottom: '8px',
           fontWeight: 400,
-          color: '#1A1F2B',
+          color: '#1A2420',
         }}
       >
         {name}
@@ -145,7 +145,7 @@ export function PricingCard({
             fontSize: '20px',
             verticalAlign: 'super',
             marginRight: '2px',
-            color: '#1A1F2B',
+            color: '#1A2420',
           }}
         >
           $
@@ -155,7 +155,7 @@ export function PricingCard({
             fontSize: '42px',
             fontWeight: 500,
             fontFamily: "'Inter', sans-serif",
-            color: '#1A1F2B',
+            color: '#1A2420',
           }}
         >
           {price}

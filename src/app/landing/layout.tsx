@@ -19,9 +19,7 @@ export default function LandingLayout({ children }: { children: ReactNode }) {
         <style dangerouslySetInnerHTML={{ __html: landingCss }} />
       </head>
       <body>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   );
