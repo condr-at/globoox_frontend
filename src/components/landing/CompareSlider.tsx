@@ -83,7 +83,7 @@ export function CompareSlider() {
             flexDirection: 'column',
             fontFamily: "'Lora', serif",
             background: '#fcfcfc',
-            color: '#1A2420',
+            color: '#2C3B2D',
           }}
         >
           <div style={{ ...readerHeader, color: '#999' }}>
@@ -118,18 +118,18 @@ export function CompareSlider() {
             flexDirection: 'column',
             fontFamily: "'Lora', serif",
             background: '#fffbf9',
-            color: '#B25032',
+            color: '#C05A3A',
             clipPath: `inset(0 ${100 - position}% 0 0)`,
           }}
         >
-          <div style={{ ...readerHeader, color: '#C4856F', borderBottomColor: 'rgba(178,80,50,0.1)' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C4856F" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+          <div style={{ ...readerHeader, color: '#E8B89A', borderBottomColor: 'rgba(178,80,50,0.1)' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8B89A" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
             <span>Sapiens · Chapter 1</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C4856F" strokeWidth="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E8B89A" strokeWidth="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
           </div>
           <div style={{ flex: 1, overflow: 'hidden', padding: '28px 32px' }}>
             <div style={{ maxWidth: '480px', margin: '0 auto' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 400, marginBottom: '16px', fontFamily: "'Lora', serif", color: '#B25032' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 400, marginBottom: '16px', fontFamily: "'Lora', serif", color: '#C05A3A' }}>
                 The Cognitive Revolution
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '14px' }}>
@@ -156,7 +156,7 @@ export function CompareSlider() {
             padding: '4px 10px',
             borderRadius: '4px',
             background: '#eee',
-            color: '#666',
+            color: '#7A8C7B',
             zIndex: 5,
           }}
         >
@@ -174,7 +174,7 @@ export function CompareSlider() {
             padding: '4px 10px',
             borderRadius: '4px',
             background: '#fdeee9',
-            color: '#B25032',
+            color: '#C05A3A',
             zIndex: 5,
           }}
         >
@@ -188,7 +188,7 @@ export function CompareSlider() {
             left: `${position}%`,
             width: '1px',
             height: '100%',
-            background: '#B25032',
+            background: '#C05A3A',
             transform: 'translateX(-50%)',
             zIndex: 3,
           }}
@@ -203,7 +203,7 @@ export function CompareSlider() {
             width: '36px',
             height: '36px',
             background: 'white',
-            border: '1px solid #B25032',
+            border: '1px solid #C05A3A',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -212,7 +212,7 @@ export function CompareSlider() {
             userSelect: 'none',
           }}
         >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#B25032" strokeWidth="2.5">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#C05A3A" strokeWidth="2.5">
             <path d="M8 9l-4 3 4 3M16 9l4 3-4 3" />
           </svg>
         </div>

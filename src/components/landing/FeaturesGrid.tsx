@@ -10,7 +10,7 @@ export function FeaturesGrid() {
             textTransform: 'uppercase',
             fontSize: '12px',
             fontWeight: 600,
-            color: '#B25032',
+            color: '#C05A3A',
             letterSpacing: '0.12em',
             marginBottom: '16px',
             display: 'block',
@@ -24,7 +24,7 @@ export function FeaturesGrid() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#1A2420',
+            color: '#2C3B2D',
             marginBottom: '24px',
           }}
         >
@@ -64,12 +64,12 @@ export function FeaturesGrid() {
                 letterSpacing: '-0.01em',
                 fontSize: '32px',
                 marginBottom: '16px',
-                color: '#1A2420',
+                color: '#2C3B2D',
               }}
             >
               Seamless by design.
             </h2>
-            <ol style={{ margin: '24px 0 0 0', color: '#5E6771' }}>
+            <ol style={{ margin: '24px 0 0 0', color: '#7A8C7B' }}>
               <li style={{ marginBottom: '12px', paddingLeft: '0' }}>Upload your manuscript</li>
               <li style={{ marginBottom: '12px', paddingLeft: '0' }}>Select your destination language</li>
               <li style={{ marginBottom: '12px', paddingLeft: '0' }}>Begin your literary journey</li>
@@ -82,7 +82,7 @@ export function FeaturesGrid() {
           className="fg-card fg-card-lg"
           style={{
             gridColumn: 'span 7',
-            background: '#1A2420',
+            background: '#2C3B2D',
             borderRadius: '12px',
             padding: '48px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
@@ -106,7 +106,7 @@ export function FeaturesGrid() {
             >
               Thought-for-thought translation.
             </h2>
-            <p style={{ color: 'rgba(247, 245, 242, 0.7)', fontSize: '17px' }}>
+            <p style={{ color: 'rgba(244, 240, 232, 0.7)', fontSize: '17px' }}>
               We move beyond literal substitution. Our engine preserves the author&apos;s voice, cultural idioms, and the
               emotional resonance of every passage.
             </p>
@@ -137,12 +137,12 @@ export function FeaturesGrid() {
                 letterSpacing: '-0.01em',
                 fontSize: '32px',
                 marginBottom: '16px',
-                color: '#1A2420',
+                color: '#2C3B2D',
               }}
             >
               Your library, kept private.
             </h2>
-            <p style={{ color: '#5E6771', fontSize: '17px' }}>
+            <p style={{ color: '#7A8C7B', fontSize: '17px' }}>
               We respect the sanctity of your personal collection. Files are processed securely, encrypted at rest, and
               never stored beyond the translation window.
             </p>
@@ -163,7 +163,7 @@ export function FeaturesGrid() {
             flexDirection: 'column',
             justifyContent: 'space-between',
             textAlign: 'center',
-            borderColor: '#B25032',
+            borderColor: '#C05A3A',
           }}
         >
           <div>
@@ -175,7 +175,7 @@ export function FeaturesGrid() {
                 letterSpacing: '-0.01em',
                 fontSize: '32px',
                 marginBottom: '16px',
-                color: '#1A2420',
+                color: '#2C3B2D',
               }}
             >
               Simple pricing.
@@ -186,13 +186,13 @@ export function FeaturesGrid() {
                 fontSize: '56px',
                 fontWeight: '700',
                 margin: '16px 0',
-                color: '#1A2420',
+                color: '#2C3B2D',
               }}
             >
               $4.99
-              <span style={{ fontSize: '18px', color: '#5E6771', fontWeight: '400' }}> / month</span>
+              <span style={{ fontSize: '18px', color: '#7A8C7B', fontWeight: '400' }}> / month</span>
             </div>
-            <p style={{ fontSize: '15px', color: '#5E6771' }}>
+            <p style={{ fontSize: '15px', color: '#7A8C7B' }}>
               Includes unlimited translations and cloud sync across all your reading devices.
             </p>
           </div>

@@ -18,21 +18,38 @@ html {
 }
 
 :root {
-  --bg-light: #F7F5F2;
-  --bg-dark: #1A2420;
-  --bg-dark-card: #212D27;
+  /* Brand: Forest & Terracotta */
+  --ink:           #2C3B2D;
+  --ink-80:        #3D5040;
+  --ink-50:        rgba(44,59,45,.50);
+  --ink-10:        rgba(44,59,45,.07);
+  --primary:       #C05A3A;
+  --primary-hover:  #A34D32;
+  --primary-10:    rgba(192,90,58,.08);
+  --primary-20:    rgba(192,90,58,.15);
+  --primary-30:    rgba(192,90,58,.25);
+  --parchment:     #F4F0E8;
+  --parchment-dark:#E6E0D6;
+  --ash:           #7A8C7B;
+  --dusk:          #E8B89A;
+  --mist:          #B8C4B9;
+
+  /* Semantic aliases */
+  --bg-light: var(--parchment);
+  --bg-dark: var(--ink);
+  --bg-dark-card: var(--ink-80);
   --bg-dark-border: rgba(255,255,255,0.08);
-  --accent: #B25032;
-  --accent-hover: #963F26;
-  --accent-muted: #8B3D26;
-  --accent-on-dark: #C4826E;
-  --accent-glow: rgba(178,80,50,0.15);
-  --stars: #D4A574;
-  --text-heading: #1A2420;
-  --text-body: #5E6771;
-  --text-dark-heading: #F7F5F2;
-  --text-dark-body: #F7F5F2;
-  --text-dark-muted: #6B7280;
+  --accent: var(--primary);
+  --accent-hover: var(--primary-hover);
+  --accent-muted: var(--primary-hover);
+  --accent-on-dark: var(--dusk);
+  --accent-glow: var(--primary-20);
+  --stars: var(--dusk);
+  --text-heading: var(--ink);
+  --text-body: var(--ash);
+  --text-dark-heading: var(--parchment);
+  --text-dark-body: var(--parchment);
+  --text-dark-muted: var(--ink-50);
 }
 
 body {
@@ -51,7 +68,7 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Lora', serif;
   font-weight: 400;
   letter-spacing: -0.01em;
-  color: #1A2420;
+  color: var(--ink);
   margin: 0;
   padding: 0;
 }
@@ -79,7 +96,7 @@ p {
 }
 
 a {
-  color: #B25032;
+  color: var(--primary);
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -108,13 +125,13 @@ a:hover {
 }
 
 .btn-primary-hover:hover {
-  background: #963F26 !important;
+  background: var(--primary-hover) !important;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(178, 80, 50, 0.3) !important;
 }
 
 .footer-link:hover {
-  color: #B25032;
+  color: var(--primary);
 }
 
 /* ============================================
@@ -230,7 +247,7 @@ td, th {
 }
 
 ::-webkit-scrollbar-track {
-  background: #F7F5F2;
+  background: var(--parchment);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -239,12 +256,12 @@ td, th {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #963F26;
+  background: var(--primary-hover);
 }
 
 /* Firefox */
 * {
-  scrollbar-color: #B25032 #F7F5F2;
+  scrollbar-color: #B25032 var(--parchment);
   scrollbar-width: thin;
 }
 

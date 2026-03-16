@@ -4,8 +4,8 @@ export function Footer() {
       style={{
         padding: '32px 0',
         textAlign: 'center',
-        background: '#1A2420',
-        color: '#F7F5F2',
+        background: '#2C3B2D',
+        color: '#F4F0E8',
         fontSize: '14px',
       }}
     >
@@ -23,7 +23,7 @@ export function Footer() {
         <a
           href="#"
           style={{
-            color: '#F7F5F2',
+            color: '#F4F0E8',
             textDecoration: 'none',
             fontWeight: 500,
             transition: 'color 0.2s ease',
@@ -35,7 +35,7 @@ export function Footer() {
         <a
           href="#"
           style={{
-            color: '#F7F5F2',
+            color: '#F4F0E8',
             textDecoration: 'none',
             fontWeight: 500,
             transition: 'color 0.2s ease',
@@ -47,7 +47,7 @@ export function Footer() {
         <a
           href="#"
           style={{
-            color: '#F7F5F2',
+            color: '#F4F0E8',
             textDecoration: 'none',
             fontWeight: 500,
             transition: 'color 0.2s ease',

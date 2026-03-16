@@ -19,7 +19,7 @@ export function Pricing() {
           letter-spacing: -0.01em;
           font-size: 48px;
           margin-bottom: 20px;
-          color: #1A2420;
+          color: #2C3B2D;
         }
         @media (max-width: 639px) {
           .pricing-section {
@@ -43,7 +43,7 @@ export function Pricing() {
           <p
             style={{
               fontSize: '18px',
-              color: '#5E6771',
+              color: '#7A8C7B',
               maxWidth: '600px',
               margin: '0 auto',
             }}

@@ -49,7 +49,7 @@ const reviews: Review[] = [
 export function Reviews() {
 
   return (
-    <section className="reviews-section" style={{ padding: '120px 0', background: '#1A2420' }}>
+    <section className="reviews-section" style={{ padding: '120px 0', background: '#2C3B2D' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '60px', textAlign: 'center' }}>
         <span
@@ -71,7 +71,7 @@ export function Reviews() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#F7F5F2',
+            color: '#F4F0E8',
             marginBottom: '24px',
           }}
         >
@@ -130,7 +130,7 @@ export function Reviews() {
                 style={{
                   fontSize: '16px',
                   lineHeight: 1.7,
-                  color: '#F7F5F2',
+                  color: '#F4F0E8',
                   margin: 0,
                   flex: 1,
                 }}
@@ -160,7 +160,7 @@ export function Reviews() {
                   <div
                     style={{
                       fontWeight: 600,
-                      color: '#F7F5F2',
+                      color: '#F4F0E8',
                       fontSize: '16px',
                     }}
                   >
@@ -212,7 +212,7 @@ export function Reviews() {
                 style={{
                   fontSize: '16px',
                   lineHeight: 1.7,
-                  color: '#F7F5F2',
+                  color: '#F4F0E8',
                   margin: 0,
                   flex: 1,
                 }}
@@ -242,7 +242,7 @@ export function Reviews() {
                   <div
                     style={{
                       fontWeight: 600,
-                      color: '#F7F5F2',
+                      color: '#F4F0E8',
                       fontSize: '16px',
                     }}
                   >
@@ -273,10 +273,10 @@ export function Reviews() {
             bottom: 0,
             pointerEvents: 'none',
             background: `linear-gradient(to right,
-              #1A2420 0%,
+              #2C3B2D 0%,
               transparent 100px,
               transparent calc(100% - 100px),
-              #1A2420 100%)`,
+              #2C3B2D 100%)`,
           }}
         />
       </div>
@@ -308,10 +308,10 @@ export function Reviews() {
           }
           .reviews-gradient {
             background: linear-gradient(to right,
-              #1A2420 0%,
+              #2C3B2D 0%,
               transparent 60px,
               transparent calc(100% - 60px),
-              #1A2420 100%) !important;
+              #2C3B2D 100%) !important;
           }
         }
 
@@ -333,10 +333,10 @@ export function Reviews() {
           }
           .reviews-gradient {
             background: linear-gradient(to right,
-              #1A2420 0%,
+              #2C3B2D 0%,
               transparent 40px,
               transparent calc(100% - 40px),
-              #1A2420 100%) !important;
+              #2C3B2D 100%) !important;
           }
         }
       `}</style>

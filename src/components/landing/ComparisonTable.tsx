@@ -31,7 +31,7 @@ export function ComparisonTable() {
           font-size: 18px;
           border-bottom: 1px solid rgba(0,0,0,0.05);
           font-weight: 400;
-          color: #1A2420;
+          color: #2C3B2D;
           width: 20%;
         }
         .comparison-table th:first-child {
@@ -39,17 +39,17 @@ export function ComparisonTable() {
           width: 40%;
         }
         .comparison-table th.comparison-table__scholar {
-          color: #B25032;
+          color: #C05A3A;
         }
         .comparison-table td {
           padding: 20px 32px;
           font-size: 15px;
-          color: #5E6771;
+          color: #7A8C7B;
           width: 20%;
           text-align: center;
         }
         .comparison-table td:first-child {
-          color: #1A2420;
+          color: #2C3B2D;
           font-weight: 500;
           width: 40%;
           text-align: left;

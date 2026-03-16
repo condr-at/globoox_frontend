@@ -51,7 +51,7 @@ export function UseCases() {
   }, []);
 
   return (
-    <section className="usecases-section" style={{ padding: '120px 0', background: '#1A2420' }}>
+    <section className="usecases-section" style={{ padding: '120px 0', background: '#2C3B2D' }}>
       <div className="usecases-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px', textAlign: 'center' }}>
         <span
@@ -59,7 +59,7 @@ export function UseCases() {
             textTransform: 'uppercase',
             fontSize: '12px',
             fontWeight: 600,
-            color: '#C4826E',
+            color: '#E8B89A',
             letterSpacing: '0.12em',
             marginBottom: '16px',
             display: 'block',
@@ -73,7 +73,7 @@ export function UseCases() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#F7F5F2',
+            color: '#F4F0E8',
             marginBottom: '24px',
           }}
         >
@@ -82,7 +82,7 @@ export function UseCases() {
         <p
           style={{
             fontSize: '18px',
-            color: '#F7F5F2',
+            color: '#F4F0E8',
             maxWidth: '600px',
             margin: '0 auto',
             lineHeight: 1.6,
@@ -123,7 +123,7 @@ export function UseCases() {
                   fontFamily: 'Lora, serif',
                   fontSize: '24px',
                   fontWeight: 400,
-                  color: '#F7F5F2',
+                  color: '#F4F0E8',
                   marginBottom: '8px',
                 }}
               >
@@ -132,7 +132,7 @@ export function UseCases() {
               <p
                 style={{
                   fontSize: '14px',
-                  color: '#C4826E',
+                  color: '#E8B89A',
                   fontWeight: 600,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
@@ -148,7 +148,7 @@ export function UseCases() {
               style={{
                 fontSize: '16px',
                 lineHeight: 1.6,
-                color: '#F7F5F2',
+                color: '#F4F0E8',
                 margin: 0,
               }}
             >
@@ -163,12 +163,12 @@ export function UseCases() {
                     style={{
                       width: '6px',
                       height: '6px',
-                      backgroundColor: '#C4826E',
+                      backgroundColor: '#E8B89A',
                       borderRadius: '50%',
                       flexShrink: 0,
                     }}
                   />
-                  <span style={{ fontSize: '14px', color: '#F7F5F2' }}>{benefit}</span>
+                  <span style={{ fontSize: '14px', color: '#F4F0E8' }}>{benefit}</span>
                 </div>
               ))}
             </div>

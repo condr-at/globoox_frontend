@@ -10,7 +10,7 @@ export function QualityAssuranceV2() {
             textTransform: 'uppercase',
             fontSize: '12px',
             fontWeight: 600,
-            color: '#B25032',
+            color: '#C05A3A',
             letterSpacing: '0.12em',
             marginBottom: '16px',
             display: 'block',
@@ -24,7 +24,7 @@ export function QualityAssuranceV2() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#1A2420',
+            color: '#2C3B2D',
             marginBottom: '24px',
             margin: '0 auto 24px',
             maxWidth: '600px',
@@ -35,7 +35,7 @@ export function QualityAssuranceV2() {
         <p
           style={{
             fontSize: '18px',
-            color: '#666',
+            color: '#7A8C7B',
             maxWidth: '600px',
             lineHeight: 1.6,
             margin: '0 auto',
@@ -64,7 +64,7 @@ export function QualityAssuranceV2() {
               style={{
                 width: '100%',
                 height: '100%',
-                background: '#1A2420',
+                background: '#2C3B2D',
                 borderRadius: '10px',
                 overflow: 'hidden',
                 position: 'relative',
@@ -106,7 +106,7 @@ export function QualityAssuranceV2() {
               style={{
                 width: '100%',
                 height: '100%',
-                background: '#1A2420',
+                background: '#2C3B2D',
                 borderRadius: '14px',
                 overflow: 'hidden',
                 position: 'relative',
@@ -138,7 +138,7 @@ export function QualityAssuranceV2() {
               style={{
                 width: '100%',
                 height: '100%',
-                background: '#1A2420',
+                background: '#2C3B2D',
                 borderRadius: '32px',
                 overflow: 'hidden',
                 position: 'relative',
