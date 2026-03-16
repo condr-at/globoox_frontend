@@ -23,11 +23,11 @@ export function ComparisonSection() {
           letter-spacing: -0.01em;
           font-size: 48px;
           margin-bottom: 20px;
-          color: #2C3B2D;
+          color: var(--ink);
         }
         .comparison-section__subtitle {
           font-size: 18px;
-          color: #7A8C7B;
+          color: var(--ash);
           max-width: 600px;
           margin: 0 auto;
         }

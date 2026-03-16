@@ -26,7 +26,7 @@ function CheckIcon() {
       style={{
         marginRight: '12px',
         flexShrink: 0,
-        color: '#C05A3A',
+        color: 'var(--primary)',
       }}
     >
       <polyline points="20 6 9 17 4 12" />
@@ -50,8 +50,8 @@ export function PricingCard({
         background: '#FFFFFF',
         borderRadius: '16px',
         padding: '48px 32px',
-        boxShadow: '0 12px 40px rgba(192, 90, 58, 0.08)',
-        border: '2px solid #C05A3A',
+        boxShadow: '0 12px 40px rgba(var(--primary-rgb, 192, 90, 58), 0.08)',
+        border: '2px solid var(--primary)',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
@@ -75,7 +75,7 @@ export function PricingCard({
       ? {
           display: 'block',
           textAlign: 'center',
-          background: hovered ? '#A34D32' : '#C05A3A',
+          background: hovered ? 'var(--primary-hover)' : 'var(--primary)',
           color: 'white',
           padding: '16px',
           borderRadius: '8px',
@@ -93,7 +93,7 @@ export function PricingCard({
           padding: '14px',
           borderRadius: '8px',
           border: '1px solid #DED9D2',
-          color: '#2C3B2D',
+          color: 'var(--ink)',
           textDecoration: 'none',
           fontWeight: 500,
           transition: 'all 0.2s ease',
@@ -101,7 +101,7 @@ export function PricingCard({
           background: hovered ? '#FDFCFB' : 'transparent',
           fontSize: '16px',
           width: '100%',
-          borderColor: hovered ? '#7A8C7B' : '#DED9D2',
+          borderColor: hovered ? 'var(--ash)' : '#DED9D2',
         };
 
   return (
@@ -130,7 +130,7 @@ export function PricingCard({
             top: '-14px',
             left: '50%',
             transform: 'translateX(-50%)',
-            background: '#C05A3A',
+            background: 'var(--primary)',
             color: 'white',
             padding: '4px 16px',
             borderRadius: '20px',
@@ -150,7 +150,7 @@ export function PricingCard({
           fontSize: '24px',
           marginBottom: '8px',
           fontWeight: 400,
-          color: '#2C3B2D',
+          color: 'var(--ink)',
         }}
       >
         {name}
@@ -162,7 +162,7 @@ export function PricingCard({
             fontSize: '20px',
             verticalAlign: 'super',
             marginRight: '2px',
-            color: '#2C3B2D',
+            color: 'var(--ink)',
           }}
         >
           $
@@ -173,12 +173,12 @@ export function PricingCard({
             fontSize: '42px',
             fontWeight: 500,
             fontFamily: "'Inter', sans-serif",
-            color: '#2C3B2D',
+            color: 'var(--ink)',
           }}
         >
           {price}
         </span>
-        <span style={{ color: '#7A8C7B', fontSize: '16px' }}>{period}</span>
+        <span style={{ color: 'var(--ash)', fontSize: '16px' }}>{period}</span>
       </div>
 
       <ul
@@ -194,7 +194,7 @@ export function PricingCard({
             key={idx}
             style={{
               fontSize: '15px',
-              color: '#7A8C7B',
+              color: 'var(--ash)',
               marginBottom: '16px',
               display: 'flex',
               alignItems: 'center',

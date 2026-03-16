@@ -46,9 +46,10 @@ function BookSpine({ title, height, bg, textColor, className }: { title: string;
           textOrientation: 'mixed',
           fontFamily: "'Lora', serif",
           fontSize: '18px',
-          color: textColor || '#7A8C7B',
+          color: textColor || 'var(--ink-80)',
+          fontWeight: textColor ? 400 : 500,
           margin: '0 auto',
-          opacity: 0.8,
+          opacity: textColor ? 0.8 : 1,
           transform: 'rotate(180deg)',
           position: 'relative',
           zIndex: 2,
@@ -66,7 +67,7 @@ function FloatingScript({ children, style }: { children: React.ReactNode; style:
       style={{
         position: 'absolute',
         fontFamily: "'Lora', serif",
-        color: '#C05A3A',
+        color: 'var(--primary)',
         opacity: 0.15,
         fontSize: '31px',
         pointerEvents: 'none',
@@ -118,9 +119,11 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
       .spine-hover span {
         font-size: 14px !important;
       }
-      .spine-h-416 { height: 291px !important; }
-      .spine-h-364 { height: 255px !important; }
-      .spine-h-442 { height: 309px !important; }
+      .spine-long-title span { font-size: 12px !important; }
+      .spine-longest-title span { font-size: 10.5px !important; }
+      .spine-h-416 { height: 233px !important; }
+      .spine-h-364 { height: 204px !important; }
+      .spine-h-442 { height: 247px !important; }
       /* Centered variant */
       .hero-centered {
         padding: 40px 20px !important;
@@ -160,6 +163,11 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
         height: 400px !important;
         width: 100% !important;
       }
+      .spine-h-416 { height: 333px !important; }
+      .spine-h-364 { height: 291px !important; }
+      .spine-h-442 { height: 354px !important; }
+      .spine-long-title span { font-size: 16px !important; }
+      .spine-longest-title span { font-size: 14px !important; }
       /* Centered variant */
       .hero-centered {
         padding: 60px 32px !important;
@@ -209,7 +217,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
                 marginBottom: '28px',
                 fontWeight: 500,
                 fontFamily: "'Lora', serif",
-                color: '#2C3B2D',
+                color: 'var(--ink)',
               }}
             >
               The world&apos;s library, in your native language.
@@ -218,7 +226,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
               className="hero-split-p"
               style={{
                 fontSize: '20px',
-                color: '#7A8C7B',
+                color: 'var(--ash)',
                 marginBottom: '44px',
                 maxWidth: '520px',
               }}
@@ -232,7 +240,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
               onClick={() => {}}
               style={{
                 display: 'inline-block',
-                background: isHovered ? '#A34D32' : '#C05A3A',
+                background: isHovered ? 'var(--primary-hover)' : 'var(--primary)',
                 color: 'white',
                 padding: '18px 40px',
                 borderRadius: '8px',
@@ -241,7 +249,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
                 transition: 'all 0.2s ease',
                 border: 'none',
                 cursor: 'pointer',
-                boxShadow: `0 4px 14px ${isHovered ? 'rgba(163, 77, 50, 0.25)' : 'rgba(192, 90, 58, 0.25)'}`,
+                boxShadow: `0 4px 14px ${isHovered ? 'rgba(163, 77, 50, 0.25)' : 'rgba(var(--primary-rgb, 192, 90, 58), 0.25)'}`,
                 fontFamily: "'Inter', sans-serif",
               }}
             >
@@ -266,7 +274,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
                 position: 'relative',
                 width: '130%',
                 height: '650px',
-                background: 'rgba(192, 90, 58, 0.03)',
+                background: 'rgba(var(--primary-rgb, 192, 90, 58), 0.03)',
                 borderRadius: '260px 52px 260px 52px',
                 display: 'flex',
                 alignItems: 'center',
@@ -290,11 +298,11 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
               </FloatingScript>
 
               <div style={{ display: 'flex', gap: '16px', transform: 'rotate(-5deg)', alignItems: 'flex-end' }}>
-                <BookSpine title="How to Build a Bridge with Duct Tape" height={416} bg="#E8E4DF" className="spine-h-416" />
-                <BookSpine title="The Coffee Equation" height={364} bg="#DED9D2" className="spine-h-364" />
-                <BookSpine title="Globoox Engine" height={442} bg="#2C3B2D" textColor="#E8A996" className="spine-h-442" />
-                <BookSpine title="Why Dogs Tilt Their Heads" height={364} bg="#DED9D2" className="spine-h-364" />
-                <BookSpine title="The 4 AM Airport Rule" height={416} bg="#E8E4DF" className="spine-h-416" />
+                <BookSpine title="How to Build a Bridge with Duct Tape" height={416} bg="var(--parchment-light)" className="spine-h-416 spine-long-title spine-longest-title" />
+                <BookSpine title="The Coffee Equation" height={364} bg="var(--parchment-light)" className="spine-h-364" />
+                <BookSpine title="Globoox Engine" height={442} bg="var(--ink)" textColor="#E8A996" className="spine-h-442" />
+                <BookSpine title="Why Dogs Tilt Their Heads" height={364} bg="var(--parchment-light)" className="spine-h-364 spine-long-title" />
+                <BookSpine title="The 4 AM Airport Rule" height={416} bg="var(--parchment-light)" className="spine-h-416" />
               </div>
             </div>
           </div>
@@ -332,7 +340,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
             lineHeight: 1.1,
             marginBottom: '24px',
             maxWidth: '900px',
-            color: '#2C3B2D',
+            color: 'var(--ink)',
           }}
         >
           The world&apos;s library, in your native language.
@@ -341,7 +349,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
           className="hero-centered-p"
           style={{
             fontSize: '20px',
-            color: '#7A8C7B',
+            color: 'var(--ash)',
             marginBottom: '40px',
             maxWidth: '600px',
           }}
@@ -355,7 +363,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
           onClick={() => {}}
           style={{
             display: 'inline-block',
-            background: isHovered ? '#A34D32' : '#C05A3A',
+            background: isHovered ? 'var(--primary-hover)' : 'var(--primary)',
             color: 'white',
             padding: '16px 32px',
             borderRadius: '8px',

@@ -46,7 +46,7 @@ export function FAQ() {
             textTransform: 'uppercase',
             fontSize: '12px',
             fontWeight: 600,
-            color: '#C05A3A',
+            color: 'var(--primary)',
             letterSpacing: '0.12em',
             marginBottom: '16px',
             display: 'block',
@@ -60,7 +60,7 @@ export function FAQ() {
             fontFamily: 'Lora, serif',
             fontSize: '48px',
             lineHeight: 1.1,
-            color: '#2C3B2D',
+            color: 'var(--ink)',
             marginBottom: '24px',
           }}
         >
@@ -69,7 +69,7 @@ export function FAQ() {
         <p
           style={{
             fontSize: '18px',
-            color: '#7A8C7B',
+            color: 'var(--ash)',
             maxWidth: '600px',
             margin: '0 auto',
             lineHeight: 1.6,
@@ -102,16 +102,16 @@ export function FAQ() {
                 padding: 0,
                 fontSize: '18px',
                 fontWeight: 600,
-                color: '#2C3B2D',
+                color: 'var(--ink)',
                 fontFamily: 'Inter, sans-serif',
                 textAlign: 'left',
                 transition: 'color 0.2s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#C05A3A';
+                e.currentTarget.style.color = 'var(--primary)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#2C3B2D';
+                e.currentTarget.style.color = 'var(--ink)';
               }}
             >
               {item.question}
@@ -139,7 +139,7 @@ export function FAQ() {
                   marginTop: '16px',
                   fontSize: '16px',
                   lineHeight: 1.7,
-                  color: '#7A8C7B',
+                  color: 'var(--ash)',
                   animation: 'slideDown 0.3s ease',
                 }}
               >
