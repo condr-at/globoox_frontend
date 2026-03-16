@@ -66,10 +66,10 @@ export function FeaturesGrid() {
             >
               Seamless by design.
             </h2>
-            <ol style={{ margin: '24px 0 0 20px', color: '#5E6771' }}>
-              <li style={{ marginBottom: '12px', paddingLeft: '8px' }}>Upload your manuscript</li>
-              <li style={{ marginBottom: '12px', paddingLeft: '8px' }}>Select your destination language</li>
-              <li style={{ marginBottom: '12px', paddingLeft: '8px' }}>Begin your literary journey</li>
+            <ol style={{ margin: '24px 0 0 0', color: '#5E6771' }}>
+              <li style={{ marginBottom: '12px', paddingLeft: '0' }}>Upload your manuscript</li>
+              <li style={{ marginBottom: '12px', paddingLeft: '0' }}>Select your destination language</li>
+              <li style={{ marginBottom: '12px', paddingLeft: '0' }}>Begin your literary journey</li>
             </ol>
           </div>
         </div>
@@ -89,7 +89,7 @@ export function FeaturesGrid() {
           }}
         >
           <div>
-            <SectionLabel style={{ color: '#D48B77' }}>Advanced Engine</SectionLabel>
+            <SectionLabel style={{ color: '#C4826E' }}>Advanced Engine</SectionLabel>
             <h2
               style={{
                 fontFamily: "'Lora', serif",
@@ -102,7 +102,7 @@ export function FeaturesGrid() {
             >
               Thought-for-thought translation.
             </h2>
-            <p style={{ color: '#A0A9B5', fontSize: '17px' }}>
+            <p style={{ color: 'rgba(247, 245, 242, 0.7)', fontSize: '17px' }}>
               We move beyond literal substitution. Our engine preserves the author&apos;s voice, cultural idioms, and the
               emotional resonance of every passage.
             </p>

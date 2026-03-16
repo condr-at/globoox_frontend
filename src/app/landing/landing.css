@@ -31,7 +31,7 @@ html {
   --text-heading: #1A2420;
   --text-body: #5E6771;
   --text-dark-heading: #F7F5F2;
-  --text-dark-body: #9CA3AF;
+  --text-dark-body: #F7F5F2;
   --text-dark-muted: #6B7280;
 }
 
@@ -176,6 +176,10 @@ td, th {
    ============================================ */
 
 @media (max-width: 768px) {
+  .floating-script {
+    display: none !important;
+  }
+
   h1 {
     font-size: 40px;
   }

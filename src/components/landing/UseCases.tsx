@@ -81,7 +81,7 @@ export function UseCases() {
         <p
           style={{
             fontSize: '18px',
-            color: '#9CA3AF',
+            color: '#F7F5F2',
             maxWidth: '600px',
             margin: '0 auto',
             lineHeight: 1.6,
@@ -146,7 +146,7 @@ export function UseCases() {
               style={{
                 fontSize: '16px',
                 lineHeight: 1.6,
-                color: '#9CA3AF',
+                color: '#F7F5F2',
                 margin: 0,
               }}
             >
@@ -166,7 +166,7 @@ export function UseCases() {
                       flexShrink: 0,
                     }}
                   />
-                  <span style={{ fontSize: '14px', color: '#9CA3AF' }}>{benefit}</span>
+                  <span style={{ fontSize: '14px', color: '#F7F5F2' }}>{benefit}</span>
                 </div>
               ))}
             </div>

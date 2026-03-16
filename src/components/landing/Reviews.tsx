@@ -127,7 +127,7 @@ export function Reviews() {
                 style={{
                   fontSize: '16px',
                   lineHeight: 1.7,
-                  color: '#9CA3AF',
+                  color: '#F7F5F2',
                   margin: 0,
                   flex: 1,
                 }}
@@ -166,7 +166,7 @@ export function Reviews() {
                   <div
                     style={{
                       fontSize: '14px',
-                      color: '#6B7280',
+                      color: 'rgba(247, 245, 242, 0.5)',
                     }}
                   >
                     {review.role}
@@ -208,7 +208,7 @@ export function Reviews() {
                 style={{
                   fontSize: '16px',
                   lineHeight: 1.7,
-                  color: '#9CA3AF',
+                  color: '#F7F5F2',
                   margin: 0,
                   flex: 1,
                 }}
@@ -247,7 +247,7 @@ export function Reviews() {
                   <div
                     style={{
                       fontSize: '14px',
-                      color: '#6B7280',
+                      color: 'rgba(247, 245, 242, 0.5)',
                     }}
                   >
                     {review.role}
