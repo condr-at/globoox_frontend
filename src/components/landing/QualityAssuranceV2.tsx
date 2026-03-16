@@ -45,7 +45,8 @@ export function QualityAssuranceV2() {
       </div>
 
       <div style={{ marginTop: '60px', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ position: 'relative', width: '100%', maxWidth: '800px' }}>
+        {/* MacBook mockup — visible on lg+ (≥1024px) */}
+        <div className="device-macbook" style={{ position: 'relative', width: '100%', maxWidth: '800px' }}>
           {/* MacBook lid */}
           <div
             style={{
@@ -58,7 +59,6 @@ export function QualityAssuranceV2() {
               position: 'relative',
             }}
           >
-            {/* Screen */}
             <div
               style={{
                 width: '100%',
@@ -69,13 +69,8 @@ export function QualityAssuranceV2() {
                 position: 'relative',
               }}
             >
-              {/* CompareSlider stretched to fill screen */}
-              <div className="macbook-screen-slider" style={{ width: '100%', height: '100%' }}>
+              <div className="device-screen-slider" style={{ width: '100%', height: '100%' }}>
                 <CompareSlider />
-                <style>{`
-                  .macbook-screen-slider > div { margin-top: 0 !important; height: 100% !important; }
-                  .macbook-screen-slider > div > div { height: 100% !important; border-radius: 0 !important; border: none !important; }
-                `}</style>
               </div>
             </div>
           </div>
@@ -92,8 +87,106 @@ export function QualityAssuranceV2() {
             }}
           />
         </div>
+
+        {/* Tablet mockup — visible on md (≥640px and <1024px) */}
+        <div className="device-tablet" style={{ position: 'relative', width: '100%', maxWidth: '420px' }}>
+          <div
+            style={{
+              width: '100%',
+              aspectRatio: '3 / 4',
+              background: '#C8C4BC',
+              borderRadius: '24px',
+              padding: '3%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              position: 'relative',
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                background: '#1A2420',
+                borderRadius: '14px',
+                overflow: 'hidden',
+                position: 'relative',
+              }}
+            >
+              <div className="device-screen-slider" style={{ width: '100%', height: '100%' }}>
+                <CompareSlider />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tablet mockup end */}
+        {/* iPhone mockup — visible on <640px */}
+        <div className="device-iphone" style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
+          <div
+            style={{
+              width: '100%',
+              aspectRatio: '9 / 19.5',
+              background: '#1A1A1A',
+              borderRadius: '40px',
+              padding: '3%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+              position: 'relative',
+              border: '3px solid #333',
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                background: '#1A2420',
+                borderRadius: '32px',
+                overflow: 'hidden',
+                position: 'relative',
+              }}
+            >
+              {/* Dynamic Island */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '10px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '72px',
+                  height: '20px',
+                  background: '#000',
+                  borderRadius: '20px',
+                  zIndex: 10,
+                }}
+              />
+              <div className="device-screen-slider" style={{ width: '100%', height: '100%', paddingTop: '36px', background: '#fcfcfc' }}>
+                <CompareSlider />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       </div>
+
+      <style>{`
+        .device-screen-slider > div { margin-top: 0 !important; height: 100% !important; }
+        .device-screen-slider > div > div { height: 100% !important; border-radius: 0 !important; border: none !important; }
+
+        /* Default: show iPhone, hide others */
+        .device-macbook { display: none !important; }
+        .device-tablet { display: none !important; }
+        .device-iphone { display: block !important; }
+
+        /* ≥640px: show tablet */
+        @media (min-width: 640px) {
+          .device-iphone { display: none !important; }
+          .device-tablet { display: block !important; }
+        }
+
+        /* ≥1024px: show macbook */
+        @media (min-width: 1024px) {
+          .device-tablet { display: none !important; }
+          .device-macbook { display: block !important; }
+        }
+      `}</style>
     </section>
   );
 }
