@@ -38,8 +38,8 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section style={{ padding: '0 0 120px 0' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
+    <section className="faq-section" style={{ padding: '0 0 120px 0' }}>
+      <div className="faq-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px', textAlign: 'center' }}>
         <span
           style={{
@@ -55,6 +55,7 @@ export function FAQ() {
           Questions?
         </span>
         <h2
+          className="faq-heading"
           style={{
             fontFamily: 'Lora, serif',
             fontSize: '48px',
@@ -158,6 +159,17 @@ export function FAQ() {
           to {
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+        @media (max-width: 639px) {
+          .faq-section {
+            padding: 0 0 60px 0 !important;
+          }
+          .faq-heading {
+            font-size: 28px !important;
+          }
+          .faq-container {
+            padding: 0 20px !important;
           }
         }
       `}</style>

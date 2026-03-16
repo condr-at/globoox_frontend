@@ -9,9 +9,10 @@ export function Footer() {
         fontSize: '14px',
       }}
     >
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
+      <div className="footer-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <p>© 2026 Globoox Inc. Curating the world&apos;s wisdom.</p>
       <div
+        className="footer-links"
         style={{
           marginTop: '20px',
           display: 'flex',
@@ -57,6 +58,18 @@ export function Footer() {
         </a>
       </div>
       </div>
+
+      <style>{`
+        @media (max-width: 639px) {
+          .footer-container {
+            padding: 0 20px !important;
+          }
+          .footer-links {
+            flex-wrap: wrap !important;
+            gap: 16px !important;
+          }
+        }
+      `}</style>
     </footer>
   );
 }

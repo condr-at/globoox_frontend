@@ -2,8 +2,8 @@ import { CompareSlider } from './CompareSlider';
 
 export function QualityAssuranceV2() {
   return (
-    <section style={{ padding: '120px 0' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
+    <section className="qa-section" style={{ padding: '120px 0' }}>
+      <div className="qa-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px', textAlign: 'center' }}>
         <span
           style={{
@@ -19,6 +19,7 @@ export function QualityAssuranceV2() {
           Quality Assurance
         </span>
         <h2
+          className="qa-heading"
           style={{
             fontFamily: 'Lora, serif',
             fontSize: '48px',
@@ -185,6 +186,16 @@ export function QualityAssuranceV2() {
         @media (min-width: 1024px) {
           .device-tablet { display: none !important; }
           .device-macbook { display: block !important; }
+        }
+
+        /* Section-level responsive styles */
+        @media (max-width: 639px) {
+          .qa-section { padding: 60px 0 !important; }
+          .qa-container { padding: 0 20px !important; }
+          .qa-heading { font-size: 28px !important; }
+        }
+        @media (min-width: 640px) and (max-width: 1023px) {
+          .qa-heading { font-size: 36px !important; }
         }
       `}</style>
     </section>

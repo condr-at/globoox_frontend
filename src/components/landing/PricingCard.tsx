@@ -105,7 +105,24 @@ export function PricingCard({
         };
 
   return (
-    <div style={cardStyle}>
+    <>
+      <style>{`
+        .pricing-card {
+          padding: 48px 32px;
+        }
+        .pricing-card .pricing-card-price {
+          font-size: 42px;
+        }
+        @media (max-width: 639px) {
+          .pricing-card {
+            padding: 24px 20px;
+          }
+          .pricing-card .pricing-card-price {
+            font-size: 32px;
+          }
+        }
+      `}</style>
+    <div className="pricing-card" style={{ ...cardStyle, padding: undefined }}>
       {featured && (
         <div
           style={{
@@ -151,6 +168,7 @@ export function PricingCard({
           $
         </span>
         <span
+          className="pricing-card-price"
           style={{
             fontSize: '42px',
             fontWeight: 500,
@@ -197,5 +215,6 @@ export function PricingCard({
         {buttonText}
       </button>
     </div>
+    </>
   );
 }

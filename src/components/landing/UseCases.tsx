@@ -13,15 +13,15 @@ interface UseCase {
 const useCases: UseCase[] = [
   {
     icon: '',
-    title: 'Literature Students',
-    subtitle: 'Dive deeper into world literature',
+    title: 'Scholars',
+    subtitle: 'Study sources in any language',
     description:
-      'Read original texts in their native languages to understand nuance, cultural context, and literary devices that translation often loses. Perfect for comparative literature and language studies.',
-    benefits: ['Preserve original meaning', 'Learn language naturally', 'Analyze literary style', 'Academic research'],
+      'Access primary sources, monographs, and scholarly texts in their original language. Understand the precise terminology and argumentation without relying on sparse or outdated translations.',
+    benefits: ['Read primary sources', 'Precise terminology', 'Cross-language citations', 'Deeper comprehension'],
   },
   {
     icon: '',
-    title: 'Researchers & Academics',
+    title: 'Researchers',
     subtitle: 'Access global knowledge without limits',
     description:
       'Read research papers, academic texts, and specialized knowledge from around the world in your preferred language. Never let language barriers limit your research.',
@@ -29,11 +29,11 @@ const useCases: UseCase[] = [
   },
   {
     icon: '',
-    title: 'Book Lovers',
-    subtitle: 'Expand your literary horizons',
+    title: 'Non-fiction Readers',
+    subtitle: 'Explore ideas from every language',
     description:
-      'Discover bestsellers and hidden gems from every corner of the world. Read the books everyone is talking about, regardless of what language they were originally written in.',
-    benefits: ['Discover new authors', 'Read global bestsellers', 'Join worldwide conversations', 'Unlimited selection'],
+      'Access the best non-fiction from around the world — science, history, philosophy, business — in your native language, without waiting for a traditional translation.',
+    benefits: ['Read global non-fiction', 'Stay current with ideas', 'No waiting for publishers', 'Unlimited selection'],
   },
 ];
 
@@ -51,8 +51,8 @@ export function UseCases() {
   }, []);
 
   return (
-    <section style={{ padding: '120px 0', background: '#1A2420' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
+    <section className="usecases-section" style={{ padding: '120px 0', background: '#1A2420' }}>
+      <div className="usecases-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px', textAlign: 'center' }}>
         <span
           style={{
@@ -68,6 +68,7 @@ export function UseCases() {
           Who Uses Globoox
         </span>
         <h2
+          className="usecases-heading"
           style={{
             fontFamily: 'Lora, serif',
             fontSize: '48px',
@@ -101,6 +102,7 @@ export function UseCases() {
         {useCases.map((useCase, index) => (
           <div
             key={index}
+            className="usecases-card"
             style={{
               opacity: visibleIndices.has(index) ? 1 : 0,
               transform: visibleIndices.has(index) ? 'translateY(0)' : 'translateY(20px)',
@@ -111,7 +113,7 @@ export function UseCases() {
               border: '1px solid rgba(255,255,255,0.08)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '20px',
+              gap: '12px',
             }}
           >
             {/* Title */}
@@ -154,9 +156,9 @@ export function UseCases() {
             </p>
 
             {/* Benefits */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px' }}>
               {useCase.benefits.map((benefit, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span
                     style={{
                       width: '6px',
@@ -174,6 +176,17 @@ export function UseCases() {
         ))}
       </div>
       </div>
+      <style>{`
+        @media (max-width: 639px) {
+          .usecases-section { padding: 60px 0 !important; }
+          .usecases-container { padding: 0 20px !important; }
+          .usecases-heading { font-size: 28px !important; }
+          .usecases-card { padding: 20px !important; }
+        }
+        @media (min-width: 640px) and (max-width: 1023px) {
+          .usecases-heading { font-size: 36px !important; }
+        }
+      `}</style>
     </section>
   );
 }

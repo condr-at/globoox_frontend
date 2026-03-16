@@ -2,8 +2,8 @@ import { SectionLabel } from './SectionLabel';
 
 export function FeaturesGrid() {
   return (
-    <section style={{ padding: '120px 0' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
+    <section className="fg-section" style={{ padding: '120px 0' }}>
+      <div className="fg-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px' }}>
         <span
           style={{
@@ -19,6 +19,7 @@ export function FeaturesGrid() {
           How it Works
         </span>
         <h2
+          className="fg-heading"
           style={{
             fontFamily: 'Lora, serif',
             fontSize: '48px',
@@ -32,6 +33,7 @@ export function FeaturesGrid() {
       </div>
 
       <div
+        className="fg-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(12, 1fr)',
@@ -40,6 +42,7 @@ export function FeaturesGrid() {
       >
         {/* The Method - small card (5 columns) */}
         <div
+          className="fg-card fg-card-sm"
           style={{
             gridColumn: 'span 5',
             background: '#FFFFFF',
@@ -76,6 +79,7 @@ export function FeaturesGrid() {
 
         {/* Advanced Engine - large dark card (7 columns) */}
         <div
+          className="fg-card fg-card-lg"
           style={{
             gridColumn: 'span 7',
             background: '#1A2420',
@@ -111,6 +115,7 @@ export function FeaturesGrid() {
 
         {/* Privacy First - large card (7 columns) */}
         <div
+          className="fg-card fg-card-lg"
           style={{
             gridColumn: 'span 7',
             background: '#FFFFFF',
@@ -146,6 +151,7 @@ export function FeaturesGrid() {
 
         {/* Premium Access - small card (5 columns) */}
         <div
+          className="fg-card fg-card-sm"
           style={{
             gridColumn: 'span 5',
             background: '#FFFFFF',
@@ -193,6 +199,48 @@ export function FeaturesGrid() {
         </div>
       </div>
       </div>
+
+      <style>{`
+        /* Mobile: < 640px */
+        @media (max-width: 639px) {
+          .fg-section {
+            padding: 60px 0 !important;
+          }
+          .fg-container {
+            padding: 0 20px !important;
+          }
+          .fg-heading {
+            font-size: 28px !important;
+          }
+          .fg-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .fg-card {
+            grid-column: span 1 !important;
+            padding: 24px !important;
+          }
+        }
+
+        /* Tablet: 640px – 1023px */
+        @media (min-width: 640px) and (max-width: 1023px) {
+          .fg-section {
+            padding: 80px 0 !important;
+          }
+          .fg-container {
+            padding: 0 32px !important;
+          }
+          .fg-heading {
+            font-size: 36px !important;
+          }
+          .fg-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .fg-card {
+            grid-column: span 1 !important;
+            padding: 32px !important;
+          }
+        }
+      `}</style>
     </section>
   );
 }

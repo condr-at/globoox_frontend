@@ -49,7 +49,7 @@ const reviews: Review[] = [
 export function Reviews() {
 
   return (
-    <section style={{ padding: '120px 0', background: '#1A2420' }}>
+    <section className="reviews-section" style={{ padding: '120px 0', background: '#1A2420' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '60px', textAlign: 'center' }}>
         <span
@@ -66,6 +66,7 @@ export function Reviews() {
           What Users Say
         </span>
         <h2
+          className="reviews-heading"
           style={{
             fontFamily: 'Lora, serif',
             fontSize: '48px',
@@ -88,6 +89,7 @@ export function Reviews() {
         }}
       >
         <div
+          className="reviews-track"
           style={{
             display: 'flex',
             gap: '32px',
@@ -99,6 +101,7 @@ export function Reviews() {
           {reviews.map((review, index) => (
             <div
               key={`first-${index}`}
+              className="review-card"
               style={{
                 width: '380px',
                 flexShrink: 0,
@@ -180,6 +183,7 @@ export function Reviews() {
           {reviews.map((review, index) => (
             <div
               key={`second-${index}`}
+              className="review-card"
               style={{
                 width: '380px',
                 flexShrink: 0,
@@ -260,6 +264,7 @@ export function Reviews() {
 
         {/* Gradient fade overlay */}
         <div
+          className="reviews-gradient"
           style={{
             position: 'absolute',
             top: 0,
@@ -283,6 +288,55 @@ export function Reviews() {
           }
           100% {
             transform: translateX(calc(-380px * ${reviews.length} - 32px * ${reviews.length}));
+          }
+        }
+
+        /* Tablet: 640px - 1023px */
+        @media (min-width: 640px) and (max-width: 1023px) {
+          .reviews-section {
+            padding: 90px 0 !important;
+          }
+          .reviews-heading {
+            font-size: 36px !important;
+          }
+          .review-card {
+            width: 320px !important;
+            padding: 28px !important;
+          }
+          .reviews-track {
+            animation-duration: 50s !important;
+          }
+          .reviews-gradient {
+            background: linear-gradient(to right,
+              #1A2420 0%,
+              transparent 60px,
+              transparent calc(100% - 60px),
+              #1A2420 100%) !important;
+          }
+        }
+
+        /* Mobile: <640px */
+        @media (max-width: 639px) {
+          .reviews-section {
+            padding: 60px 0 !important;
+          }
+          .reviews-heading {
+            font-size: 28px !important;
+          }
+          .review-card {
+            width: 280px !important;
+            padding: 24px !important;
+          }
+          .reviews-track {
+            animation-duration: 40s !important;
+            gap: 20px !important;
+          }
+          .reviews-gradient {
+            background: linear-gradient(to right,
+              #1A2420 0%,
+              transparent 40px,
+              transparent calc(100% - 40px),
+              #1A2420 100%) !important;
           }
         }
       `}</style>
