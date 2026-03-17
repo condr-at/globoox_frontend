@@ -53,9 +53,7 @@ type Phase =
   | 'modal-tap'
   | 'translating'
   | 'translated'
-  | 'hold'
-  | 'fade-out'
-  | 'fade-in';
+  | 'hold';
 
 // первый слот — Meditations (новая книга из Step 1), остальные — existing books
 const NEW_BOOK = { title: 'Meditations', author: 'Marcus Aurelius', color: '#9B8AAB', progress: 0 };
@@ -138,35 +136,75 @@ function Ripple({ active }: { active: boolean }) {
 }
 
 // ─── glow border ─────────────────────────────────────────────────────────────
-function GlowBorder({ active }: { active: boolean }) {
+function GlowBorder({ active, width = 320, height = 640 }: { active: boolean; width?: number; height?: number }) {
+  const r = 20; // border-radius виджета
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      borderRadius: 20,
       pointerEvents: 'none',
       opacity: active ? 1 : 0,
-      transition: 'opacity 0.4s ease',
-      zIndex: 50,
-      background: 'transparent',
-      boxShadow: active
-        ? 'inset 0 0 0 2px transparent'
-        : 'none',
-      overflow: 'hidden',
+      transition: 'opacity 0.5s ease',
+      zIndex: 42, // над затемнением (zIndex 40), под модалкой (zIndex 50)
     }}>
-      {active && (
-        <div style={{
-          position: 'absolute', inset: -2,
-          borderRadius: 22,
-          background: 'linear-gradient(90deg, #0f00ff, #ae1b6e, #cf0000, #ff9f10, #0f00ff)',
-          backgroundSize: '300% 100%',
-          animation: 'readermock-glow 1.4s linear infinite',
-          opacity: 0.85,
-          WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-          WebkitMaskComposite: 'xor',
-          maskComposite: 'exclude',
-          padding: 2,
-        }} />
-      )}
+      <svg
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        style={{ position: 'absolute', inset: 0, overflow: 'visible' }}
+      >
+        <defs>
+          <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stopColor="#0f00ff" />
+            <stop offset="25%"  stopColor="#ae1b6e" />
+            <stop offset="50%"  stopColor="#cf0000" />
+            <stop offset="75%"  stopColor="#ff9f10" />
+            <stop offset="100%" stopColor="#0f00ff" />
+            <animateTransform
+              attributeName="gradientTransform"
+              type="translate"
+              from="-1 -1"
+              to="1 1"
+              dur="1.8s"
+              repeatCount="indefinite"
+            />
+          </linearGradient>
+          <filter id="glowBlur">
+            <feGaussianBlur stdDeviation="8" />
+          </filter>
+        </defs>
+        {/* широкое размытое свечение */}
+        <rect
+          x={2} y={2}
+          width={width - 4} height={height - 4}
+          rx={r} ry={r}
+          fill="none"
+          stroke="url(#glowGrad)"
+          strokeWidth="12"
+          filter="url(#glowBlur)"
+          opacity="1"
+        />
+        {/* среднее свечение */}
+        <rect
+          x={2} y={2}
+          width={width - 4} height={height - 4}
+          rx={r} ry={r}
+          fill="none"
+          stroke="url(#glowGrad)"
+          strokeWidth="6"
+          filter="url(#glowBlur)"
+          opacity="1"
+        />
+        {/* чёткая линия поверх */}
+        <rect
+          x={2} y={2}
+          width={width - 4} height={height - 4}
+          rx={r} ry={r}
+          fill="none"
+          stroke="url(#glowGrad)"
+          strokeWidth="2.5"
+          opacity="1"
+        />
+      </svg>
     </div>
   );
 }
@@ -181,7 +219,7 @@ function IOSAlert({ visible, tapOK }: { visible: boolean; tapOK: boolean }) {
       opacity: visible ? 1 : 0,
       transition: 'opacity 0.25s ease',
       pointerEvents: visible ? 'auto' : 'none',
-      zIndex: 40,
+      zIndex: 50,
       borderRadius: 20,
     }}>
       <div style={{
@@ -294,7 +332,6 @@ export function ReaderMockup() {
                                   setPhase('hold');
                                   schedule(() => {
                                     // fade out
-                                    setPhase('fade-out');
                                     let op = 0;
                                     const stepOut = 16 / T_FADE_OUT;
                                     const fadeOut = () => {
@@ -303,8 +340,9 @@ export function ReaderMockup() {
                                       if (op < 1) {
                                         rafRef.current = requestAnimationFrame(fadeOut);
                                       } else {
-                                        // сброс под overlay
-                                        setPhase('fade-in');
+                                        // сброс под overlay — как в MyBooksMockup
+                                        setPhase('library');
+                                        setFadeOpacity(1);
                                         let op2 = 1;
                                         const stepIn = 16 / T_FADE_IN;
                                         schedule(() => {
@@ -351,7 +389,7 @@ export function ReaderMockup() {
   }, []);
 
   // ─── derived state ───────────────────────────────────────────────────────────
-  const inReader = phase !== 'library' && phase !== 'book-tap' && phase !== 'fade-out' && phase !== 'fade-in';
+  const inReader = phase !== 'library' && phase !== 'book-tap';
   const bookTapped = phase === 'book-tap';
   const dropdownOpen = phase === 'dropdown-open' || phase === 'hover-0' || phase === 'hover-1' || phase === 'hover-2' || phase === 'lang-select';
   const langTapped = phase === 'lang-tap';
@@ -359,7 +397,7 @@ export function ReaderMockup() {
   const modalVisible = phase === 'modal-show' || phase === 'modal-idle' || phase === 'modal-tap';
   const modalTapOK = phase === 'modal-tap';
   const isTranslating = phase === 'translating';
-  const isTranslated = phase === 'translated' || phase === 'hold' || phase === 'fade-out' || phase === 'fade-in';
+  const isTranslated = phase === 'translated' || phase === 'hold';
   const currentLang = isTranslated ? 'EN' : 'GR';
 
   const textLines = isTranslated ? ENGLISH_TEXT : GREEK_TEXT;
