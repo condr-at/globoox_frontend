@@ -2,53 +2,34 @@
 
 import { useEffect, useState } from 'react';
 
-interface UseCase {
-  icon: string;
+export interface UseCaseItem {
+  icon?: string;
   title: string;
-  subtitle: string;
-  description: string;
-  benefits: string[];
+  subtitle?: string;
+  description?: string;
+  benefits?: string[];
+  imagePlaceholder?: boolean;
 }
 
-const useCases: UseCase[] = [
-  {
-    icon: '',
-    title: 'Scholars',
-    subtitle: 'Study sources in any language',
-    description:
-      'Access primary sources, monographs, and scholarly texts in their original language. Understand the precise terminology and argumentation without relying on sparse or outdated translations.',
-    benefits: ['Read primary sources', 'Precise terminology', 'Cross-language citations', 'Deeper comprehension'],
-  },
-  {
-    icon: '',
-    title: 'Researchers',
-    subtitle: 'Access global knowledge without limits',
-    description:
-      'Read research papers, academic texts, and specialized knowledge from around the world in your preferred language. Never let language barriers limit your research.',
-    benefits: ['Break language barriers', 'Access global research', 'Maintain academic rigor', 'Faster comprehension'],
-  },
-  {
-    icon: '',
-    title: 'Non-fiction Readers',
-    subtitle: 'Explore ideas from every language',
-    description:
-      'Access the best non-fiction from around the world — science, history, philosophy, business — in your native language, without waiting for a traditional translation.',
-    benefits: ['Read global non-fiction', 'Stay current with ideas', 'No waiting for publishers', 'Unlimited selection'],
-  },
-];
+interface UseCasesProps {
+  label: string;
+  heading: string;
+  description: string;
+  items: UseCaseItem[];
+}
 
-export function UseCases() {
+export function UseCases({ label, heading, description, items }: UseCasesProps) {
   const [visibleIndices, setVisibleIndices] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    useCases.forEach((_, index) => {
+    items.forEach((_, index) => {
       const timer = setTimeout(() => {
         setVisibleIndices((prev) => new Set(prev).add(index));
       }, index * 150);
 
       return () => clearTimeout(timer);
     });
-  }, []);
+  }, [items]);
 
   return (
     <section className="usecases-section" style={{ padding: '120px 0', background: 'var(--ink)' }}>
@@ -65,7 +46,7 @@ export function UseCases() {
             display: 'block',
           }}
         >
-          Who Uses Globoox
+          {label}
         </span>
         <h2
           className="usecases-heading"
@@ -77,7 +58,7 @@ export function UseCases() {
             marginBottom: '24px',
           }}
         >
-          Perfect for every kind of reader
+          {heading}
         </h2>
         <p
           style={{
@@ -88,7 +69,7 @@ export function UseCases() {
             lineHeight: 1.6,
           }}
         >
-          Whatever brings you to reading, Globoox adapts to your needs
+          {description}
         </p>
       </div>
 
@@ -99,7 +80,7 @@ export function UseCases() {
           gap: '32px',
         }}
       >
-        {useCases.map((useCase, index) => (
+        {items.map((useCase, index) => (
           <div
             key={index}
             className="usecases-card"
@@ -129,49 +110,74 @@ export function UseCases() {
               >
                 {useCase.title}
               </h3>
+              {useCase.subtitle && (
+                <p
+                  style={{
+                    fontSize: '14px',
+                    color: 'var(--dusk)',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    margin: 0,
+                  }}
+                >
+                  {useCase.subtitle}
+                </p>
+              )}
+            </div>
+
+            {/* Image Placeholder */}
+            {useCase.imagePlaceholder && (
+              <div
+                style={{
+                  width: '100%',
+                  aspectRatio: '16/10',
+                  backgroundColor: 'rgba(244, 240, 232, 0.03)',
+                  border: '1px dashed rgba(244, 240, 232, 0.15)',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '12px',
+                }}
+              >
+                <span style={{ color: 'var(--ash)', fontSize: '11px', letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 600 }}>Screenshot UI</span>
+              </div>
+            )}
+
+            {/* Description */}
+            {useCase.description && (
               <p
                 style={{
-                  fontSize: '14px',
-                  color: 'var(--dusk)',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  fontSize: '16px',
+                  lineHeight: 1.6,
+                  color: 'var(--parchment)',
                   margin: 0,
                 }}
               >
-                {useCase.subtitle}
+                {useCase.description}
               </p>
-            </div>
-
-            {/* Description */}
-            <p
-              style={{
-                fontSize: '16px',
-                lineHeight: 1.6,
-                color: 'var(--parchment)',
-                margin: 0,
-              }}
-            >
-              {useCase.description}
-            </p>
+            )}
 
             {/* Benefits */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px' }}>
-              {useCase.benefits.map((benefit, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      backgroundColor: 'var(--dusk)',
-                      borderRadius: '50%',
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span style={{ fontSize: '14px', color: 'var(--parchment)' }}>{benefit}</span>
-                </div>
-              ))}
-            </div>
+            {useCase.benefits && useCase.benefits.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '4px' }}>
+                {useCase.benefits.map((benefit, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span
+                      style={{
+                        width: '6px',
+                        height: '6px',
+                        backgroundColor: 'var(--dusk)',
+                        borderRadius: '50%',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span style={{ fontSize: '14px', color: 'var(--parchment)' }}>{benefit}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>

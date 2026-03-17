@@ -1,6 +1,20 @@
 import { SectionLabel } from './SectionLabel';
 
-export function FeaturesGrid() {
+interface FeatureCard {
+  label: string;
+  heading: string;
+  content: React.ReactNode;
+  variant?: 'light' | 'dark' | 'accent';
+  size?: 'sm' | 'lg';
+}
+
+interface FeaturesGridProps {
+  sectionLabel: string;
+  sectionHeading: string;
+  cards: FeatureCard[];
+}
+
+export function FeaturesGrid({ sectionLabel, sectionHeading, cards }: FeaturesGridProps) {
   return (
     <section className="fg-section" style={{ padding: '120px 0' }}>
       <div className="fg-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
@@ -16,7 +30,7 @@ export function FeaturesGrid() {
             display: 'block',
           }}
         >
-          How it Works
+          {sectionLabel}
         </span>
         <h2
           className="fg-heading"
@@ -28,7 +42,7 @@ export function FeaturesGrid() {
             marginBottom: '24px',
           }}
         >
-          Powerful features for every reader
+          {sectionHeading}
         </h2>
       </div>
 
@@ -40,163 +54,46 @@ export function FeaturesGrid() {
           gap: '24px',
         }}
       >
-        {/* The Method - small card (5 columns) */}
-        <div
-          className="fg-card fg-card-sm"
-          style={{
-            gridColumn: 'span 5',
-            background: '#FFFFFF',
-            borderRadius: '12px',
-            padding: '48px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-            border: '1px solid rgba(0,0,0,0.05)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div>
-            <SectionLabel>The Method</SectionLabel>
-            <h2
-              style={{
-                fontFamily: "'Lora', serif",
-                fontWeight: 400,
-                letterSpacing: '-0.01em',
-                fontSize: '32px',
-                marginBottom: '16px',
-                color: 'var(--ink)',
-              }}
-            >
-              Seamless by design.
-            </h2>
-            <ol style={{ margin: '24px 0 0 0', color: 'var(--ash)' }}>
-              <li style={{ marginBottom: '12px', paddingLeft: '0' }}>Upload your manuscript</li>
-              <li style={{ marginBottom: '12px', paddingLeft: '0' }}>Select your destination language</li>
-              <li style={{ marginBottom: '12px', paddingLeft: '0' }}>Begin your literary journey</li>
-            </ol>
-          </div>
-        </div>
-
-        {/* Advanced Engine - large dark card (7 columns) */}
-        <div
-          className="fg-card fg-card-lg"
-          style={{
-            gridColumn: 'span 7',
-            background: 'var(--ink)',
-            borderRadius: '12px',
-            padding: '48px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-            border: '1px solid rgba(0,0,0,0.05)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div>
-            <SectionLabel style={{ color: '#C4826E' }}>Advanced Engine</SectionLabel>
-            <h2
-              style={{
-                fontFamily: "'Lora', serif",
-                fontWeight: 400,
-                letterSpacing: '-0.01em',
-                fontSize: '32px',
-                marginBottom: '16px',
-                color: 'white',
-              }}
-            >
-              Thought-for-thought translation.
-            </h2>
-            <p style={{ color: 'rgba(244, 240, 232, 0.7)', fontSize: '17px' }}>
-              We move beyond literal substitution. Our engine preserves the author&apos;s voice, cultural idioms, and the
-              emotional resonance of every passage.
-            </p>
-          </div>
-        </div>
-
-        {/* Privacy First - large card (7 columns) */}
-        <div
-          className="fg-card fg-card-lg"
-          style={{
-            gridColumn: 'span 7',
-            background: '#FFFFFF',
-            borderRadius: '12px',
-            padding: '48px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-            border: '1px solid rgba(0,0,0,0.05)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div>
-            <SectionLabel>Privacy First</SectionLabel>
-            <h2
-              style={{
-                fontFamily: "'Lora', serif",
-                fontWeight: 400,
-                letterSpacing: '-0.01em',
-                fontSize: '32px',
-                marginBottom: '16px',
-                color: 'var(--ink)',
-              }}
-            >
-              Your library, kept private.
-            </h2>
-            <p style={{ color: 'var(--ash)', fontSize: '17px' }}>
-              We respect the sanctity of your personal collection. Files are processed securely, encrypted at rest, and
-              never stored beyond the translation window.
-            </p>
-          </div>
-        </div>
-
-        {/* Premium Access - small card (5 columns) */}
-        <div
-          className="fg-card fg-card-sm"
-          style={{
-            gridColumn: 'span 5',
-            background: '#FFFFFF',
-            borderRadius: '12px',
-            padding: '48px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-            border: '1px solid rgba(0,0,0,0.05)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            textAlign: 'center',
-            borderColor: 'var(--primary)',
-          }}
-        >
-          <div>
-            <SectionLabel>Premium Access</SectionLabel>
-            <h2
-              style={{
-                fontFamily: "'Lora', serif",
-                fontWeight: 400,
-                letterSpacing: '-0.01em',
-                fontSize: '32px',
-                marginBottom: '16px',
-                color: 'var(--ink)',
-              }}
-            >
-              Simple pricing.
-            </h2>
+        {cards.map((card, i) => {
+          const isDark = card.variant === 'dark';
+          const isAccent = card.variant === 'accent';
+          const isSmall = card.size === 'sm';
+          return (
             <div
+              key={i}
+              className={`fg-card ${isSmall ? 'fg-card-sm' : 'fg-card-lg'}`}
               style={{
-                fontFamily: "'Lora', serif",
-                fontSize: '56px',
-                fontWeight: '700',
-                margin: '16px 0',
-                color: 'var(--ink)',
+                gridColumn: isSmall ? 'span 5' : 'span 7',
+                background: isDark ? 'var(--ink)' : '#FFFFFF',
+                borderRadius: '12px',
+                padding: '48px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                border: '1px solid rgba(0,0,0,0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                ...(isAccent ? { textAlign: 'center' as const, borderColor: 'var(--primary)' } : {}),
               }}
             >
-              $4.99
-              <span style={{ fontSize: '18px', color: 'var(--ash)', fontWeight: '400' }}> / month</span>
+              <div>
+                <SectionLabel style={isDark ? { color: '#C4826E' } : undefined}>{card.label}</SectionLabel>
+                <h2
+                  style={{
+                    fontFamily: "'Lora', serif",
+                    fontWeight: 400,
+                    letterSpacing: '-0.01em',
+                    fontSize: '32px',
+                    marginBottom: '16px',
+                    color: isDark ? 'white' : 'var(--ink)',
+                  }}
+                >
+                  {card.heading}
+                </h2>
+                {card.content}
+              </div>
             </div>
-            <p style={{ fontSize: '15px', color: 'var(--ash)' }}>
-              Includes unlimited translations and cloud sync across all your reading devices.
-            </p>
-          </div>
-        </div>
+          );
+        })}
       </div>
       </div>
 

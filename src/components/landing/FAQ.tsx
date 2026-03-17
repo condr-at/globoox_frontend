@@ -7,34 +7,11 @@ interface FAQItem {
   answer: string;
 }
 
-const faqItems: FAQItem[] = [
-  {
-    question: 'How does Globoox translate books?',
-    answer: 'Globoox uses advanced AI translation technology to translate e-books while preserving the original nuance, style, and literary depth. Our neural networks are trained on millions of literary texts to ensure translations sound natural in your language.',
-  },
-  {
-    question: 'Which languages are supported?',
-    answer: 'We currently support 50+ languages including major European languages, Asian languages, and more. We\'re constantly adding new languages based on user demand.',
-  },
-  {
-    question: 'Can I download books for offline reading?',
-    answer: 'Yes! Premium members can download translated books for offline reading. This works across all your devices with automatic syncing when you\'re back online.',
-  },
-  {
-    question: 'What happens to my reading progress?',
-    answer: 'Your reading position is automatically saved and synced across all your devices. Switch from phone to tablet to desktop seamlessly without losing your place.',
-  },
-  {
-    question: 'Is my data private?',
-    answer: 'Absolutely. We use end-to-end encryption for all your personal data. Your reading history, preferences, and saved books are private and never shared with third parties.',
-  },
-  {
-    question: 'Can I cancel my subscription anytime?',
-    answer: 'Yes, you can cancel your subscription anytime without penalties or hidden fees. Your access continues until the end of your billing period.',
-  },
-];
+interface FAQProps {
+  items: FAQItem[];
+}
 
-export function FAQ() {
+export function FAQ({ items }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
@@ -80,7 +57,7 @@ export function FAQ() {
       </div>
 
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {faqItems.map((item, index) => (
+        {items.map((item, index) => (
           <div
             key={index}
             style={{

@@ -1,45 +1,69 @@
 'use client';
 
 import { Hero } from '@/components/landing/Hero';
-import { FeaturesGrid } from '@/components/landing/FeaturesGrid';
+import { PrivacyManifest } from '@/components/landing/PrivacyManifest';
+import { SupportedLanguages } from '@/components/landing/SupportedLanguages';
 import { UseCases } from '@/components/landing/UseCases';
 import { QualityAssuranceV2 } from '@/components/landing/QualityAssuranceV2';
-import { Reviews } from '@/components/landing/Reviews';
-import { Pricing } from '@/components/landing/Pricing';
-import { ComparisonSection } from '@/components/landing/ComparisonSection';
-import { FAQ } from '@/components/landing/FAQ';
 import { CTA } from '@/components/landing/CTA';
 import { Footer } from '@/components/landing/Footer';
 
 export default function LandingPage() {
   return (
     <>
-      {/* Hero: Split with books */}
-      <Hero variant="split" withBooks={true} />
+      <style>{`
+        .hero-long-title {
+          font-size: 42px !important;
+        }
+        @media (max-width: 1023px) {
+          .hero-long-title {
+            font-size: 32px !important;
+          }
+        }
+        @media (max-width: 639px) {
+          .hero-long-title {
+            font-size: 28px !important;
+          }
+        }
+      `}</style>
+      <Hero
+        variant="split"
+        withBooks={true}
+        title="Globoox — reading app that instantly translates e-books into your native language"
+        subtitle=""
+        titleClassName="hero-long-title"
+      />
 
-      {/* Use Cases section */}
-      <UseCases />
+      <UseCases
+        label="How It Works"
+        heading="Three simple steps."
+        description=""
+        items={[
+          { title: 'Step 1', subtitle: '', description: 'Upload your ebook', imagePlaceholder: true },
+          { title: 'Step 2', subtitle: '', description: 'Choose your language', imagePlaceholder: true },
+          { title: 'Step 3', subtitle: '', description: 'Enjoy your book!', imagePlaceholder: true },
+        ]}
+      />
 
-      {/* Features grid */}
-      <FeaturesGrid />
+      <QualityAssuranceV2
+        label="Translation Quality"
+        heading="Translations You Can Trust"
+        description="Built on an AI engine fine-tuned by expert linguists, our app delivers clear, accurate, and easy-to-read translations that capture the author's true intent."
+      />
 
-      {/* Quality Assurance section */}
-      <QualityAssuranceV2 />
+      <SupportedLanguages />
 
-      {/* Reviews section */}
-      <Reviews />
+      <PrivacyManifest />
 
-      {/* Pricing section */}
-      <Pricing />
+      <CTA
+        heading="Start with your first book."
+        description="Upload your EPUB and enjoy it in your language."
+        buttonText="Upload Your First Book"
+      />
 
-      {/* FAQ section */}
-      <FAQ />
-
-      {/* CTA section */}
-      <CTA />
-
-      {/* Footer */}
-      <Footer />
+      <Footer
+        tagline="We are building a global book platform where any reader can discover, buy, read, and listen to any book in their native language."
+      />
     </>
   );
 }

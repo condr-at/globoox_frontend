@@ -2,7 +2,13 @@
 
 import { useState } from 'react';
 
-export function CTA() {
+interface CTAProps {
+  heading: string;
+  description: string;
+  buttonText: string;
+}
+
+export function CTA({ heading, description, buttonText }: CTAProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -42,7 +48,7 @@ export function CTA() {
           color: '#FFFFFF',
         }}
       >
-        Begin your first chapter free.
+        {heading}
       </h2>
       <p
         style={{
@@ -53,27 +59,29 @@ export function CTA() {
           margin: '0 auto 40px',
         }}
       >
-        No commitment required. We&apos;ll translate your first three books with our compliments.
+        {description}
       </p>
       <button
         style={{
           display: 'inline-block',
           background: isHovered ? 'var(--dusk)' : '#FFFFFF',
-          color: isHovered ? '#FFFFFF' : 'var(--ink)',
+          color: 'var(--ink)',
           padding: '16px 32px',
           borderRadius: '8px',
           fontWeight: 600,
           textDecoration: 'none',
           fontSize: '16px',
-          transition: 'all 0.2s ease',
+          transition: 'all 0.2s cubic-bezier(0.22, 1, 0.36, 1)',
           border: 'none',
           cursor: 'pointer',
+          transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
+          boxShadow: isHovered ? '0 6px 20px rgba(232, 184, 154, 0.4)' : 'none',
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {}}
       >
-        Get Started — It&apos;s Free
+        {buttonText}
       </button>
       </div>
 

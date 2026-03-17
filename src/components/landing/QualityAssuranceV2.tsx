@@ -1,6 +1,12 @@
 import { CompareSlider } from './CompareSlider';
 
-export function QualityAssuranceV2() {
+interface QualityAssuranceV2Props {
+  label: string;
+  heading: string;
+  description: string;
+}
+
+export function QualityAssuranceV2({ label, heading, description }: QualityAssuranceV2Props) {
   return (
     <section className="qa-section" style={{ padding: '120px 0' }}>
       <div className="qa-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
@@ -16,7 +22,7 @@ export function QualityAssuranceV2() {
             display: 'block',
           }}
         >
-          Quality Assurance
+          {label}
         </span>
         <h2
           className="qa-heading"
@@ -30,7 +36,7 @@ export function QualityAssuranceV2() {
             maxWidth: '600px',
           }}
         >
-          Every Translation is Vetted
+          {heading}
         </h2>
         <p
           style={{
@@ -41,7 +47,7 @@ export function QualityAssuranceV2() {
             margin: '0 auto',
           }}
         >
-          Our multi-layer quality system ensures translations preserve literary nuance while maintaining readability in your language.
+          {description}
         </p>
       </div>
 

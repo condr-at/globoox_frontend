@@ -1,4 +1,8 @@
-export function Footer() {
+interface FooterProps {
+  tagline: string;
+}
+
+export function Footer({ tagline }: FooterProps) {
   return (
     <footer
       style={{
@@ -10,7 +14,7 @@ export function Footer() {
       }}
     >
       <div className="footer-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
-      <p>© 2026 Globoox Inc. Curating the world&apos;s wisdom.</p>
+      <p>{tagline}</p>
       <div
         className="footer-links"
         style={{

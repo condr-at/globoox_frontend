@@ -6,6 +6,9 @@ import { SectionLabel } from './SectionLabel';
 interface HeroProps {
   variant?: 'centered' | 'split';
   withBooks?: boolean;
+  title: string;
+  subtitle: string;
+  titleClassName?: string;
 }
 
 function BookSpine({ title, height, bg, textColor, className }: { title: string; height: number; bg: string; textColor?: string; className?: string }) {
@@ -79,7 +82,7 @@ function FloatingScript({ children, style }: { children: React.ReactNode; style:
   );
 }
 
-export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
+export function Hero({ variant = 'centered', withBooks = false, title, subtitle, titleClassName }: HeroProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   const responsiveStyles = `
@@ -210,9 +213,9 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
           >
             <SectionLabel>Introducing Globoox</SectionLabel>
             <h1
-              className="hero-split-h1"
+              className={`hero-split-h1 ${titleClassName || ''}`}
               style={{
-                fontSize: '64px',
+                fontSize: titleClassName ? undefined : '64px',
                 lineHeight: 1.1,
                 marginBottom: '28px',
                 fontWeight: 500,
@@ -220,7 +223,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
                 color: 'var(--ink)',
               }}
             >
-              The world&apos;s library, in your native language.
+              {title}
             </h1>
             <p
               className="hero-split-p"
@@ -231,7 +234,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
                 maxWidth: '520px',
               }}
             >
-              Instantly translate any e-book and experience stories with the nuance and depth they were meant to be read.
+              {subtitle}
             </p>
             <button
               className="btn-primary-hover hero-split-btn"
@@ -331,19 +334,18 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
       >
         <SectionLabel>Introducing Globoox</SectionLabel>
         <h1
-          className="hero-centered-h1"
+          className={`hero-centered-h1 ${titleClassName || ''}`}
           style={{
             fontFamily: "'Lora', serif",
             fontWeight: 400,
             letterSpacing: '-0.01em',
-            fontSize: '56px',
+            fontSize: titleClassName ? undefined : '56px',
             lineHeight: 1.1,
             marginBottom: '24px',
             maxWidth: '900px',
-            color: 'var(--ink)',
-          }}
+            }}
         >
-          The world&apos;s library, in your native language.
+          {title}
         </h1>
         <p
           className="hero-centered-p"
@@ -354,7 +356,7 @@ export function Hero({ variant = 'centered', withBooks = false }: HeroProps) {
             maxWidth: '600px',
           }}
         >
-          Instantly translate any e-book and experience stories with the nuance and depth they were meant to be read.
+          {subtitle}
         </p>
         <button
           className="hero-centered-btn"
