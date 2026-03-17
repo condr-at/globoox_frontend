@@ -127,6 +127,7 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
       .spine-h-416 { height: 233px !important; }
       .spine-h-364 { height: 204px !important; }
       .spine-h-442 { height: 247px !important; }
+      .spine-desiguales { height: 240px !important; }
       /* Centered variant */
       .hero-centered {
         padding: 40px 20px !important;
@@ -169,6 +170,7 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
       .spine-h-416 { height: 333px !important; }
       .spine-h-364 { height: 291px !important; }
       .spine-h-442 { height: 354px !important; }
+      .spine-desiguales { height: 310px !important; }
       .spine-long-title span { font-size: 16px !important; }
       .spine-longest-title span { font-size: 14px !important; }
       /* Centered variant */
@@ -301,11 +303,11 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
               </FloatingScript>
 
               <div style={{ display: 'flex', gap: '16px', transform: 'rotate(-5deg)', alignItems: 'flex-end' }}>
-                <BookSpine title="How to Build a Bridge with Duct Tape" height={416} bg="var(--parchment-light)" className="spine-h-416 spine-long-title spine-longest-title" />
-                <BookSpine title="The Coffee Equation" height={364} bg="var(--parchment-light)" className="spine-h-364" />
+                <BookSpine title="Nexus. Yuval Noah Harari" height={416} bg="var(--parchment-light)" className="spine-h-416 spine-long-title" />
+                <BookSpine title="Эволюция Человека. А. Марков" height={364} bg="var(--parchment-light)" className="spine-h-364 spine-long-title spine-longest-title" />
                 <BookSpine title="Globoox Engine" height={442} bg="var(--ink)" textColor="#E8A996" className="spine-h-442" />
-                <BookSpine title="Why Dogs Tilt Their Heads" height={364} bg="var(--parchment-light)" className="spine-h-364 spine-long-title" />
-                <BookSpine title="The 4 AM Airport Rule" height={416} bg="var(--parchment-light)" className="spine-h-416" />
+                <BookSpine title="Desiguales. Diego Castañeda Garza" height={364} bg="var(--parchment-light)" className="spine-h-364 spine-desiguales spine-long-title spine-longest-title" />
+                <BookSpine title="Manet, le secret. Sophie Chauveau" height={416} bg="var(--parchment-light)" className="spine-h-416 spine-long-title" />
               </div>
             </div>
           </div>
