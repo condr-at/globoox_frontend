@@ -29,7 +29,7 @@ export default function LandingPage() {
       <Hero
         variant="split"
         withBooks={true}
-        title="Globoox — reading app that instantly translates e-books into your native language"
+        title="A global ebookstore where every book instantly exists in your language"
         subtitle=""
         titleClassName="hero-long-title"
       />
