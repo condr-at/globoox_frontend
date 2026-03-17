@@ -162,6 +162,7 @@ export default function LibraryPage() {
 
   const sortedBooksRef = useRef<typeof books>([]);
   const sortedBookIdsKey = useRef('');
+  const sortedOrderRef = useRef('');
 
   const filteredBooks = useMemo(() => {
     const filtered = statusFilter === 'hidden'
@@ -191,9 +192,10 @@ export default function LibraryPage() {
     const bookSetChanged = filtered.map((b) => b.id).sort().join(',') !==
       sortedBooksRef.current.map((b) => b.id).sort().join(',');
 
-    if (bookSetChanged || prevIdsKey === '' || sortOrder !== 'recently_opened') {
+    if (bookSetChanged || prevIdsKey === '' || sortOrder !== 'recently_opened' || sortedOrderRef.current !== sortOrder) {
       sortedBooksRef.current = sorted;
       sortedBookIdsKey.current = newIdsKey;
+      sortedOrderRef.current = sortOrder;
     }
 
     return sortedBooksRef.current;
