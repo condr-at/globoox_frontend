@@ -142,6 +142,76 @@
   --sidebar-primary-foreground: #FFFFFF;
 }
 
+/* Forest & Terracotta — Light */
+.forest-light {
+  --system-blue: #C05A3A;
+  --system-green: #7A8C7B;
+  --system-orange: #E8B89A;
+  --system-red: #C05A3A;
+  --system-yellow: #E8B89A;
+  --system-gray: #7A8C7B;
+  --system-gray2: #B8C4B9;
+  --system-gray3: #B8C4B9;
+  --system-gray4: #E6E0D6;
+  --system-gray5: #EDE8DF;
+  --system-gray6: #F4F0E8;
+
+  --label-primary: #2C3B2D;
+  --label-secondary: rgba(44, 59, 45, 0.6);
+  --label-tertiary: rgba(44, 59, 45, 0.3);
+  --label-quaternary: rgba(44, 59, 45, 0.18);
+
+  --bg-primary: #F4F0E8;
+  --bg-secondary: #EDE8DF;
+  --bg-tertiary: #FFFFFF;
+  --bg-grouped: #F4F0E8;
+  --bg-grouped-secondary: #FFFFFF;
+
+  --separator: rgba(44, 59, 45, 0.18);
+  --separator-opaque: #D4CFC6;
+
+  --fill-primary: rgba(44, 59, 45, 0.12);
+  --fill-secondary: rgba(44, 59, 45, 0.08);
+  --fill-tertiary: rgba(44, 59, 45, 0.06);
+
+  --primary-foreground: #FFFFFF;
+}
+
+/* Forest & Terracotta — Dark */
+.forest-dark {
+  --system-blue: #E8B89A;
+  --system-green: #7A8C7B;
+  --system-orange: #E8B89A;
+  --system-red: #E8B89A;
+  --system-yellow: #E8B89A;
+  --system-gray: #7A8C7B;
+  --system-gray2: #4D5E4E;
+  --system-gray3: #3D5040;
+  --system-gray4: #2C3B2D;
+  --system-gray5: #1E2B1F;
+  --system-gray6: #141E14;
+
+  --label-primary: #F4F0E8;
+  --label-secondary: rgba(244, 240, 232, 0.7);
+  --label-tertiary: rgba(244, 240, 232, 0.35);
+  --label-quaternary: rgba(244, 240, 232, 0.18);
+
+  --bg-primary: #1A2419;
+  --bg-secondary: #1E2B1F;
+  --bg-tertiary: #253328;
+  --bg-grouped: #1A2419;
+  --bg-grouped-secondary: #253328;
+
+  --separator: rgba(244, 240, 232, 0.12);
+  --separator-opaque: #3D5040;
+
+  --fill-primary: rgba(244, 240, 232, 0.14);
+  --fill-secondary: rgba(244, 240, 232, 0.10);
+  --fill-tertiary: rgba(244, 240, 232, 0.07);
+
+  --primary-foreground: #1A2419;
+}
+
 /* ============================================
    Base Styles
    ============================================ */

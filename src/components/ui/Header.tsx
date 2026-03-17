@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpen, ShoppingBag, User } from 'lucide-react';
+import { BookOpen, ShoppingBag, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Header() {
@@ -57,7 +57,7 @@ export default function Header() {
                     </Link>
                 </Button>
 
-                {/* Profile */}
+                {/* Settings */}
                 <Button
                     variant="ghost"
                     asChild
@@ -68,8 +68,8 @@ export default function Header() {
                     }`}
                 >
                     <Link href="/profile">
-                        <User className="w-6 h-6" strokeWidth={isActive('/profile') ? 2 : 1.5} />
-                        <span className="text-[10px] font-medium">Profile</span>
+                        <Settings className="w-6 h-6" strokeWidth={isActive('/profile') ? 2 : 1.5} />
+                        <span className="text-[10px] font-medium">Settings</span>
                     </Link>
                 </Button>
             </div>

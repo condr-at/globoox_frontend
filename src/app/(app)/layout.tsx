@@ -70,6 +70,7 @@ export default function RootLayout({
           enableSystem
           storageKey="globoox-theme"
           disableTransitionOnChange
+          themes={['light', 'dark', 'forest-light', 'forest-dark', 'system']}
         >
           <PostHogProvider />
           <SyncCheckClient />

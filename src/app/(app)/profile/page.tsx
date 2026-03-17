@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User, Settings, HelpCircle, LogOut, Loader2, FlaskConical } from 'lucide-react';
+import { User, HelpCircle, LogOut, Loader2, FlaskConical } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -12,6 +13,18 @@ import { createClient } from '@/lib/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useAuth } from '@/lib/hooks/useAuth';
 import JoinAlphaDialog from '@/components/JoinAlphaDialog';
+import IOSSettingsRow from '@/components/ui/ios-settings-row';
+
+const MODES = [
+    { id: 'system', label: 'Browser Default' },
+    { id: 'light', label: 'Light' },
+    { id: 'dark', label: 'Dark' },
+] as const;
+
+const COLOR_THEMES = [
+    { id: 'globoox', label: 'Globoox', lightTheme: 'forest-light', darkTheme: 'forest-dark' },
+    { id: 'default', label: 'Default', lightTheme: 'light', darkTheme: 'dark' },
+] as const;
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -19,6 +32,41 @@ export default function ProfilePage() {
     const { user, isAlpha, loading } = useAuth();
     const [signingOut, setSigningOut] = useState(false);
     const [showAccessModal, setShowAccessModal] = useState(false);
+    const { theme, setTheme, resolvedTheme } = useTheme();
+
+    const PALETTE_KEY = 'globoox-palette';
+    const [palette, setPalette] = useState<'globoox' | 'default'>(() => {
+        if (typeof window === 'undefined') return 'default';
+        return (localStorage.getItem(PALETTE_KEY) as 'globoox' | 'default') ?? 'default';
+    });
+
+    const systemModeActive = theme === 'system';
+    useEffect(() => {
+        if (!systemModeActive || !resolvedTheme) return;
+        if (palette === 'globoox') {
+            const cls = resolvedTheme === 'dark' ? 'forest-dark' : 'forest-light';
+            document.documentElement.classList.remove('light', 'dark', 'forest-light', 'forest-dark');
+            document.documentElement.classList.add(cls);
+        }
+    }, [systemModeActive, resolvedTheme, palette]);
+
+    const currentColorTheme = palette;
+    const currentMode = theme === 'system' ? 'system'
+        : theme === 'dark' || theme === 'forest-dark' ? 'dark'
+        : 'light';
+
+    const applyAppearance = (mode: string, colorTheme: 'globoox' | 'default') => {
+        localStorage.setItem(PALETTE_KEY, colorTheme);
+        setPalette(colorTheme);
+        if (mode === 'system') {
+            setTheme('system');
+            return;
+        }
+        setTheme(colorTheme === 'globoox'
+            ? (mode === 'dark' ? 'forest-dark' : 'forest-light')
+            : (mode === 'dark' ? 'dark' : 'light')
+        );
+    };
 
     useEffect(() => {
         const supabase = createClient();
@@ -38,12 +86,10 @@ export default function ProfilePage() {
         || 'User';
 
     const displayEmail = user?.email || '';
-
     const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
 
     return (
         <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
-            {/* Header */}
             <PageHeader title="Profile" />
 
             <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(1rem+env(safe-area-inset-top)+76px)] pb-4 space-y-4">
@@ -109,50 +155,62 @@ export default function ProfilePage() {
                             </Card>
                         )}
 
-                        {/* Menu Items */}
-                        <Card className="shadow-none">
-                            <CardContent className="p-0">
-                                <Button
-                                    variant="ghost"
-                                    type="button"
-                                    aria-disabled="true"
-                                    className="w-full justify-start h-12 px-4 rounded-none cursor-not-allowed hover:bg-transparent hover:text-inherit"
-                                >
-                                    <Settings className="w-5 h-5 mr-3 opacity-60" />
-                                    <span className="flex items-center gap-2">
-                                        <span className="opacity-60">Settings</span>
-                                        <span className="text-[8px] font-semibold text-white leading-none px-1 py-0.5 rounded-full bg-primary">
-                                            soon
-                                        </span>
-                                    </span>
-                                </Button>
-                                <div className="pl-12 pr-4">
-                                    <Separator />
-                                </div>
-                                <Button variant="ghost" asChild className="w-full justify-start h-12 px-4 rounded-none">
-                                    <a href="mailto:support@globoox.co">
-                                        <HelpCircle className="w-5 h-5 mr-3" />
-                                        Help & Support
-                                    </a>
-                                </Button>
-                                <div className="pl-12 pr-4">
-                                    <Separator />
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    className="w-full justify-start h-12 px-4 rounded-none text-destructive hover:text-destructive"
-                                    onClick={handleSignOut}
-                                    disabled={signingOut}
-                                >
-                                    {signingOut ? (
-                                        <Loader2 className="w-5 h-5 mr-3 animate-spin" />
-                                    ) : (
-                                        <LogOut className="w-5 h-5 mr-3" />
-                                    )}
-                                    Sign Out
-                                </Button>
-                            </CardContent>
-                        </Card>
+                        {/* Appearance */}
+                        <div>
+                            <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-muted-foreground">
+                                Appearance
+                            </p>
+                            <Card className="shadow-none">
+                                <CardContent className="p-0">
+                                    <IOSSettingsRow
+                                        label="Mode"
+                                        value={currentMode}
+                                        options={MODES}
+                                        onChange={(id) => applyAppearance(id, currentColorTheme)}
+                                    />
+                                    <div className="ml-4 h-px bg-[var(--separator-opaque)]" />
+                                    <IOSSettingsRow
+                                        label="Theme"
+                                        value={currentColorTheme}
+                                        options={COLOR_THEMES}
+                                        onChange={(id) => applyAppearance(currentMode, id as 'globoox' | 'default')}
+                                    />
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Other */}
+                        <div>
+                            <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-muted-foreground">
+                                Other
+                            </p>
+                            <Card className="shadow-none">
+                                <CardContent className="p-0">
+                                    <Button variant="ghost" asChild className="w-full justify-start h-12 px-4 rounded-none">
+                                        <a href="mailto:support@globoox.co">
+                                            <HelpCircle className="w-5 h-5 mr-3" />
+                                            Help & Support
+                                        </a>
+                                    </Button>
+                                    <div className="pl-12 pr-4">
+                                        <Separator />
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        className="w-full justify-start h-12 px-4 rounded-none text-destructive hover:text-destructive"
+                                        onClick={handleSignOut}
+                                        disabled={signingOut}
+                                    >
+                                        {signingOut ? (
+                                            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                                        ) : (
+                                            <LogOut className="w-5 h-5 mr-3" />
+                                        )}
+                                        Sign Out
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </>
                 ) : (
                     /* Guest state */
