@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 // ─── timing (ms) ─────────────────────────────────────────────────────────────
-const T_IDLE            = 1200;
+const T_IDLE            = 2400;
 const T_BTN_FLASH       = 80;    // одно мигание кнопки Add
 const T_PAUSE_EMPTY     = 1100;  // смотрим на пустой drawer
 const T_TAP_FLASH       = 500;   // вспышка зоны выбора
@@ -16,8 +16,8 @@ const T_PAUSE_DONE      = 900;   // пауза на чекмарке
 const T_DRAWER_CLOSE    = 420;
 const T_PAUSE_BOOK      = 600;
 const T_HOLD            = 2600;
-const T_RESET_OPEN      = 320;   // drawer открылся — сбрасываем книгу под ним
-const T_RESET_CLOSE     = 480;   // drawer закрывается обратно
+const T_FADE_OUT        = 1000;
+const T_FADE_IN         = 800;
 
 // высота зоны выбора файла — фиксирована чтобы drawer не скакал
 const DRAWER_ZONE_H = 110;
@@ -34,6 +34,7 @@ type Phase =
   | 'upload-done'
   | 'drawer-closing'
   | 'book-appear'
+  | 'book-reorder'
   | 'hold'
   | 'fade-out'
   | 'fade-in';
@@ -59,47 +60,14 @@ const C = {
 // ─── mock books ───────────────────────────────────────────────────────────────
 const EXISTING_BOOKS = [
   { title: 'The Art of War',           author: 'Sun Tzu',         color: '#A0896E', progress: 74 },
-  { title: 'On the Origin of Species', author: 'Charles Darwin',  color: '#6B8C7A', progress: 41 },
+  { title: 'Walden',                   author: 'Henry Thoreau',   color: '#6B8C7A', progress: 41 },
   { title: 'The Prince',               author: 'Machiavelli',     color: '#7A8A6E', progress: 88 },
-  { title: 'Walden',                   author: 'Henry Thoreau',   color: '#8A7A6E', progress: 22 },
+  { title: 'On the Origin of Species', author: 'Charles Darwin',  color: '#8A7A6E', progress: 22 },
   { title: 'Thus Spoke Zarathustra',   author: 'Nietzsche',       color: '#7A9BAA', progress: 0  },
 ];
 const NEW_BOOK = { title: 'Meditations', author: 'Marcus Aurelius', color: '#9B8AAB' };
 
 // ─── mini book cover ──────────────────────────────────────────────────────────
-function MiniCover({ color, progress = 0, visible = true, animate = false }: {
-  color: string; progress?: number; visible?: boolean; animate?: boolean;
-}) {
-  return (
-    <div style={{
-      width: '100%',
-      aspectRatio: '2/3',
-      borderRadius: 6,
-      backgroundColor: color,
-      position: 'relative',
-      overflow: 'hidden',
-      boxShadow: `0 2px 8px ${C.coverShadow}`,
-      opacity: visible ? 1 : 0,
-      transform: animate
-        ? 'translateY(0) scale(1)'
-        : visible ? 'translateY(0)' : 'translateY(12px) scale(0.93)',
-      transition: animate
-        ? 'opacity 0.6s ease, transform 0.6s cubic-bezier(0.22,1,0.36,1)'
-        : 'none',
-    }}>
-      <div style={{ position: 'absolute', bottom: 10, left: 7, right: 7 }}>
-        <div style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginBottom: 3, width: '88%' }} />
-        <div style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginBottom: 3, width: '65%' }} />
-        <div style={{ height: 2, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.4)', width: '50%' }} />
-      </div>
-      {progress > 0 && (
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2.5, backgroundColor: C.progressBg }}>
-          <div style={{ height: '100%', width: `${progress}%`, backgroundColor: C.accent }} />
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── spinner ──────────────────────────────────────────────────────────────────
 function Spinner() {
@@ -296,6 +264,7 @@ export function MyBooksMockup() {
   const [phase, setPhase]             = useState<Phase>('idle');
   const [uploadPct, setUploadPct]     = useState(0);
   const [showNewBook, setShowNewBook] = useState(false);
+  const [newBookFirst, setNewBookFirst] = useState(false);
   const [fadeOpacity, setFadeOpacity] = useState(0);
   const [scale, setScale]             = useState(1);
   const outerRef                      = useRef<HTMLDivElement>(null);
@@ -326,6 +295,7 @@ export function MyBooksMockup() {
     setPhase('idle');
     setUploadPct(0);
     setShowNewBook(false);
+    setNewBookFirst(false);
     setFadeOpacity(0);
 
     schedule(() => {
@@ -369,7 +339,17 @@ export function MyBooksMockup() {
                           schedule(() => {
                             schedule(() => {
                               setPhase('book-appear');
-                              setShowNewBook(true);
+
+                              // дать браузеру отрендерить existing на старых позициях,
+                              // потом сдвинуть их через CSS transition
+                              rafRef.current = requestAnimationFrame(() => {
+                                rafRef.current = requestAnimationFrame(() => {
+                                  setNewBookFirst(true);
+                                  schedule(() => {
+                                    setShowNewBook(true);
+                                  }, 200);
+                                });
+                              });
 
                               schedule(() => {
                                 setPhase('hold');
@@ -386,6 +366,7 @@ export function MyBooksMockup() {
                                       setPhase('fade-in');
                                       setUploadPct(0);
                                       setShowNewBook(false);
+                                      setNewBookFirst(false);
                                       let op2 = 1;
                                       const stepIn = 16 / T_FADE_IN;
                                       schedule(() => {
@@ -404,7 +385,7 @@ export function MyBooksMockup() {
                                   };
                                   rafRef.current = requestAnimationFrame(fadeOut);
                                 }, T_HOLD);
-                              }, 400);
+                              }, 700);
                             }, T_PAUSE_BOOK);
                           }, T_DRAWER_CLOSE);
                         }, T_PAUSE_DONE);
@@ -531,37 +512,94 @@ export function MyBooksMockup() {
           ))}
         </div>
 
-        {/* book grid */}
-        <div style={{
-          padding: '4px 16px 16px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 14,
-        }}>
-          {EXISTING_BOOKS.map((b) => (
-            <div key={b.title}>
-              <MiniCover color={b.color} progress={b.progress} />
-              <div style={{ marginTop: 5 }}>
-                <div style={{ color: C.text, fontSize: 10, fontWeight: 500, lineHeight: 1.35,
-                  overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                  {b.title}
-                </div>
-                <div style={{ color: C.textMuted, fontSize: 9, marginTop: 2 }}>{b.author}</div>
-              </div>
-            </div>
-          ))}
+        {/* book grid — абсолютное позиционирование для анимации сдвига */}
+        {(() => {
+          const GAP = 14;
+          const PAD = 16;
+          const COLS = 3;
+          const cellW = (320 - PAD * 2 - GAP * (COLS - 1)) / COLS; // ~76px
+          const coverH = cellW * (3 / 2); // aspect 2/3
+          const labelH = 36; // текст под обложкой
+          const cellH = coverH + labelH;
+          const rowH = cellH + GAP;
+          const rows = 2;
+          const containerH = rows * cellH + (rows - 1) * GAP + 20; // +20 bottom padding
 
-          {/* new book slot */}
-          <div>
-            <MiniCover color={NEW_BOOK.color} visible={showNewBook} animate={showNewBook} />
-            {showNewBook && (
-              <div style={{ marginTop: 5 }}>
-                <div style={{ color: C.text, fontSize: 10, fontWeight: 500, lineHeight: 1.35 }}>{NEW_BOOK.title}</div>
-                <div style={{ color: C.textMuted, fontSize: 9, marginTop: 2 }}>{NEW_BOOK.author}</div>
-              </div>
-            )}
-          </div>
-        </div>
+          // порядок слотов: 0..5, каждый → {col, row}
+          const slotPos = (idx: number) => ({
+            left: PAD + (idx % COLS) * (cellW + GAP),
+            top: 4 + Math.floor(idx / COLS) * rowH,
+          });
+
+          // все 6 книг: Meditations + 5 existing
+          const ALL_BOOKS = [
+            { key: 'new', color: NEW_BOOK.color, title: NEW_BOOK.title, author: NEW_BOOK.author, progress: 0, isNew: true },
+            ...EXISTING_BOOKS.map(b => ({ key: b.title, color: b.color, title: b.title, author: b.author, progress: b.progress, isNew: false })),
+          ];
+
+          // позиция каждой книги зависит от фазы:
+          // до reorder: new=slot5 (невидима до showNewBook), existing=slots 0-4
+          // после reorder: new=slot0, existing=slots 1-5
+          const bookSlot = (bookIdx: number) => newBookFirst ? bookIdx : (bookIdx === 0 ? 5 : bookIdx - 1);
+
+          return (
+            <div style={{ position: 'relative', height: containerH, margin: '0 0 0 0' }}>
+              {ALL_BOOKS.map((book, bookIdx) => {
+                const slot = bookSlot(bookIdx);
+                const pos = slotPos(slot);
+                const isNew = book.isNew;
+                const visible = isNew ? showNewBook : true;
+                return (
+                  <div
+                    key={book.key}
+                    style={{
+                      position: 'absolute',
+                      width: cellW,
+                      left: pos.left,
+                      top: pos.top,
+                      opacity: isNew ? 1 : 1,
+                      transform: isNew ? (visible ? 'scale(1)' : 'scale(0)') : undefined,
+                      transformOrigin: 'center center',
+                      transition: isNew
+                        ? 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)'
+                        : newBookFirst
+                          ? 'left 0.45s cubic-bezier(0.22,1,0.36,1), top 0.45s cubic-bezier(0.22,1,0.36,1)'
+                          : 'none',
+                    }}
+                  >
+                    <div style={{
+                      width: '100%',
+                      aspectRatio: '2/3',
+                      borderRadius: 6,
+                      backgroundColor: book.color,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      boxShadow: `0 2px 8px ${C.coverShadow}`,
+                    }}>
+                      <div style={{ position: 'absolute', bottom: 10, left: 7, right: 7 }}>
+                        <div style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginBottom: 3, width: '88%' }} />
+                        <div style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginBottom: 3, width: '65%' }} />
+                        <div style={{ height: 2, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.4)', width: '50%' }} />
+                      </div>
+                      {book.progress > 0 && (
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2.5, backgroundColor: C.progressBg }}>
+                          <div style={{ height: '100%', width: `${book.progress}%`, backgroundColor: C.accent }} />
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ marginTop: 5 }}>
+                      <div style={{ color: C.text, fontSize: 10, fontWeight: 500, lineHeight: 1.35,
+                        overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {book.title}
+                      </div>
+                      <div style={{ color: C.textMuted, fontSize: 9, marginTop: 2 }}>{book.author}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
 
       {/* ── bottom tab bar ── */}
@@ -601,7 +639,7 @@ export function MyBooksMockup() {
         position: 'absolute', inset: 0,
         backgroundColor: 'rgba(0,0,0,0.32)',
         opacity: drawerOpen ? 1 : 0,
-        transition: 'opacity 0.38s ease',
+        transition: 'opacity 0.38s ease-out',
         pointerEvents: 'none',
         zIndex: 9,
       }} />

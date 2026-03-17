@@ -283,7 +283,7 @@ export function EnjoyMockup() {
                     marginBottom: block.head ? 14 : 10,
                     filter: blurred ? 'blur(3px)' : 'none',
                     opacity: blurred ? 0.4 : 1,
-                    transition: blurred ? 'none' : 'filter 0.4s ease, opacity 0.4s ease',
+                    transition: blurred ? 'none' : 'filter 0.4s ease-out, opacity 0.4s ease-out',
                     position: 'relative',
                   }}>
                     {block.text}
@@ -297,7 +297,17 @@ export function EnjoyMockup() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   pointerEvents: 'none',
                 }}>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: C.textMuted, letterSpacing: '0.03em' }}>Translating...</span>
+                  <span style={{
+                    fontSize: 16,
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    background: `linear-gradient(90deg, rgba(192,90,58,0.2) 0%, rgba(192,90,58,0.2) 30%, ${C.accent} 50%, rgba(192,90,58,0.2) 70%, rgba(192,90,58,0.2) 100%)`,
+                    backgroundSize: '200% 100%',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    animation: 'enjoymock-shimmer 1.8s linear infinite',
+                  }}>Translating...</span>
                 </div>
               )}
             </div>
@@ -354,6 +364,10 @@ export function EnjoyMockup() {
           @keyframes enjoymock-slide-in-right {
             from { transform: translateX(-100%); }
             to   { transform: translateX(0); }
+          }
+          @keyframes enjoymock-shimmer {
+            0%   { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
           }
         `}</style>
       </div>

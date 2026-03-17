@@ -61,9 +61,9 @@ type Phase =
 const NEW_BOOK = { title: 'Meditations', author: 'Marcus Aurelius', color: '#9B8AAB', progress: 0 };
 const EXISTING_BOOKS = [
   { title: 'The Art of War',           author: 'Sun Tzu',        color: '#A0896E', progress: 74 },
-  { title: 'On the Origin of Species', author: 'Charles Darwin', color: '#6B8C7A', progress: 41 },
+  { title: 'Walden',                   author: 'Henry Thoreau',  color: '#6B8C7A', progress: 41 },
   { title: 'The Prince',               author: 'Machiavelli',    color: '#7A8A6E', progress: 88 },
-  { title: 'Walden',                   author: 'Henry Thoreau',  color: '#8A7A6E', progress: 22 },
+  { title: 'On the Origin of Species', author: 'Charles Darwin', color: '#8A7A6E', progress: 22 },
   { title: 'Thus Spoke Zarathustra',   author: 'Nietzsche',      color: '#7A9BAA', progress: 0  },
 ];
 
@@ -97,7 +97,7 @@ function MiniCover({ color, progress = 0, tapped = false }: {
       overflow: 'hidden',
       boxShadow: `0 2px 8px ${C.coverShadow}`,
       transform: tapped ? 'scale(0.93)' : 'scale(1)',
-      transition: 'transform 0.12s ease',
+      transition: 'transform 0.12s ease-out',
     }}>
       <div style={{ position: 'absolute', bottom: 10, left: 7, right: 7 }}>
         <div style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginBottom: 3, width: '88%' }} />
@@ -412,7 +412,7 @@ export function ReaderMockup() {
         <div style={{
           position: 'absolute', inset: 0,
           opacity: inReader ? 0 : 1,
-          transition: 'opacity 0.35s ease',
+          transition: 'opacity 0.35s ease-in-out',
           pointerEvents: 'none',
           backgroundColor: C.bg,
         }}>
@@ -519,7 +519,7 @@ export function ReaderMockup() {
         <div style={{
           position: 'absolute', inset: 0,
           opacity: inReader ? 1 : 0,
-          transition: 'opacity 0.35s ease',
+          transition: 'opacity 0.35s ease-in-out',
           pointerEvents: 'none',
           backgroundColor: C.bg,
           display: 'flex',
@@ -604,7 +604,7 @@ export function ReaderMockup() {
                 opacity: textBlur ? 0.4 : 1,
                 transition: textBlur
                   ? 'none'
-                  : `filter 0.5s ease ${i * 0.12}s, opacity 0.5s ease ${i * 0.12}s`,
+                  : `filter 0.5s ease-out ${i * 0.12}s, opacity 0.5s ease-out ${i * 0.12}s`,
               }}>
                 {line}
               </p>
@@ -615,7 +615,17 @@ export function ReaderMockup() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 pointerEvents: 'none',
               }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: C.textMuted, letterSpacing: '0.03em' }}>Translating...</span>
+                <span style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                  background: `linear-gradient(90deg, rgba(192,90,58,0.2) 0%, rgba(192,90,58,0.2) 30%, ${C.accent} 50%, rgba(192,90,58,0.2) 70%, rgba(192,90,58,0.2) 100%)`,
+                  backgroundSize: '200% 100%',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  animation: 'readermock-shimmer 1.8s linear infinite',
+                }}>Translating...</span>
               </div>
             )}
           </div>
@@ -648,6 +658,10 @@ export function ReaderMockup() {
           @keyframes readermock-glow {
             0%   { background-position: 0% 50%; }
             100% { background-position: 300% 50%; }
+          }
+          @keyframes readermock-shimmer {
+            0%   { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
           }
         `}</style>
       </div>
