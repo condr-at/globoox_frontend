@@ -32,7 +32,7 @@ export default function Header() {
                 >
                     <div className="relative">
                         <div className="opacity-40">
-                            <ShoppingBag className="w-8 h-8" strokeWidth={1.5} />
+                            <ShoppingBag className="w-9 h-9" strokeWidth={1.5} />
                         </div>
                         <span className="absolute -top-0.5 -right-3 text-[8px] font-semibold text-white leading-none px-1 py-0.5 rounded-full bg-primary">
                             soon

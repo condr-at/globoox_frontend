@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { MyBooksMockup } from './MyBooksMockup';
 
 export interface UseCaseItem {
   icon?: string;
@@ -9,6 +10,7 @@ export interface UseCaseItem {
   description?: string;
   benefits?: string[];
   imagePlaceholder?: boolean;
+  mockup?: 'my-books';
 }
 
 interface UseCasesProps {
@@ -126,8 +128,12 @@ export function UseCases({ label, heading, description, items }: UseCasesProps) 
               )}
             </div>
 
-            {/* Image Placeholder */}
-            {useCase.imagePlaceholder && (
+            {/* Mockup or Image Placeholder */}
+            {useCase.mockup === 'my-books' ? (
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                <MyBooksMockup />
+              </div>
+            ) : useCase.imagePlaceholder && (
               <div
                 style={{
                   width: '100%',

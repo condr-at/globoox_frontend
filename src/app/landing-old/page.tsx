@@ -39,7 +39,7 @@ export default function LandingPage() {
         heading="Three simple steps."
         description=""
         items={[
-          { title: 'Step 1', subtitle: '', description: 'Upload your ebook', imagePlaceholder: true },
+          { title: 'Step 1', subtitle: '', description: 'Upload your ebook', mockup: 'my-books' },
           { title: 'Step 2', subtitle: '', description: 'Choose your language', imagePlaceholder: true },
           { title: 'Step 3', subtitle: '', description: 'Enjoy your book!', imagePlaceholder: true },
         ]}
