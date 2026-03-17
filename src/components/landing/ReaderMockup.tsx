@@ -200,16 +200,6 @@ function GlowBorder({ active, width = 320, height = 640 }: { active: boolean; wi
           filter="url(#glowBlur)"
           opacity="1"
         />
-        {/* чёткая линия поверх */}
-        <rect
-          x={2} y={2}
-          width={width - 4} height={height - 4}
-          rx={r} ry={r}
-          fill="none"
-          stroke="url(#glowGrad)"
-          strokeWidth="2.5"
-          opacity="1"
-        />
       </svg>
     </div>
   );
