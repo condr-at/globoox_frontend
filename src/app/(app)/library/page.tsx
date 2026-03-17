@@ -231,7 +231,7 @@ export default function LibraryPage() {
                 setSortDropdownOpen((v) => !v);
               }
             }}
-            className="ml-auto relative flex items-center gap-[4px] px-[8px] min-h-[44px] text-[var(--system-blue)] active:opacity-70 transition-opacity after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-[-4px]"
+            className="ml-auto relative flex items-center gap-[4px] px-[8px] min-h-[44px] text-primary active:opacity-70 transition-opacity after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-[-4px]"
             aria-label="Sort"
           >
             <span className="text-[15px] font-medium">
@@ -259,7 +259,7 @@ export default function LibraryPage() {
                     className="w-full flex items-center justify-between px-[16px] py-[12px] text-left transition-colors active:bg-[var(--fill-tertiary)]"
                   >
                     <span className="text-[17px]">{label}</span>
-                    {sortOrder === value && <Check className="w-[18px] h-[18px] text-[var(--system-blue)]" />}
+                    {sortOrder === value && <Check className="w-[18px] h-[18px] text-primary" />}
                   </button>
                   {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />}
                 </div>
@@ -333,7 +333,7 @@ export default function LibraryPage() {
               ].join(' ')}
             >
               <span>{label}</span>
-              {sortOrder === value && <Check className="w-[18px] h-[18px] text-[var(--system-blue)]" />}
+              {sortOrder === value && <Check className="w-[18px] h-[18px] text-primary" />}
             </button>
           ))}
         </div>

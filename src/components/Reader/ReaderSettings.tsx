@@ -31,7 +31,7 @@ export default function ReaderSettings({
             {externalOpen === undefined && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="flex items-center justify-center min-w-[44px] min-h-[44px] text-[var(--system-blue)] active:opacity-70 transition-opacity"
+                    className="flex items-center justify-center min-w-[44px] min-h-[44px] text-primary active:opacity-70 transition-opacity"
                 >
                     <Settings className="w-[20px] h-[20px]" />
                 </button>
@@ -54,12 +54,12 @@ export default function ReaderSettings({
                 <div className="p-5 pt-0">
                     <div>
                         <div className="flex items-center gap-[8px] mb-[12px]">
-                            <Type className="w-[16px] h-[16px] text-[var(--label-secondary)]" />
-                            <span className="text-[15px] text-[var(--label-secondary)]">Font Size</span>
+                            <Type className="w-[16px] h-[16px] text-muted-foreground" />
+                            <span className="text-[15px] text-muted-foreground">Font Size</span>
                         </div>
                         <div className="flex items-center gap-[16px]">
                             <span className={sliderEdgeBoxClassName}>
-                                <span className="text-[13px] text-[var(--label-secondary)]">A</span>
+                                <span className="text-[13px] text-muted-foreground">A</span>
                             </span>
                             <input
                                 type="range"
@@ -100,10 +100,10 @@ export default function ReaderSettings({
                                 "
                             />
                             <span className={sliderEdgeBoxClassName}>
-                                <span className="text-[20px] text-[var(--label-secondary)]">A</span>
+                                <span className="text-[20px] text-muted-foreground">A</span>
                             </span>
                         </div>
-                        <p className="text-center text-[13px] text-[var(--label-tertiary)] mt-[8px]">
+                        <p className="text-center text-[13px] text-muted-foreground/50 mt-[8px]">
                             {settings.fontSize}px
                         </p>
                     </div>

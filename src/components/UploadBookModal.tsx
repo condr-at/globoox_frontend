@@ -204,14 +204,14 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
               className={`${sectionClassName} cursor-pointer py-7 text-center transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.03]`}
             >
               {file ? (
-                <FileText className="mx-auto mb-3 h-10 w-10 text-[var(--label-secondary)]" />
+                <FileText className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
               ) : (
-                <Upload className="mx-auto mb-3 h-10 w-10 text-[var(--label-secondary)]" />
+                <Upload className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
               )}
-              <p className="text-[15px] font-medium text-[var(--label-primary)]">
+              <p className="text-[15px] font-medium text-foreground">
                 {file ? file.name : 'Choose an EPUB file'}
               </p>
-              <p className="mt-1 text-sm text-[var(--label-secondary)]">
+              <p className="mt-1 text-sm text-muted-foreground">
                 EPUB only. DRM-protected books usually cannot be imported.
               </p>
             </div>
@@ -226,11 +226,11 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
 
             {error && (
               <div className={`${sectionClassName} space-y-3 text-left`}>
-                <p className="text-sm font-medium text-[var(--system-red)]">{error}</p>
+                <p className="text-sm font-medium text-destructive">{error}</p>
                 {uploadHelp && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-[var(--label-primary)]">{uploadHelp.title}</p>
-                    <ul className="space-y-1 text-sm text-[var(--label-secondary)]">
+                    <p className="text-sm font-medium text-foreground">{uploadHelp.title}</p>
+                    <ul className="space-y-1 text-sm text-muted-foreground">
                       {uploadHelp.tips.map((tip) => (
                         <li key={tip}>{tip}</li>
                       ))}
@@ -251,14 +251,14 @@ export default function UploadBookModal({ isOpen, onClose, onUploaded }: UploadB
         ) : (
           <div className={`${sectionClassName} py-8 text-center`}>
             {progress < 100 ? (
-              <Loader2 className="mx-auto mb-3 h-10 w-10 animate-spin text-[var(--label-secondary)]" />
+              <Loader2 className="mx-auto mb-3 h-10 w-10 animate-spin text-muted-foreground" />
             ) : (
-              <CheckCircle className="mx-auto mb-3 h-10 w-10 text-[var(--label-secondary)]" />
+              <CheckCircle className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
             )}
-            <p className="mb-3 text-sm text-[var(--label-secondary)]">{message}</p>
+            <p className="mb-3 text-sm text-muted-foreground">{message}</p>
             <div className="h-2 w-full rounded-full bg-[var(--fill-quaternary)]">
               <div
-                className="h-2 rounded-full bg-[var(--system-blue)] transition-all duration-300"
+                className="h-2 rounded-full bg-primary transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>

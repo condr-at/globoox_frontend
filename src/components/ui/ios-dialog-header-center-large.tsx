@@ -15,11 +15,11 @@ export default function IOSDialogHeaderCenterLarge({
 }: IOSDialogHeaderCenterLargeProps) {
   return (
     <div className={cn('text-center', className)}>
-      <h2 className="text-[22px] font-semibold leading-tight text-[var(--label-primary)]">
+      <h2 className="text-[22px] font-semibold leading-tight text-foreground">
         {title}
       </h2>
       {description ? (
-        <div className="mt-2 text-sm leading-relaxed text-[var(--label-secondary)]">
+        <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {description}
         </div>
       ) : null}

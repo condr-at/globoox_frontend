@@ -67,13 +67,13 @@ export default function IOSAlertDialog({
         </div>
         <h2
           id={titleId}
-          className="text-[17px] font-semibold leading-[22px] tracking-[-0.01em] text-[var(--label-primary)]"
+          className="text-[17px] font-semibold leading-[22px] tracking-[-0.01em] text-foreground"
         >
           {title}
         </h2>
         <div
           id={descriptionId}
-          className="mt-3 text-[13px] leading-[18px] text-[var(--label-primary)]"
+          className="mt-3 text-[13px] leading-[18px] text-foreground"
         >
           {description}
         </div>

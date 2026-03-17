@@ -58,7 +58,7 @@ export default function ReaderActionsMenu({
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-[var(--system-blue)] active:opacity-70 disabled:opacity-50 after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-[-10px]"
+        className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-primary active:opacity-70 disabled:opacity-50 after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-[-10px]"
         disabled={disabled}
       >
         <MoreHorizontal className="w-6 h-6" />
@@ -75,10 +75,10 @@ export default function ReaderActionsMenu({
             className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors active:bg-[var(--fill-tertiary)]"
           >
             <div className="flex items-center gap-3">
-              <List className="w-5 h-5 text-[var(--system-blue)]" />
+              <List className="w-5 h-5 text-primary" />
               <span className="text-[17px]">Chapters</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-[var(--label-tertiary)]" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
           </button>
 
           <div className="ml-12 mr-4 h-[0.5px] bg-[var(--separator)]" />
@@ -88,10 +88,10 @@ export default function ReaderActionsMenu({
             className="w-full flex items-center justify-between px-4 py-3 text-left transition-colors active:bg-[var(--fill-tertiary)]"
           >
             <div className="flex items-center gap-3">
-              <Type className="w-5 h-5 text-[var(--system-blue)]" />
+              <Type className="w-5 h-5 text-primary" />
               <span className="text-[17px]">Appearance</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-[var(--label-tertiary)]" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
           </button>
         </div>
       )}

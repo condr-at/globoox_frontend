@@ -37,10 +37,10 @@ function getActionClassName({
   return cn(
     'flex h-[56px] w-full items-center justify-center px-4 text-center text-[17px] transition-colors active:bg-black/[0.04] disabled:opacity-50 dark:active:bg-white/[0.06]',
     destructive
-      ? 'font-normal text-[var(--system-red)]'
+      ? 'font-normal text-destructive'
       : emphasized
-        ? 'font-normal text-[var(--system-blue)] sm:font-medium dark:font-normal'
-        : 'font-normal text-[var(--system-blue)]',
+        ? 'font-normal text-primary sm:font-medium dark:font-normal'
+        : 'font-normal text-primary',
     className,
   );
 }

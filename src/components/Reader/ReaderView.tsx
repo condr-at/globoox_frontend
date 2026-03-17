@@ -1404,7 +1404,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             >
                 <div className="flex h-11 items-center px-4">
                     <div className="flex h-full items-center justify-start shrink-0">
-                        <Button variant="ghost" size="icon" asChild className="text-[var(--system-blue)] -ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px]">
+                        <Button variant="ghost" size="icon" asChild className="text-primary -ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px]">
                             <Link
                                 href="/library"
                                 onClick={() => {
@@ -1416,7 +1416,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                                     } catch { /* ignore */ }
                                 }}
                             >
-                                <ChevronLeft className="w-6 h-6 text-[var(--system-blue)]" strokeWidth={2.5} />
+                                <ChevronLeft className="w-6 h-6 text-primary" strokeWidth={2.5} />
                             </Link>
                         </Button>
                     </div>
@@ -1427,7 +1427,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                                 {readerBookTitle}
                             </h1>
                             {readerBookAuthor && (
-                                <p className={`max-w-full text-[11px] leading-3 text-[var(--label-secondary)] truncate ${isBookMetaPending ? 'blur-[3px] opacity-40' : ''}`}>
+                                <p className={`max-w-full text-[11px] leading-3 text-muted-foreground truncate ${isBookMetaPending ? 'blur-[3px] opacity-40' : ''}`}>
                                     {readerBookAuthor}
                                 </p>
                             )}
@@ -1589,7 +1589,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                     size="sm"
                     onClick={goToPrevPage}
                     disabled={currentPageIdx === 0 && currentChapterIndex === 1}
-                    className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
+                    className="hidden md:flex items-center gap-0.5 text-xs text-primary disabled:opacity-30 px-1"
                 >
                     <span className="truncate">← Previous page</span>
                 </Button>
@@ -1610,7 +1610,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                     size="sm"
                     onClick={goToNextPage}
                     disabled={currentPageIdx >= pages.length - 1 && currentChapterIndex === chapters.length}
-                    className="hidden md:flex items-center gap-0.5 text-xs text-[var(--system-blue)] disabled:opacity-30 px-1"
+                    className="hidden md:flex items-center gap-0.5 text-xs text-primary disabled:opacity-30 px-1"
                 >
                     <span className="truncate">Next page →</span>
                 </Button>

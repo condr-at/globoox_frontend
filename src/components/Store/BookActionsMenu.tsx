@@ -60,7 +60,7 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
       <button
         ref={triggerRef}
         type="button"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/80 backdrop-blur text-[var(--system-blue)] active:opacity-70"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/80 backdrop-blur text-primary active:opacity-70"
         onPointerDown={(e) => {
           e.stopPropagation();
         }}
@@ -95,9 +95,9 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
             className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors active:bg-[var(--fill-tertiary)]"
           >
             {hideLabel === 'Unhide' ? (
-              <Eye className="w-4 h-4 text-[var(--system-blue)]" />
+              <Eye className="w-4 h-4 text-primary" />
             ) : (
-              <EyeOff className="w-4 h-4 text-[var(--system-blue)]" />
+              <EyeOff className="w-4 h-4 text-primary" />
             )}
             <span className="text-[15px]">{hideLabel}</span>
           </button>
@@ -115,8 +115,8 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
             }}
             className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors active:bg-[var(--fill-tertiary)]"
           >
-            <Trash2 className="w-4 h-4 text-[var(--system-red)]" />
-            <span className="text-[15px] text-[var(--system-red)]">Delete</span>
+            <Trash2 className="w-4 h-4 text-destructive" />
+            <span className="text-[15px] text-destructive">Delete</span>
           </button>
         </div>
       )}

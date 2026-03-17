@@ -50,7 +50,7 @@ export default function TableOfContents({
             {externalOpen === undefined && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="flex items-center justify-center min-w-[44px] min-h-[44px] text-[var(--system-blue)] active:opacity-70 transition-opacity"
+                    className="flex items-center justify-center min-w-[44px] min-h-[44px] text-primary active:opacity-70 transition-opacity"
                 >
                     <List className="w-[20px] h-[20px]" />
                 </button>
@@ -114,17 +114,17 @@ export default function TableOfContents({
                                                 block
                                                 ${depth === 1 ? 'text-[18px]' : 'text-[16px]'}
                                                 ${isActive
-                                                    ? 'text-[var(--label-primary)] font-semibold'
+                                                    ? 'text-foreground font-semibold'
                                                     : depth === 1
-                                                        ? 'text-[var(--label-primary)]'
-                                                        : 'text-[var(--label-secondary)]'
+                                                        ? 'text-foreground'
+                                                        : 'text-muted-foreground'
                                                 }
                                             `}
                                         >
                                             {chapter.title}
                                         </span>
                                     </span>
-                                    <span className="shrink-0 text-[15px] text-[var(--label-secondary)]">
+                                    <span className="shrink-0 text-[15px] text-muted-foreground">
                                         {depth === 1 ? chapter.number : ''}
                                     </span>
                                 </button>

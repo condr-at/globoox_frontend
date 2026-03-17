@@ -33,24 +33,24 @@ export default function IOSReaderHeader({
               variant="ghost"
               size="icon"
               type="button"
-              className="text-[var(--system-blue)] -ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px]"
+              className="text-primary -ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px]"
             >
-              <ChevronLeft className="w-6 h-6 text-[var(--system-blue)]" strokeWidth={2.5} />
+              <ChevronLeft className="w-6 h-6 text-primary" strokeWidth={2.5} />
             </Button>
           </div>
 
           <div className="min-w-0 flex-1 px-2">
             <div className="flex max-w-full flex-col justify-center text-left">
-              <h1 className="max-w-full text-sm font-semibold truncate text-[var(--label-primary)]">{title}</h1>
+              <h1 className="max-w-full text-sm font-semibold truncate text-foreground">{title}</h1>
               {subtitle ? (
-                <p className="max-w-full text-[11px] leading-3 text-[var(--label-secondary)] truncate">
+                <p className="max-w-full text-[11px] leading-3 text-muted-foreground truncate">
                   {subtitle}
                 </p>
               ) : null}
             </div>
           </div>
 
-          <div className="flex h-full items-center justify-end shrink-0 text-[var(--system-blue)]">
+          <div className="flex h-full items-center justify-end shrink-0 text-primary">
             {trailingLeft}
             {trailingRight}
           </div>

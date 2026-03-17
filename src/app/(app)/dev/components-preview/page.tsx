@@ -61,10 +61,10 @@ type CatalogItem = {
 function LayerBadge({ layer }: { layer: Layer }) {
   const palette =
     layer === 'Primitive'
-      ? 'bg-[var(--fill-secondary)] text-[var(--label-secondary)]'
+      ? 'bg-[var(--fill-secondary)] text-muted-foreground'
       : layer === 'Pattern'
-        ? 'bg-[var(--system-blue)]/10 text-[var(--system-blue)]'
-        : 'bg-[var(--fill-tertiary)] text-[var(--label-primary)]';
+        ? 'bg-[var(--system-blue)]/10 text-primary'
+        : 'bg-[var(--fill-tertiary)] text-foreground';
 
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${palette}`}>
@@ -85,8 +85,8 @@ function Section({
   return (
     <section className="rounded-[28px] bg-[var(--bg-grouped-secondary)] p-6">
       <div className="mb-5">
-        <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-[var(--label-primary)]">{title}</h2>
-        <p className="mt-1 text-sm leading-relaxed text-[var(--label-secondary)]">{description}</p>
+        <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-foreground">{title}</h2>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
       </div>
       {children}
     </section>
@@ -104,8 +104,8 @@ function CatalogCard({
     <div className="rounded-[24px] bg-[var(--bg-grouped)] p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="break-words text-[17px] font-semibold text-[var(--label-primary)]">{item.title}</h3>
-          <p className="mt-1 text-sm text-[var(--label-secondary)]">Built on: {item.builtOn}</p>
+          <h3 className="break-words text-[17px] font-semibold text-foreground">{item.title}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">Built on: {item.builtOn}</p>
         </div>
         <div className="shrink-0">
           <LayerBadge layer={item.layer} />
@@ -113,16 +113,16 @@ function CatalogCard({
       </div>
 
       <div className="mt-4 space-y-3 text-sm leading-relaxed">
-        <p className="text-[var(--label-primary)]">
+        <p className="text-foreground">
           <span className="font-medium">Use when:</span> {item.useWhen}
         </p>
-        <p className="text-[var(--label-secondary)]">
-          <span className="font-medium text-[var(--label-primary)]">Avoid when:</span> {item.avoidWhen}
+        <p className="text-muted-foreground">
+          <span className="font-medium text-foreground">Avoid when:</span> {item.avoidWhen}
         </p>
         {item.inlinePreview ? item.inlinePreview : null}
         {item.notes ? (
-          <p className="text-[var(--label-secondary)]">
-            <span className="font-medium text-[var(--label-primary)]">Notes:</span> {item.notes}
+          <p className="text-muted-foreground">
+            <span className="font-medium text-foreground">Notes:</span> {item.notes}
           </p>
         ) : null}
       </div>
@@ -132,7 +132,7 @@ function CatalogCard({
           <button
             type="button"
             onClick={() => onOpen(item.openKey!)}
-            className="flex h-14 items-center justify-center rounded-2xl text-[17px] font-medium text-[var(--system-blue)] transition-colors active:bg-black/[0.04] dark:active:bg-white/[0.06] px-4"
+            className="flex h-14 items-center justify-center rounded-2xl text-[17px] font-medium text-primary transition-colors active:bg-black/[0.04] dark:active:bg-white/[0.06] px-4"
           >
             Open Preview
           </button>
@@ -140,7 +140,7 @@ function CatalogCard({
             <button
               type="button"
               onClick={() => onOpen(item.secondaryOpenKey!)}
-              className="flex h-14 items-center justify-center rounded-2xl text-[17px] font-medium text-[var(--system-blue)] transition-colors active:bg-black/[0.04] dark:active:bg-white/[0.06] px-4"
+              className="flex h-14 items-center justify-center rounded-2xl text-[17px] font-medium text-primary transition-colors active:bg-black/[0.04] dark:active:bg-white/[0.06] px-4"
             >
               {item.secondaryLabel}
             </button>
@@ -432,11 +432,11 @@ export default function ComponentsPreviewPage() {
     <main className="min-h-screen bg-[var(--bg-grouped)] px-6 py-10">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <header className="max-w-4xl">
-          <p className="text-sm font-medium text-[var(--system-blue)]">Design Catalog</p>
-          <h1 className="mt-2 text-[34px] font-semibold tracking-[-0.03em] text-[var(--label-primary)]">
+          <p className="text-sm font-medium text-primary">Design Catalog</p>
+          <h1 className="mt-2 text-[34px] font-semibold tracking-[-0.03em] text-foreground">
             Components Preview
           </h1>
-          <p className="mt-3 text-[17px] leading-[24px] text-[var(--label-secondary)]">
+          <p className="mt-3 text-[17px] leading-[24px] text-muted-foreground">
             This page documents the modal stack by layer so it is obvious what can be inserted where.
           </p>
         </header>
@@ -446,27 +446,27 @@ export default function ComponentsPreviewPage() {
           description="These are the constraints for how modal code should be composed in product code."
         >
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-foreground">
               <p className="font-medium">Allowed in feature code</p>
-              <p className="mt-2 text-[var(--label-secondary)]">
+              <p className="mt-2 text-muted-foreground">
                 `IOSAlertDialog`, `IOSFlowDialog`, and reader-specific sheet components built on `IOSBottomDrawer`.
               </p>
             </div>
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-foreground">
               <p className="font-medium">Do not use directly</p>
-              <p className="mt-2 text-[var(--label-secondary)]">
+              <p className="mt-2 text-muted-foreground">
                 `IOSModalShell` and `IOSDialog` should stay in the UI layer unless you are defining a new canonical pattern.
               </p>
             </div>
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-foreground">
               <p className="font-medium">Action weight</p>
-              <p className="mt-2 text-[var(--label-secondary)]">
+              <p className="mt-2 text-muted-foreground">
                 Use regular by default. `font-medium` is allowed only for a single primary action in light theme.
               </p>
             </div>
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-[var(--label-primary)]">
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-foreground">
               <p className="font-medium">Do not hand-roll chrome</p>
-              <p className="mt-2 text-[var(--label-secondary)]">
+              <p className="mt-2 text-muted-foreground">
                 Reuse `IOSBottomDrawerHeader`, `IOSDialogHeaderCenterLarge`, and `IOSDialogFooter`. Do not rebuild modal chrome locally in feature files.
               </p>
             </div>
@@ -479,20 +479,20 @@ export default function ComponentsPreviewPage() {
         >
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
-              <p className="font-medium text-[var(--label-primary)]">IOSAlertDialog</p>
-              <p className="mt-2 text-[var(--label-secondary)]">Use for short blocking decisions, warnings, confirmations, and simple access requests.</p>
+              <p className="font-medium text-foreground">IOSAlertDialog</p>
+              <p className="mt-2 text-muted-foreground">Use for short blocking decisions, warnings, confirmations, and simple access requests.</p>
             </div>
             <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
-              <p className="font-medium text-[var(--label-primary)]">IOSFeatureDialog</p>
-              <p className="mt-2 text-[var(--label-secondary)]">Use for compact prompts with richer copy or benefits lists, but not full flows.</p>
+              <p className="font-medium text-foreground">IOSFeatureDialog</p>
+              <p className="mt-2 text-muted-foreground">Use for compact prompts with richer copy or benefits lists, but not full flows.</p>
             </div>
             <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
-              <p className="font-medium text-[var(--label-primary)]">IOSFlowDialog</p>
-              <p className="mt-2 text-[var(--label-secondary)]">Use for sheet-based tasks with custom body layout, inputs, uploads, and drag-to-dismiss.</p>
+              <p className="font-medium text-foreground">IOSFlowDialog</p>
+              <p className="mt-2 text-muted-foreground">Use for sheet-based tasks with custom body layout, inputs, uploads, and drag-to-dismiss.</p>
             </div>
             <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
-              <p className="font-medium text-[var(--label-primary)]">Reader BottomDrawer Pattern</p>
-              <p className="mt-2 text-[var(--label-secondary)]">Use only inside the reader for Chapters, Appearance, and other reader-specific drawers.</p>
+              <p className="font-medium text-foreground">Reader BottomDrawer Pattern</p>
+              <p className="mt-2 text-muted-foreground">Use only inside the reader for Chapters, Appearance, and other reader-specific drawers.</p>
             </div>
           </div>
         </Section>

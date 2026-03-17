@@ -60,7 +60,7 @@ export default function LanguageSwitch({
           ref={triggerRef}
           onClick={() => setIsOpen(!effectiveOpen)}
           disabled={disabled}
-          className="relative flex items-center gap-[4px] px-[8px] min-w-[44px] min-h-[44px] text-[var(--system-blue)] active:opacity-70 disabled:opacity-50 transition-opacity after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-[-4px]"
+          className="relative flex items-center gap-[4px] px-[8px] min-w-[44px] min-h-[44px] text-primary active:opacity-70 disabled:opacity-50 transition-opacity after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-[-4px]"
         >
           <span className="text-[15px] font-medium">{activeLanguage.toUpperCase()}</span>
           <ChevronDown className={`w-[16px] h-[16px] transition-transform ${effectiveOpen ? 'rotate-180' : ''}`} />
@@ -81,7 +81,7 @@ export default function LanguageSwitch({
               >
                 <span className="text-[17px]">{languageNames[lang]}</span>
                 {activeLanguage === lang && (
-                  <Check className="w-[20px] h-[20px] text-[var(--system-blue)]" />
+                  <Check className="w-[20px] h-[20px] text-primary" />
                 )}
               </button>
               {index < availableLanguages.length - 1 ? (

@@ -43,7 +43,7 @@ export default function JoinAlphaDialog({
           Join the alpha program and get early access to new features. We&apos;ll contact you at{' '}
           <span className="font-medium">{userEmail}</span>.
           {status === 'error' ? (
-            <span className="mt-2 block text-[var(--system-red)]">
+            <span className="mt-2 block text-destructive">
               Something went wrong. Please try again.
             </span>
           ) : null}

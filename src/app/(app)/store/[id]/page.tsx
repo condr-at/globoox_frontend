@@ -27,7 +27,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                     ? 'fill-[var(--system-orange)] text-[var(--system-orange)]'
                     : i < rating
                         ? 'fill-[var(--system-orange)]/50 text-[var(--system-orange)]'
-                        : 'text-[var(--system-gray3)]'
+                        : 'text-muted-foreground'
                     }`}
             />
         ));
@@ -38,7 +38,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
             {/* Navigation Bar */}
             <header className="nav-bar fixed top-0 left-0 right-0 z-40 safe-area-inset-top">
                 <div className="flex items-center h-[44px] px-[16px]">
-                    <Link href="/store" className="flex items-center gap-[4px] text-[var(--system-blue)] -ml-[8px] min-w-[44px] min-h-[44px] pl-[8px]">
+                    <Link href="/store" className="flex items-center gap-[4px] text-primary -ml-[8px] min-w-[44px] min-h-[44px] pl-[8px]">
                         <ChevronLeft className="w-[20px] h-[20px]" strokeWidth={2.5} />
                         <span className="text-[17px]">Store</span>
                     </Link>
@@ -60,7 +60,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
 
                     {/* Demo badge */}
                     {book.hasDemo && (
-                        <div className="absolute -top-[8px] -right-[8px] px-[12px] py-[4px] rounded-full bg-[var(--system-blue)] text-[12px] font-semibold text-white shadow-md">
+                        <div className="absolute -top-[8px] -right-[8px] px-[12px] py-[4px] rounded-full bg-primary text-[12px] font-semibold text-primary-foreground shadow-md">
                             Demo Available
                         </div>
                     )}
@@ -69,13 +69,13 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                 {/* Info Card */}
                 <div className="bg-[var(--bg-grouped-secondary)] rounded-[12px] p-[16px] mb-[16px]">
                     <h1 className="text-[22px] font-bold mb-[4px]">{book.title}</h1>
-                    <p className="text-[17px] text-[var(--label-secondary)] mb-[16px]">by {book.author}</p>
+                    <p className="text-[17px] text-muted-foreground mb-[16px]">by {book.author}</p>
 
                     {/* Rating */}
                     <div className="flex items-center gap-[8px] mb-[16px]">
                         <div className="flex">{renderStars(book.rating)}</div>
                         <span className="text-[15px] font-semibold">{book.rating}</span>
-                        <span className="text-[13px] text-[var(--label-tertiary)]">
+                        <span className="text-[13px] text-muted-foreground/50">
                             ({book.reviews >= 1000 ? `${(book.reviews / 1000).toFixed(1)}K` : book.reviews} reviews)
                         </span>
                     </div>
@@ -85,7 +85,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                         {book.genre.map((genre) => (
                             <span
                                 key={genre}
-                                className="px-[12px] py-[4px] rounded-full bg-[var(--fill-tertiary)] text-[13px] font-medium text-[var(--label-secondary)]"
+                                className="px-[12px] py-[4px] rounded-full bg-[var(--fill-tertiary)] text-[13px] font-medium text-muted-foreground"
                             >
                                 {genre}
                             </span>
@@ -96,7 +96,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                 {/* Description */}
                 <div className="bg-[var(--bg-grouped-secondary)] rounded-[12px] p-[16px] mb-[16px]">
                     <h2 className="text-[17px] font-semibold mb-[12px]">About this book</h2>
-                    <p className="text-[17px] text-[var(--label-secondary)] leading-[1.5]">
+                    <p className="text-[17px] text-muted-foreground leading-[1.5]">
                         {book.description}
                     </p>
                 </div>
@@ -104,10 +104,10 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                 {/* Price & Actions */}
                 <div className="bg-[var(--bg-grouped-secondary)] rounded-[12px] p-[16px]">
                     <div className="flex items-baseline gap-[8px] mb-[20px]">
-                        <p className="text-[28px] font-bold text-[var(--label-primary)]">
+                        <p className="text-[28px] font-bold text-foreground">
                             {book.price}
                         </p>
-                        <span className="text-[13px] text-[var(--label-tertiary)]">USD</span>
+                        <span className="text-[13px] text-muted-foreground/50">USD</span>
                     </div>
 
                     <div className="flex flex-col gap-[12px]">
@@ -129,7 +129,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                                 <ExternalLink className="w-[20px] h-[20px]" />
                                 Buy
                             </button>
-                            <p className="mt-[6px] text-[12px] text-[var(--label-tertiary)] text-center">
+                            <p className="mt-[6px] text-[12px] text-muted-foreground/50 text-center">
                                 comnig soon
                             </p>
                         </div>
@@ -138,9 +138,9 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
 
                 {/* Info note */}
                 {book.hasDemo && (
-                    <div className="mt-[16px] p-[16px] rounded-[12px] bg-[var(--system-blue)]/10">
-                        <p className="text-[15px] text-[var(--label-secondary)]">
-                            <span className="text-[var(--system-blue)] font-medium">Tip:</span> Try our instant translation feature. Switch between English, French, Spanish, and German while reading.
+                    <div className="mt-[16px] p-[16px] rounded-[12px] bg-primary/10">
+                        <p className="text-[15px] text-muted-foreground">
+                            <span className="text-primary font-medium">Tip:</span> Try our instant translation feature. Switch between English, French, Spanish, and German while reading.
                         </p>
                     </div>
                 )}
