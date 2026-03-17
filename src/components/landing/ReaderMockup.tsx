@@ -17,8 +17,8 @@ const T_MODAL_TAP     = 150;
 const T_TRANSLATING   = 2400;  // glow + blur
 const T_TRANSLATED    = 400;   // текст проявляется
 const T_HOLD          = 2200;  // читаем английский
-const T_FADE_OUT      = 900;
-const T_FADE_IN       = 700;
+const T_BACK_TAP      = 150;   // подсветка кнопки назад
+const T_BACK_CLOSE    = 400;   // переход reader → library
 
 // ─── colours (forest-light) ──────────────────────────────────────────────────
 const C = {
@@ -53,7 +53,9 @@ type Phase =
   | 'modal-tap'
   | 'translating'
   | 'translated'
-  | 'hold';
+  | 'hold'
+  | 'back-tap'
+  | 'back-close';
 
 // первый слот — Meditations (новая книга из Step 1), остальные — existing books
 const NEW_BOOK = { title: 'Meditations', author: 'Marcus Aurelius', color: '#9B8AAB', progress: 0 };
@@ -259,11 +261,9 @@ function IOSAlert({ visible, tapOK }: { visible: boolean; tapOK: boolean }) {
 // ─── main ─────────────────────────────────────────────────────────────────────
 export function ReaderMockup() {
   const [phase, setPhase]         = useState<Phase>('library');
-  const [fadeOpacity, setFadeOpacity] = useState(0);
   const [scale, setScale]         = useState(1);
   const outerRef                  = useRef<HTMLDivElement>(null);
   const timerRef                  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const rafRef                    = useRef<number | null>(null);
 
   useEffect(() => {
     const el = outerRef.current;
@@ -286,7 +286,6 @@ export function ReaderMockup() {
 
   const runCycle = useCallback(() => {
     setPhase('library');
-    setFadeOpacity(0);
 
     schedule(() => {
       // тап по книге
@@ -331,35 +330,18 @@ export function ReaderMockup() {
                                 schedule(() => {
                                   setPhase('hold');
                                   schedule(() => {
-                                    // fade out
-                                    let op = 0;
-                                    const stepOut = 16 / T_FADE_OUT;
-                                    const fadeOut = () => {
-                                      op = Math.min(1, op + stepOut);
-                                      setFadeOpacity(op);
-                                      if (op < 1) {
-                                        rafRef.current = requestAnimationFrame(fadeOut);
-                                      } else {
-                                        // сброс под overlay — как в MyBooksMockup
+                                    // тап по кнопке назад
+                                    setPhase('back-tap');
+                                    schedule(() => {
+                                      // анимация закрытия (reader → library)
+                                      setPhase('back-close');
+                                      schedule(() => {
                                         setPhase('library');
-                                        setFadeOpacity(1);
-                                        let op2 = 1;
-                                        const stepIn = 16 / T_FADE_IN;
                                         schedule(() => {
-                                          const fadeIn = () => {
-                                            op2 = Math.max(0, op2 - stepIn);
-                                            setFadeOpacity(op2);
-                                            if (op2 > 0) {
-                                              rafRef.current = requestAnimationFrame(fadeIn);
-                                            } else {
-                                              runCycle();
-                                            }
-                                          };
-                                          rafRef.current = requestAnimationFrame(fadeIn);
-                                        }, 80);
-                                      }
-                                    };
-                                    rafRef.current = requestAnimationFrame(fadeOut);
+                                          runCycle();
+                                        }, T_IDLE);
+                                      }, T_BACK_CLOSE);
+                                    }, T_BACK_TAP);
                                   }, T_HOLD);
                                 }, T_TRANSLATED);
                               }, T_TRANSLATING);
@@ -383,14 +365,14 @@ export function ReaderMockup() {
     runCycle();
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ─── derived state ───────────────────────────────────────────────────────────
-  const inReader = phase !== 'library' && phase !== 'book-tap';
+  const inReader = phase !== 'library' && phase !== 'book-tap' && phase !== 'back-close';
   const bookTapped = phase === 'book-tap';
+  const backTapped = phase === 'back-tap';
   const dropdownOpen = phase === 'dropdown-open' || phase === 'hover-0' || phase === 'hover-1' || phase === 'hover-2' || phase === 'lang-select';
   const langTapped = phase === 'lang-tap';
   const hoveredIndex = phase === 'hover-0' ? 0 : phase === 'hover-1' ? 1 : phase === 'hover-2' ? 2 : phase === 'lang-select' ? 2 : -1;
@@ -560,7 +542,7 @@ export function ReaderMockup() {
           {/* reader nav bar */}
           <div style={{ height: 44, backgroundColor: C.header, borderBottom: `0.5px solid ${C.separator}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 12px', position: 'relative' }}>
             {/* back */}
-            <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 4, opacity: backTapped ? 0.4 : 1, transition: 'opacity 0.1s ease' }}>
               <svg width="8" height="13" viewBox="0 0 8 13" fill="none">
                 <path d="M7 1L1 6.5L7 12" stroke={C.accent} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
@@ -661,15 +643,6 @@ export function ReaderMockup() {
 
         {/* ── GLOW ── */}
         <GlowBorder active={glowActive} />
-
-        {/* ── FADE OVERLAY ── */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundColor: C.bg,
-          opacity: fadeOpacity,
-          pointerEvents: 'none',
-          borderRadius: 20,
-        }} />
 
         <style>{`
           @keyframes readermock-glow {

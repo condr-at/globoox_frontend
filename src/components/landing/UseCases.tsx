@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { MyBooksMockup } from './MyBooksMockup';
 import { ReaderMockup } from './ReaderMockup';
+import { EnjoyMockup } from './EnjoyMockup';
 
 export interface UseCaseItem {
   icon?: string;
@@ -11,7 +12,7 @@ export interface UseCaseItem {
   description?: string;
   benefits?: string[];
   imagePlaceholder?: boolean;
-  mockup?: 'my-books' | 'reader';
+  mockup?: 'my-books' | 'reader' | 'enjoy';
 }
 
 interface UseCasesProps {
@@ -137,6 +138,10 @@ export function UseCases({ label, heading, description, items }: UseCasesProps) 
             ) : useCase.mockup === 'reader' ? (
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
                 <ReaderMockup />
+              </div>
+            ) : useCase.mockup === 'enjoy' ? (
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                <EnjoyMockup />
               </div>
             ) : useCase.imagePlaceholder && (
               <div
