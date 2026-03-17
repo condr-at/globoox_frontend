@@ -23,8 +23,8 @@ const T_FADE_IN       = 700;
 // ─── colours (forest-light) ──────────────────────────────────────────────────
 const C = {
   bg:          '#F4F0E8',
-  header:      '#FFFFFF',
-  statusBar:   '#FFFFFF',
+  header:      '#F4F0E8',
+  statusBar:   '#F4F0E8',
   separator:   'rgba(44,59,45,0.12)',
   text:        '#2C3B2D',
   textSecond:  'rgba(44,59,45,0.55)',
@@ -34,8 +34,8 @@ const C = {
   coverShadow: 'rgba(44,59,45,0.18)',
   progressBg:  'rgba(44,59,45,0.1)',
   coverColor:  '#9B8AAB',
-  dropdownBg:  '#FFFFFF',
-  modalBg:     '#FFFFFF',
+  dropdownBg:  '#F4F0E8',
+  modalBg:     '#F4F0E8',
   overlay:     'rgba(0,0,0,0.32)',
 };
 
@@ -435,7 +435,7 @@ export function ReaderMockup() {
           backgroundColor: C.bg,
         }}>
           {/* status bar */}
-          <div style={{ height: 22, backgroundColor: C.statusBar, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', borderBottom: `0.5px solid ${C.separator}` }}>
+          <div style={{ height: 22, backgroundColor: C.statusBar, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px'}}>
             <span style={{ color: C.text, fontSize: 10, fontWeight: 600 }}>9:41</span>
             <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
               {[3,5,7].map((h, i) => (
@@ -503,6 +503,34 @@ export function ReaderMockup() {
               </div>
             ))}
           </div>
+
+          {/* ── bottom tab bar ── */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            height: 56,
+            backgroundColor: C.bg,
+            borderTop: `0.5px solid ${C.separator}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+          }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, opacity: 0.35 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+              <span style={{ fontSize: 9, color: C.text, fontWeight: 500 }}>Store</span>
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              <span style={{ fontSize: 9, color: C.accent, fontWeight: 600 }}>My Books</span>
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, opacity: 0.35 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <span style={{ fontSize: 9, color: C.text, fontWeight: 500 }}>Settings</span>
+            </div>
+          </div>
         </div>
 
         {/* ── READER VIEW ── */}
@@ -516,7 +544,7 @@ export function ReaderMockup() {
           flexDirection: 'column',
         }}>
           {/* status bar */}
-          <div style={{ height: 22, backgroundColor: C.statusBar, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', borderBottom: `0.5px solid ${C.separator}` }}>
+          <div style={{ height: 22, backgroundColor: C.statusBar, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px'}}>
             <span style={{ color: C.text, fontSize: 10, fontWeight: 600 }}>9:41</span>
             <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
               {[3,5,7].map((h, i) => (
@@ -610,6 +638,22 @@ export function ReaderMockup() {
             )}
           </div>
 
+          {/* reader footer */}
+          <div style={{
+            height: 36,
+            flexShrink: 0,
+            borderTop: `0.5px solid ${C.separator}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 10,
+            backgroundColor: C.bg,
+          }}>
+            <span style={{ fontSize: 10, color: C.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>
+              Book I — To Himself
+            </span>
+            <span style={{ fontSize: 10, color: C.textMuted, flexShrink: 0 }}>
+              {isTranslated ? '12%' : '0%'}
+            </span>
+          </div>
         </div>
 
         {/* ── MODAL ── */}

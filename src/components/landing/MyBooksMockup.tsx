@@ -41,16 +41,16 @@ type Phase =
 // ─── colours (forest-light) ───────────────────────────────────────────────────
 const C = {
   bg:           '#F4F0E8',
-  header:       '#FFFFFF',
-  statusBar:    '#FFFFFF',
+  header:       '#F4F0E8',
+  statusBar:    '#F4F0E8',
   separator:    'rgba(44,59,45,0.18)',
   text:         '#2C3B2D',
   textSecond:   'rgba(44,59,45,0.6)',
   textMuted:    'rgba(44,59,45,0.4)',
   accent:       '#C05A3A',
   accentBg:     'rgba(192,90,58,0.1)',
-  drawerBg:     '#FFFFFF',
-  drawerInput:  '#F4F0E8',
+  drawerBg:     '#F4F0E8',
+  drawerInput:  'rgba(44,59,45,0.07)',
   coverShadow:  'rgba(44,59,45,0.18)',
   progressBg:   'rgba(44,59,45,0.1)',
   successGreen: '#7A8C7B',
@@ -475,7 +475,6 @@ export function MyBooksMockup() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
-          borderBottom: `0.5px solid ${C.separator}`,
         }}>
           <span style={{ color: C.text, fontSize: 10, fontWeight: 600 }}>9:41</span>
           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
@@ -564,6 +563,48 @@ export function MyBooksMockup() {
           </div>
         </div>
       </div>
+
+      {/* ── bottom tab bar ── */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        height: 56,
+        backgroundColor: C.bg,
+        borderTop: `0.5px solid ${C.separator}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+        zIndex: 5,
+      }}>
+        {/* Store */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, opacity: 0.35 }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <span style={{ fontSize: 9, color: C.text, fontWeight: 500 }}>Store</span>
+        </div>
+        {/* My Books — active */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+          <span style={{ fontSize: 9, color: C.accent, fontWeight: 600 }}>My Books</span>
+        </div>
+        {/* Settings */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, opacity: 0.35 }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.text} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span style={{ fontSize: 9, color: C.text, fontWeight: 500 }}>Settings</span>
+        </div>
+      </div>
+
+      {/* ── drawer overlay ── */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.32)',
+        opacity: drawerOpen ? 1 : 0,
+        transition: 'opacity 0.38s ease',
+        pointerEvents: 'none',
+        zIndex: 9,
+      }} />
 
       {/* ── drawer ── */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
