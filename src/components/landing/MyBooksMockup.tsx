@@ -330,13 +330,11 @@ export function MyBooksMockup() {
 
         schedule(() => {
           // пауза в пустом drawer
-          schedule(() => {
-            // вспышка зоны выбора
-            setPhase('tap-flash');
+          setPhase('tap-flash');
 
-            schedule(() => {
-              // спиннер
-              setPhase('spinner');
+          schedule(() => {
+            // спиннер
+            setPhase('spinner');
 
               schedule(() => {
                 // файл готов
@@ -415,12 +413,11 @@ export function MyBooksMockup() {
                     };
                     rafRef.current = requestAnimationFrame(animateProgress);
                   }, T_UPLOAD_TAP);
-                }, T_PAUSE_FILE);
-                }, T_FILE_APPEAR);
-              }, T_SPINNER);
-            }, T_TAP_FLASH);
-          }, T_PAUSE_EMPTY);
-        }, T_BTN_FLASH); // drawer выезжает сразу после вспышки
+              }, T_PAUSE_FILE);
+            }, T_SPINNER);
+          }, T_TAP_FLASH);
+        }, T_PAUSE_EMPTY);
+      }, T_BTN_FLASH); // drawer выезжает сразу после вспышки
     }, T_IDLE);
   };
 
