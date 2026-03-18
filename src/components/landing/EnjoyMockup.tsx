@@ -94,7 +94,7 @@ export function EnjoyMockup() {
   const [phase, setPhase]             = useState<Phase>('reader-idle');
   const [scale, setScale]             = useState(1);
   const [pageIdx, setPageIdx]         = useState(0);       // 0-2
-  const [swipeDir, setSwipeDir]       = useState<'left' | null>(null); // анимация свайпа
+  const [swipeDir, setSwipeDir]       = useState<'left' | 'right' | null>(null); // анимация свайпа
   const [revealedCount, setRevealedCount] = useState(5);  // сколько абзацев без blur (5 = все)
 
   const outerRef  = useRef<HTMLDivElement>(null);
@@ -236,10 +236,7 @@ export function EnjoyMockup() {
         <div style={{ height: 22, backgroundColor: C.statusBar, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px' }}>
           <span style={{ color: C.text, fontSize: 10, fontWeight: 600 }}>9:41</span>
           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            {[3,5,7].map((h, i) => (
-              <div key={i} style={{ width: 3, height: h, backgroundColor: C.text, borderRadius: 1, opacity: 0.6 }} />
-            ))}
-            <div style={{ width: 18, height: 9, border: `1.5px solid ${C.text}`, borderRadius: 2, position: 'relative', marginLeft: 3, opacity: 0.6 }}>
+            <div style={{ width: 18, height: 9, border: `1.5px solid ${C.text}`, borderRadius: 2, position: 'relative', opacity: 0.6 }}>
               <div style={{ position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)', width: 3, height: 5, backgroundColor: C.text, borderRadius: '0 1px 1px 0' }} />
               <div style={{ position: 'absolute', inset: 2, right: 3, backgroundColor: C.text, borderRadius: 0.5 }} />
             </div>
@@ -278,7 +275,7 @@ export function EnjoyMockup() {
         <div style={{
           position: 'absolute',
           top: 22 + 44,
-          bottom: 36,
+          bottom: 0,
           left: 0, right: 0,
           overflow: 'hidden',
         }}>

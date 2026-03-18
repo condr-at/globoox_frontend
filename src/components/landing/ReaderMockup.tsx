@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 
 // ─── timing (ms) ─────────────────────────────────────────────────────────────
 const T_IDLE          = 1400;  // пауза на библиотеке
-const T_BOOK_TAP      = 120;   // scale + ripple
+const T_BOOK_TAP      = 320;   // scale + ripple
 const T_READER_OPEN   = 400;   // transition в reader
 const T_READER_IDLE   = 1800;  // читаем
 const T_LANG_TAP      = 150;   // тап по кнопке языка
@@ -455,10 +455,7 @@ export function ReaderMockup() {
           <div style={{ height: 22, backgroundColor: C.statusBar, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px'}}>
             <span style={{ color: C.text, fontSize: 10, fontWeight: 600 }}>9:41</span>
             <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-              {[3,5,7].map((h, i) => (
-                <div key={i} style={{ width: 3, height: h, backgroundColor: C.text, borderRadius: 1, opacity: 0.6 }} />
-              ))}
-              <div style={{ width: 18, height: 9, border: `1.5px solid ${C.text}`, borderRadius: 2, position: 'relative', marginLeft: 3, opacity: 0.6 }}>
+              <div style={{ width: 18, height: 9, border: `1.5px solid ${C.text}`, borderRadius: 2, position: 'relative', opacity: 0.6 }}>
                 <div style={{ position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)', width: 3, height: 5, backgroundColor: C.text, borderRadius: '0 1px 1px 0' }} />
                 <div style={{ position: 'absolute', inset: 2, right: 3, backgroundColor: C.text, borderRadius: 0.5 }} />
               </div>
@@ -564,10 +561,7 @@ export function ReaderMockup() {
           <div style={{ height: 22, backgroundColor: C.statusBar, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px'}}>
             <span style={{ color: C.text, fontSize: 10, fontWeight: 600 }}>9:41</span>
             <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-              {[3,5,7].map((h, i) => (
-                <div key={i} style={{ width: 3, height: h, backgroundColor: C.text, borderRadius: 1, opacity: 0.6 }} />
-              ))}
-              <div style={{ width: 18, height: 9, border: `1.5px solid ${C.text}`, borderRadius: 2, position: 'relative', marginLeft: 3, opacity: 0.6 }}>
+              <div style={{ width: 18, height: 9, border: `1.5px solid ${C.text}`, borderRadius: 2, position: 'relative', opacity: 0.6 }}>
                 <div style={{ position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)', width: 3, height: 5, backgroundColor: C.text, borderRadius: '0 1px 1px 0' }} />
                 <div style={{ position: 'absolute', inset: 2, right: 3, backgroundColor: C.text, borderRadius: 0.5 }} />
               </div>
@@ -633,7 +627,7 @@ export function ReaderMockup() {
           </div>
 
           {/* reader content */}
-          <div style={{ flex: 1, padding: '4px 20px 16px', overflow: 'hidden', position: 'relative' }}>
+          <div style={{ flex: 1, padding: '4px 20px 16px', position: 'relative' }}>
             {textLines.map((line, i) => (
               <p key={`${isTranslated ? 'en' : 'gr'}-${i}`} style={{
                 fontSize: i === 0 ? 13 : 14,

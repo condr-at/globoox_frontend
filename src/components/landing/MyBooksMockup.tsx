@@ -47,14 +47,14 @@ const C = {
   separator:    'rgba(44,59,45,0.18)',
   text:         '#2C3B2D',
   textSecond:   'rgba(44,59,45,0.6)',
-  textMuted:    'rgba(44,59,45,0.4)',
+  textMuted:    'rgba(44,59,45,0.55)',
   accent:       '#C05A3A',
   accentBg:     'rgba(192,90,58,0.1)',
   drawerBg:     '#F4F0E8',
   drawerInput:  'rgba(44,59,45,0.07)',
   coverShadow:  'rgba(44,59,45,0.18)',
   progressBg:   'rgba(44,59,45,0.1)',
-  successGreen: '#7A8C7B',
+  successGreen: '#4A9B6F',
 };
 
 // ─── mock books ───────────────────────────────────────────────────────────────
@@ -236,8 +236,8 @@ function UploadDrawer({ open, phase, uploadPct }: {
             padding: '0 20px',
           }}>
             {isDone
-              ? <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-                  stroke={C.successGreen} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                  stroke={C.successGreen} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                   <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
@@ -480,10 +480,7 @@ export function MyBooksMockup() {
         }}>
           <span style={{ color: C.text, fontSize: 10, fontWeight: 600 }}>9:41</span>
           <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            {[3,5,7].map((h, i) => (
-              <div key={i} style={{ width: 3, height: h, backgroundColor: C.text, borderRadius: 1, opacity: 0.6 }} />
-            ))}
-            <div style={{ width: 18, height: 9, border: `1.5px solid ${C.text}`, borderRadius: 2, position: 'relative', marginLeft: 3, opacity: 0.6 }}>
+            <div style={{ width: 18, height: 9, border: `1.5px solid ${C.text}`, borderRadius: 2, position: 'relative', opacity: 0.6 }}>
               <div style={{ position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)', width: 3, height: 5, backgroundColor: C.text, borderRadius: '0 1px 1px 0' }} />
               <div style={{ position: 'absolute', inset: 2, right: 3, backgroundColor: C.text, borderRadius: 0.5 }} />
             </div>

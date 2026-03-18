@@ -76,6 +76,7 @@ export function CompareSlider() {
       >
         {/* Layer 1: Original (left) */}
         <div
+          lang="en"
           style={{
             position: 'absolute',
             inset: 0,
@@ -84,26 +85,24 @@ export function CompareSlider() {
             fontFamily: "'Lora', serif",
             background: '#fcfcfc',
             color: 'var(--ink)',
+            hyphens: 'auto',
           }}
         >
           <div style={{ ...readerHeader, color: '#999' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
-            <span>Sapiens · Chapter 1</span>
+            <span>Human Evolution · Alexander Markov</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
           </div>
-          <div style={{ flex: 1, overflow: 'hidden', padding: '28px 32px' }}>
+          <div className="compare-text-pad" style={{ flex: 1, overflow: 'hidden', padding: '28px 32px' }}>
             <div style={{ maxWidth: '480px', margin: '0 auto' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 400, marginBottom: '16px', fontFamily: "'Lora', serif" }}>
-                Когнитивная революция
+              <h3 style={{ fontSize: '18px', fontWeight: 400, marginBottom: '14px', fontFamily: "'Lora', serif" }}>
+                In Search of the Soul's Edge
               </h3>
-              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '14px' }}>
-                Около 70 000 лет назад Homo sapiens начали создавать сложные структуры, называемые культурами. Дальнейшее развитие этих культур принято называть историей.
-              </p>
-              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '14px' }}>
-                До когнитивной революции люди жили лишь на территории Афро-Евразии. Они переплывали проливы, однако не могли пересечь океан и достичь Америки или Австралии.
+              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '10px' }}>
+                Of course, science today cannot boast of having fully deciphered every secret of the human psyche. Many unsolved problems still remain unresolved. The main one among them is that neurobiologists cannot yet even theoretically imagine how a perceiving subject—the "I"—can be constructed from individual neurons and synapses.
               </p>
               <p style={{ fontSize: '14px', lineHeight: 1.8, margin: 0 }}>
-                Вымышленные реальности становились могущественнее. Сегодня это сильнейшие силы на планете. Судьба рек, деревьев и львов зависит от воображаемых сущностей вроде государств и корпораций.
+                But the trend is obvious: one by one, the most important aspects of the human personality, considered until very recently out of reach for the natural sciences (for example, memory, emotions, and even morality), are confidently moving into the material sphere, revealing their physiological, cellular, biochemical nature and evolutionary roots.
               </p>
             </div>
           </div>
@@ -111,6 +110,7 @@ export function CompareSlider() {
 
         {/* Layer 2: Translation (right, revealed by slider) */}
         <div
+          lang="ru"
           style={{
             position: 'absolute',
             inset: 0,
@@ -120,26 +120,24 @@ export function CompareSlider() {
             background: '#fffbf9',
             color: 'var(--primary)',
             clipPath: `inset(0 ${100 - position}% 0 0)`,
+            hyphens: 'auto',
           }}
         >
           <div style={{ ...readerHeader, color: 'var(--dusk)', borderBottomColor: 'rgba(178,80,50,0.1)' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dusk)" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
-            <span>Sapiens · Chapter 1</span>
+            <span>Эволюция Человека · А. Марков</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--dusk)" strokeWidth="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
           </div>
-          <div style={{ flex: 1, overflow: 'hidden', padding: '28px 32px' }}>
+          <div className="compare-text-pad" style={{ flex: 1, overflow: 'hidden', padding: '28px 32px' }}>
             <div style={{ maxWidth: '480px', margin: '0 auto' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 400, marginBottom: '16px', fontFamily: "'Lora', serif", color: 'var(--primary)' }}>
-                The Cognitive Revolution
+              <h3 style={{ fontSize: '18px', fontWeight: 400, marginBottom: '14px', fontFamily: "'Lora', serif", color: 'var(--primary)' }}>
+                В поисках душевной грани
               </h3>
-              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '14px' }}>
-                About 70,000 years ago, organisms of the species Homo sapiens started to form elaborate structures called cultures. The subsequent development of these cultures is called history.
-              </p>
-              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '14px' }}>
-                Prior to the Cognitive Revolution, humans lived exclusively in Afro-Eurasia. They could swim short stretches of sea, but were unable to cross the open ocean or reach America or Australia.
+              <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '10px' }}>
+                Конечно, наука и сегодня не может похвастаться полной расшифровкой всех тайн человеческой психики. Нерешённых проблем ещё много. Главная из них в том, что нейробиологи не могут пока даже теоретически себе представить, как из нейронов и синапсов может быть сделан воспринимающий субъект — «я».
               </p>
               <p style={{ fontSize: '14px', lineHeight: 1.8, margin: 0 }}>
-                Fictional realities grew ever more powerful. Today they are the mightiest forces in the world. The survival of rivers, trees and lions depends on imagined entities such as states and corporations.
+                Но тенденция налицо: один за другим важнейшие аспекты человеческой личности, до самого последнего времени считавшиеся недосягаемыми для естественных наук, уверенно переносятся в сферу материального, раскрывают свою физиологическую, клеточную, биохимическую природу и эволюционные корни.
               </p>
             </div>
           </div>
@@ -217,6 +215,15 @@ export function CompareSlider() {
           </svg>
         </div>
       </div>
+      <style>{`
+        @media (max-width: 639px) {
+          .compare-text-pad { padding-left: 16px !important; padding-right: 16px !important; }
+        }
+        @media (min-width: 1024px) {
+          .compare-text-pad h3 { font-size: 20px !important; }
+          .compare-text-pad p { font-size: 15px !important; }
+        }
+      `}</style>
     </div>
   );
 }
