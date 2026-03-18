@@ -289,7 +289,7 @@ export function EnjoyMockup() {
             transform: isSwiping ? (swipeLeft ? 'translateX(-100%)' : 'translateX(100%)') : 'translateX(0)',
             transition: isSwiping ? `transform ${T_SWIPE}ms cubic-bezier(0.22,1,0.36,1)` : 'none',
           }}>
-            <div style={{ padding: '20px 20px 16px' }}>
+            <div style={{ padding: '4px 20px 16px' }}>
               {currentPage.map((block, i) => {
                 const blurred = isRevealing && i >= revealedCount;
                 return (
@@ -338,7 +338,7 @@ export function EnjoyMockup() {
               transform: swipeLeft ? 'translateX(100%)' : 'translateX(-100%)',
               animation: `${swipeLeft ? 'enjoymock-slide-in' : 'enjoymock-slide-in-right'} ${T_SWIPE}ms cubic-bezier(0.22,1,0.36,1) forwards`,
             }}>
-              <div style={{ padding: '20px 20px 16px' }}>
+              <div style={{ padding: '4px 20px 16px' }}>
                 {PAGES[incomingPageIdx].map((block, i) => (
                   <p key={i} style={{
                     fontSize: block.head ? 13 : 14,

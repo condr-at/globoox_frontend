@@ -118,11 +118,11 @@ function MiniCover({ color, progress = 0, tapped = false }: {
 }
 
 // ─── ripple ───────────────────────────────────────────────────────────────────
-function Ripple({ active }: { active: boolean }) {
+function Ripple({ active, color = 'rgba(255,255,255,0.35)', radius = 6 }: { active: boolean; color?: string; radius?: number }) {
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      borderRadius: 6,
+      borderRadius: radius,
       pointerEvents: 'none',
       overflow: 'hidden',
     }}>
@@ -133,7 +133,7 @@ function Ripple({ active }: { active: boolean }) {
         aspectRatio: '1',
         transform: 'translate(-50%, -50%)',
         borderRadius: '50%',
-        backgroundColor: 'rgba(255,255,255,0.35)',
+        backgroundColor: color,
         transition: active ? 'width 0.35s ease-out, opacity 0.35s ease-out' : 'none',
         opacity: active ? 0 : 1,
       }} />
@@ -273,8 +273,10 @@ function IOSAlert({ visible, tapOK }: { visible: boolean; tapOK: boolean }) {
             fontWeight: 600,
             color: tapOK ? `rgba(192,90,58,0.45)` : C.accent,
             transition: 'color 0.1s ease',
+            position: 'relative', overflow: 'hidden',
           }}>
             OK
+            <Ripple active={tapOK} color="rgba(192,90,58,0.15)" radius={0} />
           </div>
         </div>
       </div>
@@ -629,7 +631,7 @@ export function ReaderMockup() {
           </div>
 
           {/* reader content */}
-          <div style={{ flex: 1, padding: '20px 20px 16px', overflow: 'hidden', position: 'relative' }}>
+          <div style={{ flex: 1, padding: '4px 20px 16px', overflow: 'hidden', position: 'relative' }}>
             {textLines.map((line, i) => (
               <p key={`${isTranslated ? 'en' : 'gr'}-${i}`} style={{
                 fontSize: i === 0 ? 13 : 14,
@@ -699,7 +701,7 @@ export function ReaderMockup() {
             {/* nav bar */}
             <div style={{ height: 44, backgroundColor: C.header, borderBottom: `0.5px solid ${C.separator}`, flexShrink: 0 }} />
             {/* text lines */}
-            <div style={{ flex: 1, padding: '20px 20px 16px' }}>
+            <div style={{ flex: 1, padding: '4px 20px 16px' }}>
               <SkelLine w="65%" h={11} mb={18} />
               <SkelLine w="100%" h={13} mb={8} />
               <SkelLine w="100%" h={13} mb={8} />
@@ -773,7 +775,7 @@ export function ReaderMockup() {
             transform: 'translate(-50%, -50%)',
             borderRadius: '50%',
             backgroundColor: 'rgba(192,90,58,0.10)',
-            transition: backTapped ? 'width 0.55s ease-out, opacity 0.55s ease-out' : 'none',
+            transition: backTapped ? 'width 0.6s ease-out, opacity 0.6s ease-out' : 'none',
             opacity: backTapped ? 0 : 1,
           }} />
         </div>
