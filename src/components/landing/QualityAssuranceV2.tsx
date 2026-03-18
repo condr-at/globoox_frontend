@@ -198,7 +198,7 @@ export function QualityAssuranceV2({ label, heading, description }: QualityAssur
         @media (max-width: 639px) {
           .qa-section { padding: 60px 0 !important; }
           .qa-container { padding: 0 20px !important; }
-          .qa-heading { font-size: 28px !important; }
+          .qa-heading { font-size: 36px !important; }
         }
         @media (min-width: 640px) and (max-width: 1023px) {
           .qa-heading { font-size: 36px !important; }

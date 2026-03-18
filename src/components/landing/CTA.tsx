@@ -91,7 +91,7 @@ export function CTA({ heading, description, buttonText }: CTAProps) {
             padding: 80px 0 60px 0 !important;
           }
           .cta-heading {
-            font-size: 28px !important;
+            font-size: 36px !important;
           }
           .cta-container {
             padding: 0 20px !important;

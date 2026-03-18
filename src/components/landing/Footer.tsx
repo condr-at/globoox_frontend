@@ -69,8 +69,9 @@ export function Footer({ tagline }: FooterProps) {
             padding: 0 20px !important;
           }
           .footer-links {
-            flex-wrap: wrap !important;
-            gap: 16px !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 12px !important;
           }
         }
       `}</style>

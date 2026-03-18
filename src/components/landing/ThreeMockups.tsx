@@ -52,7 +52,7 @@ export function ThreeMockups({ label = 'How It Works', heading = 'Three simple s
     <section className="threemockups-section" style={{ padding: '120px 0', background: 'var(--ink)' }}>
       <div className="threemockups-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
 
-        <div style={{ marginBottom: '80px', textAlign: 'center' }}>
+        <div className="threemockups-header" style={{ marginBottom: '80px', textAlign: 'center' }}>
           <span style={{
             textTransform: 'uppercase',
             fontSize: '12px',
@@ -223,7 +223,8 @@ export function ThreeMockups({ label = 'How It Works', heading = 'Three simple s
           .threemockups-monogram { display: none !important; }
           .threemockups-section { padding: 60px 0 !important; overflow-x: hidden !important; }
           .threemockups-container { padding: 0 20px !important; }
-          .threemockups-heading { font-size: 28px !important; }
+          .threemockups-heading { font-size: 36px !important; }
+          .threemockups-header { margin-bottom: 16px !important; }
           .threemockups-center { display: block !important; }
           .threemockups-card { border: none !important; border-radius: 0 !important; background: transparent !important; padding: 0 !important; display: block !important; width: 100% !important; }
           .threemockups-layout { flex-direction: column !important; gap: 24px !important; align-items: stretch !important; width: 100% !important; }

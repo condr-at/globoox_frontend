@@ -209,7 +209,7 @@ export default function MyBooksPage() {
         action={{ label: 'Add', onClick: handleUploadClick }}
       />
 
-      <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top)+72px)] pb-4 space-y-6">
+      <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top)+72px)] pb-4 space-y-6 overflow-x-clip">
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         <div className="flex items-center gap-2">
@@ -233,7 +233,7 @@ export default function MyBooksPage() {
                 setSortDropdownOpen((v) => !v);
               }
             }}
-            className="ml-auto relative flex items-center gap-[4px] px-[8px] min-h-[44px] text-primary active:opacity-70 transition-opacity after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-[-4px]"
+            className="ml-auto relative flex items-center gap-[4px] px-[8px] min-h-[44px] text-primary active:opacity-70 transition-opacity after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-0"
             aria-label="Sort"
           >
             <span className="text-[15px] font-medium">
