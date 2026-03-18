@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { MyBooksMockup } from './MyBooksMockup';
 import { ReaderMockup } from './ReaderMockup';
 import { EnjoyMockup } from './EnjoyMockup';
@@ -18,10 +18,35 @@ const steps = [
 
 export function ThreeMockups({ label = 'How It Works', heading = 'Three simple steps.' }: ThreeMockupsProps) {
   const [active, setActive] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const scrollToTab = useCallback((index: number) => {
+    const container = scrollRef.current;
+    const tab = tabRefs.current[index];
+    if (!container || !tab) return;
+    const containerWidth = container.offsetWidth;
+    const tabLeft = tab.offsetLeft;
+    const tabWidth = tab.offsetWidth;
+    container.scrollTo({
+      left: tabLeft - containerWidth / 2 + tabWidth / 2,
+      behavior: 'smooth',
+    });
+  }, []);
 
   const handleCycleEnd = useCallback(() => {
-    setActive(prev => (prev + 1) % 3);
-  }, []);
+    setActive(prev => {
+      const next = (prev + 1) % 3;
+      // scroll on next frame so state has updated
+      requestAnimationFrame(() => scrollToTab(next));
+      return next;
+    });
+  }, [scrollToTab]);
+
+  // scroll to active tab when active changes (covers manual clicks too)
+  useEffect(() => {
+    scrollToTab(active);
+  }, [active, scrollToTab]);
 
   return (
     <section className="threemockups-section" style={{ padding: '120px 0', background: 'var(--ink)' }}>
@@ -48,6 +73,60 @@ export function ThreeMockups({ label = 'How It Works', heading = 'Three simple s
           }}>
             {heading}
           </h2>
+        </div>
+
+        {/* Mobile horizontal tabs — visible only on mobile */}
+        <div className="threemockups-mobile-tabs" ref={scrollRef} style={{
+          display: 'none',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          marginBottom: '24px',
+          marginLeft: '-20px',
+          marginRight: '-20px',
+        }}>
+          <div style={{ display: 'flex', gap: '0' }}>
+            {steps.map(({ step, description }, i) => (
+              <button
+                key={i}
+                ref={el => { tabRefs.current[i] = el; }}
+                onClick={() => setActive(i)}
+                style={{
+                  flexShrink: 0,
+                  height: '72px',
+                  padding: '0 20px',
+                  border: 'none',
+                  borderBottom: active === i ? '2px solid var(--primary)' : '2px solid rgba(255,255,255,0.1)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  transition: 'border-color 0.25s ease',
+                }}
+              >
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: 'var(--dusk)',
+                }}>
+                  {step}
+                </span>
+                <span style={{
+                  fontSize: '15px',
+                  fontFamily: 'Lora, serif',
+                  color: active === i ? 'var(--parchment)' : 'rgba(244,240,232,0.4)',
+                  transition: 'color 0.25s ease',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {description}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div style={{
@@ -83,8 +162,8 @@ export function ThreeMockups({ label = 'How It Works', heading = 'Three simple s
             {active === 2 && <EnjoyMockup onCycleEnd={handleCycleEnd} />}
           </div>
 
-          {/* Tabs */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {/* Desktop/tablet vertical tabs */}
+          <div className="threemockups-vertical-tabs" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {steps.map(({ step, description }, i) => (
               <button
                 key={i}
@@ -139,15 +218,18 @@ export function ThreeMockups({ label = 'How It Works', heading = 'Three simple s
       </div>{/* /centering flex */}
       </div>{/* /container */}
       <style>{`
+        .threemockups-mobile-tabs::-webkit-scrollbar { display: none; }
         @media (max-width: 639px) {
           .threemockups-monogram { display: none !important; }
           .threemockups-section { padding: 60px 0 !important; }
           .threemockups-container { padding: 0 20px !important; }
           .threemockups-heading { font-size: 28px !important; }
-          .threemockups-layout { flex-direction: column !important; gap: 40px !important; }
-          .threemockups-mockup { width: 100% !important; }
+          .threemockups-layout { flex-direction: column !important; gap: 24px !important; align-items: center !important; }
+          .threemockups-mockup { width: 100% !important; display: flex !important; justify-content: center !important; }
           .threemockups-tab-label { white-space: normal !important; }
           .threemockups-card { border: none !important; border-radius: 0 !important; background: transparent !important; padding: 0 !important; }
+          .threemockups-vertical-tabs { display: none !important; }
+          .threemockups-mobile-tabs { display: block !important; }
         }
         @media (min-width: 640px) and (max-width: 1023px) {
           .threemockups-monogram { display: none !important; }

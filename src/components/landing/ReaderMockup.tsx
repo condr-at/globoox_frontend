@@ -426,13 +426,12 @@ export function ReaderMockup({ onCycleEnd }: { onCycleEnd?: () => void } = {}) {
   return (
     <div ref={outerRef} style={{
       width: '100%',
-      maxWidth: 320,
       position: 'relative',
       height: 640 * scale,
     }}>
       <div style={{
         position: 'absolute',
-        top: 0, left: 0,
+        top: 0, left: '50%',
         width: 320, height: 640,
         borderRadius: 20,
         overflow: 'hidden',
@@ -440,8 +439,8 @@ export function ReaderMockup({ onCycleEnd }: { onCycleEnd?: () => void } = {}) {
         fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
         userSelect: 'none',
         boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-        transform: `scale(${scale})`,
-        transformOrigin: 'top left',
+        transform: `translateX(-50%) scale(${scale})`,
+        transformOrigin: 'top center',
       }}>
 
         {/* ── LIBRARY VIEW ── */}
