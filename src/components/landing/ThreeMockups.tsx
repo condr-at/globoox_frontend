@@ -129,7 +129,7 @@ export function ThreeMockups({ label = 'How It Works', heading = 'Three simple s
           </div>
         </div>
 
-        <div style={{
+        <div className="threemockups-center" style={{
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -221,13 +221,14 @@ export function ThreeMockups({ label = 'How It Works', heading = 'Three simple s
         .threemockups-mobile-tabs::-webkit-scrollbar { display: none; }
         @media (max-width: 639px) {
           .threemockups-monogram { display: none !important; }
-          .threemockups-section { padding: 60px 0 !important; }
+          .threemockups-section { padding: 60px 0 !important; overflow-x: hidden !important; }
           .threemockups-container { padding: 0 20px !important; }
           .threemockups-heading { font-size: 28px !important; }
-          .threemockups-layout { flex-direction: column !important; gap: 24px !important; align-items: center !important; }
-          .threemockups-mockup { width: 100% !important; display: flex !important; justify-content: center !important; }
+          .threemockups-center { display: block !important; }
+          .threemockups-card { border: none !important; border-radius: 0 !important; background: transparent !important; padding: 0 !important; display: block !important; width: 100% !important; }
+          .threemockups-layout { flex-direction: column !important; gap: 24px !important; align-items: stretch !important; width: 100% !important; }
+          .threemockups-mockup { width: 100% !important; }
           .threemockups-tab-label { white-space: normal !important; }
-          .threemockups-card { border: none !important; border-radius: 0 !important; background: transparent !important; padding: 0 !important; }
           .threemockups-vertical-tabs { display: none !important; }
           .threemockups-mobile-tabs { display: block !important; }
         }
