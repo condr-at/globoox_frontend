@@ -230,8 +230,15 @@ export function SupportedLanguages() {
             min-height: 360px !important;
           }
           .supported-card-wrap {
-            width: 100% !important;
-            overflow: visible !important;
+            position: relative !important;
+            left: 50% !important;
+            margin-left: -50vw !important;
+            width: 100vw !important;
+            min-width: 0 !important;
+            display: flex !important;
+            justify-content: center !important;
+            overflow-x: clip !important;
+            overflow-y: visible !important;
           }
           .supported-card-visual {
             min-height: 360px !important;
