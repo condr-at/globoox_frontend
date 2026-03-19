@@ -165,7 +165,7 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
         padding: 40px 20px !important;
         gap: 32px !important;
         min-height: auto !important;
-        overflow-x: clip !important;
+        overflow-x: visible !important;
       }
       .hero-split-text {
         text-align: center !important;
@@ -187,7 +187,7 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
       }
       .hero-books-section {
         max-height: 300px !important;
-        overflow: hidden !important;
+        overflow: visible !important;
       }
       .hero-books-blob {
         height: 300px !important;
