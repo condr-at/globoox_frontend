@@ -376,7 +376,7 @@ export function Footer({ tagline }: FooterProps) {
           fontSize: '13.5px',
         }}
       >
-        <div className="footer-container" style={{ maxWidth: '800px', margin: '0 auto', padding: '0 40px' }}>
+        <div className="footer-container" style={{ maxWidth: '960px', margin: '0 auto', padding: '0 40px' }}>
           <div
             className="footer-links"
             style={{
@@ -420,8 +420,10 @@ export function Footer({ tagline }: FooterProps) {
               Privacy Policy
             </button>
           </div>
-          <p style={{ fontSize: '13.5px', color: 'var(--ash)', maxWidth: '760px', margin: '20px auto 0', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '13.5px', color: 'var(--ash)', margin: '20px auto 0', lineHeight: 1.6 }}>
             {tagline}
+            <br />
+            <span style={{ fontSize: '24px', lineHeight: 1.6 }}>❧</span>
             <br />
             Globoox © 2026
           </p>

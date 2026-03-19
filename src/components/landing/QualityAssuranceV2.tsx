@@ -10,7 +10,7 @@ export function QualityAssuranceV2({ label, heading, description }: QualityAssur
   return (
     <section className="qa-section" style={{ padding: '120px 0', background: 'var(--parchment)' }}>
       <div className="qa-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
-      <div style={{ marginBottom: '80px', textAlign: 'center' }}>
+      <div style={{ marginBottom: '48px', textAlign: 'center' }}>
         <span
           style={{
             textTransform: 'uppercase',
@@ -51,7 +51,7 @@ export function QualityAssuranceV2({ label, heading, description }: QualityAssur
         </p>
       </div>
 
-      <div style={{ marginTop: '60px', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ marginTop: '48px', display: 'flex', justifyContent: 'center' }}>
         {/* MacBook mockup — visible on lg+ (≥1024px) */}
         <div className="device-macbook" style={{ position: 'relative', width: '100%', maxWidth: '800px' }}>
           {/* MacBook lid */}

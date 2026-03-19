@@ -11,7 +11,7 @@ interface HeroProps {
   titleClassName?: string;
 }
 
-function BookSpine({ title, height, bg, textColor, className }: { title: string; height: number; bg: string; textColor?: string; className?: string }) {
+function BookSpine({ title, author, height, bg, textColor, className }: { title: string; author?: string; height: number; bg: string; textColor?: string; className?: string }) {
   return (
     <div className="spine-wrap" style={{ position: 'relative', flexShrink: 0 }}>
       <div className="spine-shadow" />
@@ -46,23 +46,47 @@ function BookSpine({ title, height, bg, textColor, className }: { title: string;
             zIndex: 1,
           }}
         />
-        <span
+        <div
+          className="spine-text-flow"
           style={{
             writingMode: 'vertical-rl',
             textOrientation: 'mixed',
-            fontFamily: "'Lora', serif",
-            fontSize: '18px',
-            color: textColor || 'var(--ink-80)',
-            fontWeight: textColor ? 400 : 500,
+            lineHeight: 1.1,
             margin: '0 auto',
-            opacity: textColor ? 0.8 : 1,
             transform: 'rotate(180deg)',
             position: 'relative',
             zIndex: 2,
           }}
         >
-          {title}
-        </span>
+          <span
+            className="spine-title"
+            style={{
+              fontFamily: "'Lora', serif",
+              fontSize: '17.5px',
+              color: textColor || 'var(--ink-80)',
+              fontWeight: textColor ? 500 : 600,
+              opacity: textColor ? 1 : 1,
+            }}
+          >
+            {title}
+          </span>
+          {author ? (
+            <>
+              <br />
+              <span
+                className="spine-author"
+                style={{
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+                  fontSize: '12px',
+                  color: textColor ? 'rgba(232,169,150,0.68)' : 'rgba(44,59,45,0.62)',
+                  fontWeight: 400,
+                }}
+              >
+                {author}
+              </span>
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -122,16 +146,15 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
         width: 100% !important;
       }
       .spine-hover {
-        width: 40px !important;
+        width: 44px !important;
       }
-      .spine-hover span {
-        font-size: 14px !important;
+      .spine-hover .spine-title {
+        font-size: 16px !important;
       }
-      .spine-long-title span { font-size: 12px !important; }
-      .spine-longest-title span { font-size: 10.5px !important; }
       .spine-h-416 { height: 233px !important; }
       .spine-h-364 { height: 204px !important; }
       .spine-h-442 { height: 247px !important; }
+      .spine-evolution { height: 255px !important; }
       .spine-desiguales { height: 240px !important; }
       /* Centered variant */
       .hero-centered {
@@ -172,12 +195,15 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
         height: 400px !important;
         width: 100% !important;
       }
+      .spine-text-flow {
+        line-height: 1.15 !important;
+      }
       .spine-h-416 { height: 333px !important; }
       .spine-h-364 { height: 291px !important; }
       .spine-h-442 { height: 354px !important; }
+      .spine-evolution { height: 364px !important; }
       .spine-desiguales { height: 310px !important; }
-      .spine-long-title span { font-size: 16px !important; }
-      .spine-longest-title span { font-size: 14px !important; }
+      .spine-hover .spine-title { font-size: 16px !important; }
       /* Centered variant */
       .hero-centered {
         padding: 60px 32px !important;
@@ -187,6 +213,14 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
       }
       .hero-centered-btn {
         padding: 16px 34px !important;
+      }
+    }
+    @media (min-width: 1280px) {
+      .spine-hover .spine-title {
+        font-size: 18px !important;
+      }
+      .spine-hover .spine-author {
+        font-size: 13px !important;
       }
     }
   `;
@@ -308,12 +342,12 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
                 History
               </FloatingScript>
 
-              <div style={{ display: 'flex', gap: '16px', transform: 'rotate(-5deg)', alignItems: 'flex-end' }}>
-                <BookSpine title="Nexus. Yuval Noah Harari" height={416} bg="var(--parchment-light)" className="spine-h-416 spine-long-title" />
-                <BookSpine title="Эволюция Человека. А. Марков" height={364} bg="var(--parchment-light)" className="spine-h-364 spine-long-title spine-longest-title" />
-                <BookSpine title="Globoox Engine" height={442} bg="var(--ink)" textColor="#E8A996" className="spine-h-442" />
-                <BookSpine title="Desiguales. Diego Castañeda Garza" height={364} bg="var(--parchment-light)" className="spine-h-364 spine-desiguales spine-long-title spine-longest-title" />
-                <BookSpine title="Manet, le secret. Sophie Chauveau" height={416} bg="var(--parchment-light)" className="spine-h-416 spine-long-title" />
+              <div style={{ display: 'flex', gap: '16px', transform: 'rotate(5deg)', alignItems: 'flex-end' }}>
+                <BookSpine title="Nexus" author="Yuval Noah Harari" height={360} bg="var(--parchment-light)" className="spine-h-416 spine-long-title" />
+                <BookSpine title="Эволюция Человека" author="А. Марков" height={396} bg="var(--parchment-light)" className="spine-evolution spine-long-title spine-longest-title" />
+                <BookSpine title="Globoox Engine" height={384} bg="var(--ink)" textColor="#E8A996" className="spine-h-442" />
+                <BookSpine title="Desiguales" author="Diego Castañeda Garza" height={308} bg="var(--parchment-light)" className="spine-h-364 spine-desiguales spine-long-title spine-longest-title" />
+                <BookSpine title="Manet, le secret" author="Sophie Chauveau" height={360} bg="var(--parchment-light)" className="spine-h-416 spine-long-title" />
               </div>
             </div>
           </div>

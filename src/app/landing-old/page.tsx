@@ -4,7 +4,7 @@ import { Hero } from '@/components/landing/Hero';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { PrivacyManifest } from '@/components/landing/PrivacyManifest';
 import { SupportedLanguages } from '@/components/landing/SupportedLanguages';
-import { ThreeMockups } from '@/components/landing/ThreeMockups';
+import { UsageAnimation } from '@/components/landing/UsageAnimation';
 import { QualityAssuranceV2 } from '@/components/landing/QualityAssuranceV2';
 import { CTA } from '@/components/landing/CTA';
 import { Footer } from '@/components/landing/Footer';
@@ -17,7 +17,7 @@ export default function LandingPage() {
       <div style={{ position: 'relative', zIndex: 1, paddingTop: '92px' }}>
         <LandingHeader
           navItems={[
-            { label: 'Usage animation', href: '#how-it-works' },
+            { label: 'How it works', href: '#how-it-works' },
             { label: 'Quality', href: '#quality' },
             { label: 'Formats & Languages', href: '#formats-languages' },
             { label: 'Start reading', href: '#start' },
@@ -47,7 +47,7 @@ export default function LandingPage() {
         />
 
         <div id="how-it-works">
-          <ThreeMockups />
+          <UsageAnimation />
         </div>
 
         <div id="quality">

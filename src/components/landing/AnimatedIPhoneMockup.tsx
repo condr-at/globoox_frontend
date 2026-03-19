@@ -825,7 +825,7 @@ export function AnimatedIPhoneMockup({
           padding: 14,
           background: '#1A1F2B',
           boxShadow: '0 30px 60px rgba(0,0,0,0.22), inset 0 0 0 2px #333, inset 0 0 0 4px #111',
-          transform: 'rotateX(5deg) rotateY(10deg)',
+          transform: 'rotateX(7deg) rotateY(15deg)',
           transformOrigin: 'top center',
           transformStyle: 'preserve-3d',
         }}
