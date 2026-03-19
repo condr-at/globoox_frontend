@@ -33,7 +33,7 @@ export function Footer({ tagline }: FooterProps) {
           }}
           onClick={(e) => e.preventDefault()}
         >
-          Terms of Service
+          Terms
         </a>
         <a
           href="#"
@@ -48,19 +48,6 @@ export function Footer({ tagline }: FooterProps) {
         >
           Privacy Policy
         </a>
-        <a
-          href="#"
-          style={{
-            color: 'var(--ash)',
-            textDecoration: 'none',
-            fontWeight: 500,
-            fontSize: '13.5px',
-            transition: 'color 0.2s ease',
-          }}
-          onClick={(e) => e.preventDefault()}
-        >
-          Contact Support
-        </a>
       </div>
       <p style={{ fontSize: '13.5px', color: 'var(--ash)', maxWidth: '760px', margin: '20px auto 0', lineHeight: 1.6 }}>
         {tagline}<br/>Globoox © 2026
@@ -71,11 +58,6 @@ export function Footer({ tagline }: FooterProps) {
         @media (max-width: 639px) {
           .footer-container {
             padding: 0 20px !important;
-          }
-          .footer-links {
-            flex-direction: column !important;
-            align-items: center !important;
-            gap: 12px !important;
           }
         }
       `}</style>
