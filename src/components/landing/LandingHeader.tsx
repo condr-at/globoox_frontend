@@ -14,8 +14,10 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
     <>
       <header
         style={{
-          position: 'sticky',
+          position: 'fixed',
           top: '12px',
+          left: 0,
+          right: 0,
           zIndex: 40,
           padding: '0px 16px 0',
           overflow: 'visible',
@@ -167,8 +169,8 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
             style={{
               position: 'absolute',
               top: 'calc(100% + 12px)',
-              left: '0',
-              right: '0',
+              left: '8px',
+              right: '8px',
               display: 'none',
               flexDirection: 'column',
               gap: '0',

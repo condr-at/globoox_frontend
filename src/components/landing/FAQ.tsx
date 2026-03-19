@@ -15,7 +15,7 @@ export function FAQ({ items }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="faq-section" style={{ padding: '0 0 120px 0' }}>
+    <section className="faq-section" style={{ padding: '0 0 120px 0', background: 'var(--parchment)' }}>
       <div className="faq-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px', textAlign: 'center' }}>
         <span

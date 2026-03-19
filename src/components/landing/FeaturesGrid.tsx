@@ -16,7 +16,7 @@ interface FeaturesGridProps {
 
 export function FeaturesGrid({ sectionLabel, sectionHeading, cards }: FeaturesGridProps) {
   return (
-    <section className="fg-section" style={{ padding: '120px 0' }}>
+    <section className="fg-section" style={{ padding: '120px 0', background: 'var(--parchment)' }}>
       <div className="fg-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px' }}>
         <span

@@ -33,7 +33,7 @@ export function Pricing() {
           }
         }
       `}</style>
-      <section className="pricing-section">
+      <section className="pricing-section" style={{ background: 'var(--parchment)' }}>
         <div className="pricing-container">
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <SectionLabel>Investment in Wisdom</SectionLabel>

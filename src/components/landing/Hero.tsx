@@ -206,6 +206,7 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
             padding: '60px 40px',
             maxWidth: '1200px',
             margin: '0 auto',
+            background: 'var(--parchment)',
           }}
         >
           <div
@@ -337,6 +338,7 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
           minHeight: '80vh',
           maxWidth: '1200px',
           margin: '0 auto',
+          background: 'var(--parchment)',
         }}
       >
         <SectionLabel>Introducing Globoox</SectionLabel>

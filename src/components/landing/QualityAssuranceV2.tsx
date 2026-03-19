@@ -8,7 +8,7 @@ interface QualityAssuranceV2Props {
 
 export function QualityAssuranceV2({ label, heading, description }: QualityAssuranceV2Props) {
   return (
-    <section className="qa-section" style={{ padding: '120px 0' }}>
+    <section className="qa-section" style={{ padding: '120px 0', background: 'var(--parchment)' }}>
       <div className="qa-container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 40px' }}>
       <div style={{ marginBottom: '80px', textAlign: 'center' }}>
         <span

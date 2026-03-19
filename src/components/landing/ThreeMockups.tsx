@@ -14,7 +14,7 @@ const steps = [
   { step: 'Step 3', description: 'Enjoy your book!' },
 ];
 
-export function ThreeMockups({ label = 'How It Works', heading = 'Three simple steps.' }: ThreeMockupsProps) {
+export function ThreeMockups({ label = 'Usage animation', heading = 'Usage animation.' }: ThreeMockupsProps) {
   const [active, setActive] = useState(0);
   const [jumpTo, setJumpTo] = useState<0 | 1 | 2 | null>(null);
   const jumpKeyRef = useRef(0); // increment to re-trigger same-tab jumps
