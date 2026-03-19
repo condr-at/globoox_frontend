@@ -5,10 +5,10 @@ import { SectionLabel } from './SectionLabel';
 
 export function SupportedLanguages() {
   const currentLangs = ['English', 'Spanish', 'Russian', 'French'];
-  const futureLangs = ['Arabic', 'Chinese', 'and dozens more'];
+  const futureLangs = ['German', 'Portuguese', 'Italian', 'Japanese', 'Korean', 'and dozens more'];
 
   return (
-    <section style={{ padding: '120px 40px', background: 'var(--ink)' }}>
+    <section className="supported-section" style={{ padding: '120px 40px', background: 'var(--ink)' }}>
       <div
         style={{
           maxWidth: '1200px',
@@ -20,7 +20,7 @@ export function SupportedLanguages() {
         }}
         className="supported-split"
       >
-        <div style={{ maxWidth: '500px' }}>
+        <div className="supported-copy" style={{ maxWidth: '500px' }}>
           <div style={{ marginBottom: '24px' }}>
             <Image
               src="/images/globe.png"
@@ -31,7 +31,7 @@ export function SupportedLanguages() {
               style={{ width: '64px', height: 'auto' }}
             />
           </div>
-          <SectionLabel>Supported Formats</SectionLabel>
+          <SectionLabel>Formats & Languages</SectionLabel>
           <h2
             className="supported-heading"
             style={{
@@ -56,62 +56,150 @@ export function SupportedLanguages() {
           </p>
         </div>
 
-        <div
-          style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '24px',
-            padding: '48px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '40px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-          }}
-          className="supported-card"
-        >
-          <div>
-            <h3 style={{ color: 'var(--ash)', fontFamily: "'Inter', sans-serif", fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '20px', fontWeight: 600 }}>
-              Available Now
-            </h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-              {currentLangs.map(lang => (
-                <span key={lang} style={{
-                  padding: '12px 24px',
-                  borderRadius: '30px',
-                  background: 'var(--primary)',
-                  color: '#fff',
-                  fontSize: '16px',
-                  fontWeight: 500,
-                  boxShadow: '0 4px 14px rgba(192, 90, 58, 0.25)',
-                }}>
-                  {lang}
-                </span>
-              ))}
-            </div>
-          </div>
+        <div className="supported-card-wrap" style={{ width: '100%', minWidth: 0 }}>
+          <div
+            style={{
+              position: 'relative',
+              minHeight: '420px',
+              width: '100%',
+              minWidth: 0,
+              overflow: 'visible',
+            }}
+            className="supported-card"
+          >
+              <div
+                className="supported-card-visual"
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: 0,
+                  transform: 'translateX(-50%)',
+                  minHeight: '420px',
+                  width: '100%',
+                  minWidth: '360px',
+                  maxWidth: '600px',
+                  padding: '32px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background:
+                    'radial-gradient(circle at 50% 50%, rgba(184,196,185,0.14) 0%, rgba(184,196,185,0.06) 24%, rgba(255,255,255,0.01) 48%, rgba(255,255,255,0.00) 72%, rgba(255,255,255,0.00) 100%)',
+                  overflow: 'visible',
+                }}
+              >
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  inset: '14% 18%',
+                  borderRadius: '50%',
+                  border: '1px dashed rgba(184,196,185,0.16)',
+                }}
+              />
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  inset: '26% 28%',
+                  borderRadius: '50%',
+                  border: '1px dashed rgba(184,196,185,0.12)',
+                }}
+              />
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  background: 'var(--dusk)',
+                  top: '18%',
+                  left: '22%',
+                  opacity: 0.65,
+                  boxShadow: '0 0 18px rgba(232,184,154,0.35)',
+                }}
+              />
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: 'var(--mist)',
+                  bottom: '20%',
+                  right: '24%',
+                  opacity: 0.5,
+                }}
+              />
 
-          <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+              <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '320px' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '148px',
+                    height: '148px',
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle at 35% 30%, rgba(244,240,232,0.18) 0%, rgba(244,240,232,0.08) 34%, rgba(192,90,58,0.12) 62%, rgba(192,90,58,0.06) 100%)',
+                    border: '1px solid rgba(244,240,232,0.14)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 18px 34px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.12)',
+                  }}
+                >
+                  <span style={{ color: 'var(--mist)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: '8px' }}>
+                    Available now
+                  </span>
+                  <span className="supported-epub-core" style={{ color: 'var(--parchment)', fontFamily: "'Lora', serif", fontSize: '36px', lineHeight: 1, fontWeight: 500 }}>
+                    EPUB
+                  </span>
+                </div>
 
-          <div>
-            <h3 style={{ color: 'var(--ash)', fontFamily: "'Inter', sans-serif", fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '20px', fontWeight: 600 }}>
-              Coming Soon
-            </h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-              {futureLangs.map(lang => (
-                <span key={lang} style={{
-                  padding: '12px 24px',
-                  borderRadius: '30px',
-                  background: 'rgba(255,255,255,0.03)',
-                  color: 'var(--ash)',
-                  fontSize: '16px',
-                  fontWeight: 500,
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}>
-                  {lang}
-                </span>
-              ))}
+                {[
+                  { label: currentLangs[0], top: '14%', left: '12%', active: true },
+                  { label: currentLangs[1], top: '18%', right: '8%', active: true },
+                  { label: currentLangs[2], bottom: '20%', left: '10%', active: true },
+                  { label: currentLangs[3], bottom: '14%', right: '14%', active: true },
+                  { label: futureLangs[0], top: '6%', left: '50%', active: false, center: true },
+                  { label: futureLangs[1], top: '42%', left: '0%', active: false },
+                  { label: futureLangs[2], top: '46%', right: '0%', active: false },
+                  { label: futureLangs[3], bottom: '8%', left: '2%', active: false },
+                  { label: futureLangs[4], bottom: '4%', right: '4%', active: false },
+                  { label: futureLangs[5], bottom: '-2%', left: '50%', active: false, center: true },
+                ].map((lang) => (
+                  <span
+                    key={lang.label}
+                    className="supported-lang-pill"
+                    style={{
+                      position: 'absolute',
+                      ...(lang.top ? { top: lang.top } : {}),
+                      ...(lang.bottom ? { bottom: lang.bottom } : {}),
+                      ...(lang.left ? { left: lang.left } : {}),
+                      ...(lang.right ? { right: lang.right } : {}),
+                      ...(lang.center ? { transform: 'translateX(-50%)' } : {}),
+                      padding: lang.active ? '12px 22px' : '7px 13px',
+                      borderRadius: '999px',
+                      background: lang.active ? 'var(--primary)' : 'rgba(255,255,255,0.03)',
+                      color: lang.active ? '#fff' : 'var(--ash)',
+                      fontSize: lang.active ? '16px' : '10.5px',
+                      fontWeight: lang.active ? 600 : 500,
+                      border: lang.active ? 'none' : '1px solid rgba(255,255,255,0.08)',
+                      boxShadow: lang.active ? '0 8px 22px rgba(192, 90, 58, 0.28)' : 'none',
+                      whiteSpace: 'nowrap',
+                      zIndex: lang.active ? 2 : 1,
+                    }}
+                  >
+                    {lang.label}
+                  </span>
+                ))}
+              </div>
+              </div>
             </div>
-          </div>
         </div>
       </div>
       <style>{`
@@ -121,16 +209,33 @@ export function SupportedLanguages() {
             gap: 60px !important;
           }
           .supported-card {
+            min-height: 420px !important;
+          }
+          .supported-card-visual {
             padding: 32px !important;
           }
         }
         @media (max-width: 639px) {
+          .supported-section {
+            padding: 120px 20px !important;
+          }
+          .supported-copy {
+            margin: 0 auto !important;
+            text-align: center !important;
+          }
           .supported-heading {
             font-size: 36px !important;
           }
-          .supported-card span {
-            font-size: 14px !important;
-            padding: 10px 18px !important;
+          .supported-card {
+            min-height: 360px !important;
+          }
+          .supported-card-wrap {
+            width: 100% !important;
+            overflow: visible !important;
+          }
+          .supported-card-visual {
+            min-height: 360px !important;
+            padding: 24px !important;
           }
         }
       `}</style>
