@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { ContinuousMockup } from './ContinuousMockup';
+import { AnimatedIPhoneMockup } from './AnimatedIPhoneMockup';
 
 interface ThreeMockupsProps {
   label?: string;
@@ -179,8 +179,8 @@ export function ThreeMockups({ label = 'Usage animation', heading = 'Usage anima
           gap: '64px',
         }}>
           {/* Mockup */}
-          <div className="threemockups-mockup" style={{ flexShrink: 0, width: '320px' }}>
-            <ContinuousMockup jumpTo={jumpTo} onStepChange={handleStepChange} />
+          <div className="threemockups-mockup" style={{ flexShrink: 0, width: '360px', display: 'flex', justifyContent: 'center' }}>
+            <AnimatedIPhoneMockup jumpTo={jumpTo} onStepChange={handleStepChange} />
           </div>
 
           {/* Desktop/tablet vertical tabs */}
@@ -251,6 +251,7 @@ export function ThreeMockups({ label = 'Usage animation', heading = 'Usage anima
           .threemockups-card { border: none !important; border-radius: 0 !important; background: transparent !important; padding: 0 !important; display: block !important; width: 100% !important; }
           .threemockups-layout { flex-direction: column !important; gap: 24px !important; align-items: stretch !important; width: 100% !important; }
           .threemockups-mockup { width: 100% !important; }
+          .threemockups-mockup > div { scale: 0.88; transform-origin: top center !important; }
           .threemockups-tab-label { white-space: normal !important; }
           .threemockups-vertical-tabs { display: none !important; }
           .threemockups-mobile-tabs { display: block !important; }
@@ -260,6 +261,7 @@ export function ThreeMockups({ label = 'Usage animation', heading = 'Usage anima
           .threemockups-card { border: none !important; border-radius: 0 !important; background: transparent !important; padding: 0 !important; }
           .threemockups-heading { font-size: 36px !important; }
           .threemockups-layout { gap: 32px !important; }
+          .threemockups-mockup { width: 348px !important; }
           .threemockups-header { margin-bottom: 48px !important; }
           .threemockups-header-divider { display: block !important; }
         }
