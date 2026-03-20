@@ -45,10 +45,9 @@ import TranslationLimitDialog from '@/components/TranslationLimitDialog';
 // that aborts in-flight prefetch requests and updates readingAnchor immediately.
 type NavigationSource = 'toc' | 'search' | 'slider' | 'link' | 'restore_anchor' | 'manual_scroll'
 const LAST_PAGE_SENTINEL = '__LAST_PAGE__';
-const SPREAD_MIN_VIEWPORT_PX = 1100;
-const SINGLE_PAGE_MAX_WIDTH_PX = 672;
-const OUTER_HORIZONTAL_PADDING_PX = 32;
+const SPREAD_MIN_VIEWPORT_PX = 1408;
 const SPREAD_GAP_PX = 32;
+const PAGE_SHELL_CLASS = 'container max-w-2xl mx-auto px-4 h-full';
 
 interface ReaderViewProps {
     bookId: string;
@@ -326,11 +325,6 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     const [layoutCacheReadyKey, setLayoutCacheReadyKey] = useState('');
     const currentPageIdxRef = useRef(0);
     const spreadModeEnabled = settings.pageLayoutMode === 'spread' && pageWidth >= SPREAD_MIN_VIEWPORT_PX;
-    const measurePageOuterWidth = useMemo(() => {
-        const singleOuterWidth = Math.max(1, Math.min(SINGLE_PAGE_MAX_WIDTH_PX, pageWidth - OUTER_HORIZONTAL_PADDING_PX));
-        if (!spreadModeEnabled) return singleOuterWidth;
-        return Math.max(1, (pageWidth - OUTER_HORIZONTAL_PADDING_PX - SPREAD_GAP_PX) / 2);
-    }, [pageWidth, spreadModeEnabled]);
 
     const normalizedCurrentPageIdx = useMemo(() => {
         if (!spreadModeEnabled) return currentPageIdx;
@@ -491,9 +485,9 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     const blockStructureKey = useMemo(
         () => {
             const contentSignature = getLayoutContentSignature(normalizedBlocks);
-            return `${contentSignature}__${pageWidth}__${pageHeight}__${settings.fontSize}__${settings.lineHeightScale}__${settings.pageLayoutMode}__${displayBlocksLang}`;
+            return `${contentSignature}__${pageWidth}__${pageHeight}__${settings.fontSize}__${settings.lineHeightScale}__${displayBlocksLang}`;
         },
-        [normalizedBlocks, pageWidth, pageHeight, settings.fontSize, settings.lineHeightScale, settings.pageLayoutMode, displayBlocksLang]
+        [normalizedBlocks, pageWidth, pageHeight, settings.fontSize, settings.lineHeightScale, displayBlocksLang]
     );
     const prevBlockStructureKey = useRef('');
     const lastProgressFetchAtRef = useRef<Map<string, number>>(new Map());
@@ -1626,14 +1620,12 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                     {/* Hidden measurement container — same content width, off-screen */}
                     <div
                         ref={measureContainerRef}
-                        className="mx-auto px-4"
+                        className="container max-w-2xl mx-auto px-4"
                         style={{
                             position: 'fixed',
                             top: '-9999px',
                             left: 0,
                             right: 0,
-                            width: `${measurePageOuterWidth}px`,
-                            maxWidth: 'none',
                             visibility: 'hidden',
                             pointerEvents: 'none',
                             zIndex: -1,
@@ -1664,33 +1656,38 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
 
                     {/* Visible page */}
                     <TranslationGlow>
-                        <div
-                            className={`mx-auto h-full select-none md:select-text ${spreadModeEnabled ? 'max-w-[1400px] px-4' : 'max-w-2xl px-4'}`}
-                            lang={activeLang}
-                        >
+                        <div className="h-full select-none md:select-text" lang={activeLang}>
                             {isLoading || !visiblePagesReady ? (
-                                <>
+                                <div className={PAGE_SHELL_CLASS}>
                                     <Skeleton className="h-7 w-64 mb-5" />
                                     <div className="space-y-5">
                                         {[100, 95, 88, 100, 72, 100, 90, 85, 100, 60, 100, 92].map((width, i) => (
                                             <Skeleton key={i} className="h-5" style={{ width: `${width}%` }} />
                                         ))}
                                     </div>
-                                </>
+                                </div>
                             ) : chaptersError ? (
                                 <p className="text-sm text-destructive py-8 text-center">{chaptersError}</p>
                             ) : contentError ? (
                                 <p className="text-sm text-destructive py-8 text-center">{contentError}</p>
                             ) : spreadModeEnabled ? (
-                                <div className="grid h-full grid-cols-2 gap-8">
-                                    <div className="h-full overflow-hidden px-4">
-                                        {renderPageBlocks(currentPageBlocks)}
+                                <div className="mx-auto flex h-full items-stretch justify-center gap-8 px-4">
+                                    <div className="h-full overflow-hidden">
+                                        <div className={PAGE_SHELL_CLASS}>
+                                            {renderPageBlocks(currentPageBlocks)}
+                                        </div>
                                     </div>
-                                    <div className="h-full overflow-hidden px-4 border-l border-border/40">
-                                        {spreadRightPageBlocks.length > 0 ? renderPageBlocks(spreadRightPageBlocks) : null}
+                                    <div className="h-full overflow-hidden">
+                                        <div className={PAGE_SHELL_CLASS}>
+                                            {spreadRightPageBlocks.length > 0 ? renderPageBlocks(spreadRightPageBlocks) : null}
+                                        </div>
                                     </div>
                                 </div>
-                            ) : renderPageBlocks(currentPageBlocks)}
+                            ) : (
+                                <div className={PAGE_SHELL_CLASS}>
+                                    {renderPageBlocks(currentPageBlocks)}
+                                </div>
+                            )}
                         </div>
                     </TranslationGlow>
                 </div>

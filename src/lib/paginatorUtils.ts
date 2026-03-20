@@ -200,8 +200,6 @@ interface ProbeHandle {
 
 function createProbe(containerRef: HTMLElement, effectiveHeight: number, lang: string): ProbeHandle {
   const doc = containerRef.ownerDocument
-  const containerRect = containerRef.getBoundingClientRect()
-  const measuredWidth = Math.max(1, Math.floor(containerRect.width))
   const host = doc.createElement('div')
   host.style.position = 'fixed'
   host.style.left = '0'
@@ -213,10 +211,9 @@ function createProbe(containerRef: HTMLElement, effectiveHeight: number, lang: s
   host.style.overflow = 'hidden'
 
   const page = doc.createElement('div')
-  page.className = 'mx-auto px-4 h-full'
+  page.className = 'container max-w-2xl mx-auto px-4 h-full'
   page.setAttribute('lang', lang)
   page.style.height = `${effectiveHeight}px`
-  page.style.width = `${measuredWidth}px`
   page.style.overflowY = 'hidden'
   page.style.overflowX = 'hidden'
 
