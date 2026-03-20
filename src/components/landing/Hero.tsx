@@ -21,6 +21,8 @@ function BookSpine({
   active = false,
   baseZ = 1,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
 }: {
   title: string;
   author?: string;
@@ -31,11 +33,15 @@ function BookSpine({
   active?: boolean;
   baseZ?: number;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }) {
   return (
     <div
       className="spine-wrap"
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{
         position: 'relative',
         flexShrink: 0,
@@ -144,6 +150,7 @@ function FloatingScript({ children, style }: { children: React.ReactNode; style:
 export function Hero({ variant = 'centered', withBooks = false, title, subtitle, titleClassName }: HeroProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [activeSpine, setActiveSpine] = useState<number | null>(null);
+  const [hoveredSpine, setHoveredSpine] = useState<number | null>(null);
 
   const responsiveStyles = `
     .spine-wrap {
@@ -264,6 +271,12 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
       .hero-split-text {
         text-align: center !important;
         align-items: center !important;
+        order: 2 !important;
+      }
+      .hero-books-section {
+        order: 1 !important;
+        width: 100% !important;
+        min-width: 0 !important;
       }
       .hero-split-h1 {
         font-size: 48px !important;
@@ -278,6 +291,26 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
         height: 400px !important;
         width: 100% !important;
       }
+      .hero-books-row {
+        gap: 0 !important;
+        transform: rotate(90deg) !important;
+        transform-origin: center center !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(1) {
+        transform: translateY(-10px) !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(2) {
+        transform: translateY(6px) !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(3) {
+        transform: translateY(-3px) !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(4) {
+        transform: translateY(4px) !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(5) {
+        transform: translateY(-7px) !important;
+      }
       .spine-text-flow {
         line-height: 1.15 !important;
       }
@@ -285,7 +318,7 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
       .spine-h-364 { height: 291px !important; }
       .spine-h-442 { height: 354px !important; }
       .spine-evolution { height: 364px !important; }
-      .spine-desiguales { height: 310px !important; }
+      .spine-desiguales { height: 372px !important; }
       .spine-hover .spine-title { font-size: 16px !important; }
       /* Centered variant */
       .hero-centered {
@@ -302,6 +335,29 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
       .hero-split {
         padding-top: 0px !important;
         padding-bottom: 0px !important;
+      }
+      .hero-books-row {
+        gap: 0 !important;
+        transform: rotate(90deg) !important;
+        transform-origin: center center !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(1) {
+        transform: translateY(-12px) !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(2) {
+        transform: translateY(8px) !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(3) {
+        transform: translateY(-4px) !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(4) {
+        transform: translateY(6px) !important;
+      }
+      .hero-books-row .spine-wrap:nth-child(5) {
+        transform: translateY(-8px) !important;
+      }
+      .spine-desiguales {
+        height: 420px !important;
       }
     }
     @media (min-width: 1280px) {
@@ -426,11 +482,66 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
                 History
               </FloatingScript>
               <div className="hero-books-row" style={{ display: 'flex', gap: '16px', transform: 'rotate(5deg)', alignItems: 'flex-end' }}>
-                <BookSpine title="Nexus" author="Yuval Noah Harari" height={360} bg="var(--parchment-light)" className="spine-h-416 spine-long-title" baseZ={1} active={activeSpine === 0} onClick={() => setActiveSpine((prev) => (prev === 0 ? null : 0))} />
-                <BookSpine title="Эволюция Человека" author="Александр Марков" height={396} bg="var(--parchment-light)" className="spine-evolution spine-long-title spine-longest-title" baseZ={2} active={activeSpine === 1} onClick={() => setActiveSpine((prev) => (prev === 1 ? null : 1))} />
-                <BookSpine title="Globoox Engine" height={384} bg="var(--ink)" textColor="#E8A996" className="spine-h-442" baseZ={3} active={activeSpine === 2} onClick={() => setActiveSpine((prev) => (prev === 2 ? null : 2))} />
-                <BookSpine title="Desiguales" author="Diego Castañeda Garza" height={308} bg="var(--parchment-light)" className="spine-h-364 spine-desiguales spine-long-title spine-longest-title" baseZ={4} active={activeSpine === 3} onClick={() => setActiveSpine((prev) => (prev === 3 ? null : 3))} />
-                <BookSpine title="Manet, le secret" author="Sophie Chauveau" height={360} bg="var(--parchment-light)" className="spine-h-416 spine-long-title" baseZ={5} active={activeSpine === 4} onClick={() => setActiveSpine((prev) => (prev === 4 ? null : 4))} />
+                <BookSpine
+                  title="Nexus"
+                  author="Yuval Noah Harari"
+                  height={360}
+                  bg="var(--parchment-light)"
+                  className="spine-h-416 spine-long-title"
+                  baseZ={1}
+                  active={activeSpine === 0 || hoveredSpine === 0}
+                  onClick={() => setActiveSpine((prev) => (prev === 0 ? null : 0))}
+                  onMouseEnter={() => setHoveredSpine(0)}
+                  onMouseLeave={() => setHoveredSpine(null)}
+                />
+                <BookSpine
+                  title="Эволюция Человека"
+                  author="Александр Марков"
+                  height={396}
+                  bg="var(--parchment-light)"
+                  className="spine-evolution spine-long-title spine-longest-title"
+                  baseZ={2}
+                  active={activeSpine === 1 || hoveredSpine === 1}
+                  onClick={() => setActiveSpine((prev) => (prev === 1 ? null : 1))}
+                  onMouseEnter={() => setHoveredSpine(1)}
+                  onMouseLeave={() => setHoveredSpine(null)}
+                />
+                <BookSpine
+                  title="Globoox Engine"
+                  height={384}
+                  bg="var(--ink)"
+                  textColor="#E8A996"
+                  className="spine-h-442"
+                  baseZ={3}
+                  active={activeSpine === 2 || hoveredSpine === 2}
+                  onClick={() => setActiveSpine((prev) => (prev === 2 ? null : 2))}
+                  onMouseEnter={() => setHoveredSpine(2)}
+                  onMouseLeave={() => setHoveredSpine(null)}
+                />
+                <BookSpine
+                  title="Desiguales"
+                  author="Diego Castañeda Garza"
+                  height={308}
+                  bg="var(--parchment-light)"
+                  className="spine-h-364 spine-desiguales spine-long-title spine-longest-title"
+                  baseZ={4}
+                  active={activeSpine === 3 || hoveredSpine === 3}
+                  onClick={() => setActiveSpine((prev) => (prev === 3 ? null : 3))}
+                  onMouseEnter={() => setHoveredSpine(3)}
+                  onMouseLeave={() => setHoveredSpine(null)}
+                />
+                <BookSpine
+                  title="Manet, le secret"
+                  author="Sophie Chauveau"
+                  height={360}
+                  bg="var(--parchment-light)"
+                  className="spine-h-416 spine-long-title"
+                  baseZ={5}
+                  active={activeSpine === 4 || hoveredSpine === 4}
+                  onClick={() => setActiveSpine((prev) => (prev === 4 ? null : 4))}
+                  onMouseEnter={() => setHoveredSpine(4)}
+                  onMouseLeave={() => setHoveredSpine(null)}
+                />
               </div>
               </div>
             </div>
