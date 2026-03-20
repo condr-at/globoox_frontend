@@ -22,6 +22,19 @@ This document is the current source of truth for:
 
 For Reader position, server remains the authoritative multi-device source, but local state is used for instant restore.
 
+## Library Load Contract (Auth Race Guard)
+
+Main implementation: `src/lib/useBooks.ts`, `src/lib/api.ts`, `src/app/(app)/auth/page.tsx`.
+
+Current behavior for `/my-books`:
+
+1. UI keeps loading state (skeleton) until the first successful `GET /api/books?status=all`.
+2. For authenticated scope, if the first successful response is empty, frontend performs one delayed retry (~1.2s) to absorb post-login auth/session races.
+3. API layer logs a throttled warning when `/api/books*` responds with `x-authenticated: false` in browser context.
+4. After successful sign-in, auth page performs full navigation (`window.location.assign(nextUrl)`) to avoid stale client-only navigation state.
+
+This is a mitigation layer; backend proxy/session consistency is still the source of truth.
+
 ## API Surface (current)
 
 Core endpoints used by Reader/Library:

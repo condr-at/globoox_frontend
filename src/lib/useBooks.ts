@@ -24,6 +24,7 @@ export function invalidateBooksCache() {
 
 export function useBooks(options?: { scopeKey?: string }) {
   const scopeKey = options?.scopeKey ?? 'guest'
+  const isAuthenticatedScope = scopeKey !== 'guest'
 
   // Initialise from cache immediately — no skeleton on repeated visits
   const cached = booksCache.get('all')
@@ -32,6 +33,8 @@ export function useBooks(options?: { scopeKey?: string }) {
   const [loading, setLoading] = useState(!cached)
   const [error, setError] = useState<string | null>(null)
   const revalidating = useRef(false)
+  const hasSuccessfulBooksFetch = useRef(Boolean(cached))
+  const authRetryDone = useRef(false)
 
   // Hydrate from persisted IndexedDB cache (fast reloads)
   useEffect(() => {
@@ -44,6 +47,7 @@ export function useBooks(options?: { scopeKey?: string }) {
       booksCache.set('all', { data: entry.books, fetchedAt: entry.fetchedAt })
       setBooks(entry.books)
       setLoading(false)
+      hasSuccessfulBooksFetch.current = true
       // Persist per-book metadata too, so /reader/[id] can render instantly on reload.
       entry.books.forEach((b) => void setCachedBookMeta(scopeKey, b))
     })
@@ -70,6 +74,11 @@ export function useBooks(options?: { scopeKey?: string }) {
       setLoading(false)
     }
 
+    // Keep skeleton until first successful /api/books call.
+    if (!hasSuccessfulBooksFetch.current) {
+      setLoading(true)
+    }
+
     // Nothing to do if cache is fresh and not forced
     if (!force && isFresh) return
 
@@ -88,15 +97,28 @@ export function useBooks(options?: { scopeKey?: string }) {
       setBooks(data)
       void setCachedBooksList(scopeKey, 'all', data)
       data.forEach((b) => void setCachedBookMeta(scopeKey, b))
+      hasSuccessfulBooksFetch.current = true
+
+      // Auth/session race guard: immediately retry once when a fresh authenticated fetch returns empty.
+      if (isAuthenticatedScope && data.length === 0 && !authRetryDone.current) {
+        authRetryDone.current = true
+        await new Promise((resolve) => setTimeout(resolve, 1200))
+        const retryData = await fetchBooks('all')
+        booksCache.set('all', { data: retryData, fetchedAt: Date.now() })
+        setBooks(retryData)
+        void setCachedBooksList(scopeKey, 'all', retryData)
+        retryData.forEach((b) => void setCachedBookMeta(scopeKey, b))
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load books'
       setError(message)
+      hasSuccessfulBooksFetch.current = true
     } finally {
       revalidating.current = false
       // Only clear the initial loading spinner (first ever load)
       setLoading(false)
     }
-  }, [scopeKey])
+  }, [isAuthenticatedScope, scopeKey])
 
   // On mount: show cache immediately, revalidate if stale
   useEffect(() => {

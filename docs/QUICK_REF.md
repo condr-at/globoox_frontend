@@ -23,6 +23,7 @@ npx tsc --noEmit         # TypeScript validation
 | Type errors | `npx tsc --noEmit` |
 | API CORS error | Verify backend allows origin |
 | Missing deps | `rm -rf node_modules && npm install` |
+| Library stuck after login | Check browser console for `[api] /api/books responded as unauthenticated` |
 
 ## Tech Stack
 
@@ -77,6 +78,19 @@ POST ${API}/api/chapters/{id}/translate
 POST ${API}/api/translate
 POST ${API}/api/detect-language
 ```
+
+## My Books Auth-Race Checklist
+
+If user logs in and still sees no books:
+
+1. Open browser console and check for warning:
+   - `[api] /api/books responded as unauthenticated`
+2. Verify response header on `GET /api/books?status=all`:
+   - `x-authenticated: true` is expected for signed-in users.
+3. Confirm UI behavior:
+   - skeleton shows while first books fetch is unresolved;
+   - one automatic retry runs on first empty authenticated response.
+4. If still empty, force a full reload and re-check headers.
 
 ## shadcn/ui Commands
 ```bash

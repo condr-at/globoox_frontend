@@ -206,6 +206,8 @@ const inflightGetRequests = new Map<string, Promise<unknown>>()
 const recentGetResponses = new Map<string, { expiresAt: number; value: unknown }>()
 const inflightChromeTranslationRequests = new Map<string, Promise<unknown>>()
 let browserTokenCache: { token: string | null; expiresAt: number } | null = null
+const ACCESS_TOKEN_STORAGE_KEY = 'globoox:access_token'
+let lastBooksAuthWarnAt = 0
 
 // Reading position cache with TTL (30 seconds)
 const POSITION_CACHE_TTL_MS = 30000
@@ -259,6 +261,12 @@ async function getBrowserAccessToken(): Promise<string | null> {
 
   let token: string | null = null
   try {
+    token = window.localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
+    if (token) {
+      browserTokenCache = { token, expiresAt: now + 3000 }
+      return token
+    }
+
     const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
@@ -316,6 +324,18 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
         headers,
       })
       statusCode = res.status
+
+      if (typeof window !== 'undefined' && path.startsWith('/api/books')) {
+        const authHeader = res.headers.get('x-authenticated')
+        if (authHeader === 'false') {
+          const now = Date.now()
+          if (now - lastBooksAuthWarnAt > 10000) {
+            lastBooksAuthWarnAt = now
+            console.warn('[api] /api/books responded as unauthenticated', { path, status: res.status })
+          }
+        }
+      }
+
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
         throw new Error(body.message || `Request failed: ${res.status}`)

@@ -296,10 +296,15 @@ export default function MyBooksPage() {
           {(['visible', 'hidden', 'all'] as const).map((f) => (
             <Button
               key={f}
-              variant={statusFilter === f ? 'default' : 'outline'}
+              variant="outline"
               size="sm"
               onClick={() => setStatusFilter(f)}
-              className="rounded-full"
+              className={[
+                'rounded-full border',
+                statusFilter === f
+                  ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
+                  : 'border-[var(--separator)] bg-background text-foreground hover:bg-accent hover:text-accent-foreground',
+              ].join(' ')}
             >
               {f === 'visible' ? 'Visible' : f === 'hidden' ? 'Hidden' : 'All'}
             </Button>

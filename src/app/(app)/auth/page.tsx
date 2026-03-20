@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { GoogleIcon } from '@/components/icons/GoogleIcon';
@@ -23,7 +23,6 @@ export default function AuthPage() {
 }
 
 function AuthForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const supabaseRef = useRef<SupabaseClient | null>(null);
 
@@ -58,7 +57,8 @@ function AuthForm() {
       setLoading(false);
     } else {
       trackUserLoggedIn('email');
-      router.push(nextUrl);
+      // Force a full navigation so server-side API proxy sees the fresh auth session immediately.
+      window.location.assign(nextUrl);
     }
   };
 
