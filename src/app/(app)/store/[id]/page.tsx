@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import { ChevronLeft, Star, ExternalLink, BookOpen } from 'lucide-react';
 import amazonBooks from '@/data/amazon-books.json';
 import IOSIcon from '@/components/ui/ios-icon';
+import { Button } from '@/components/ui/button';
 
 interface BookDetailPageProps {
     params: Promise<{ id: string }>;
@@ -114,22 +115,23 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                     <div className="flex flex-col gap-[12px]">
                         {book.hasDemo && book.demoBookId && (
                             <Link href={`/reader/${book.demoBookId}`}>
-                                <button className="w-full btn-primary">
+                                <Button className="w-full h-[50px] text-[17px] font-semibold">
                                     <BookOpen className="w-[20px] h-[20px]" />
                                     Read Demo Free
-                                </button>
+                                </Button>
                             </Link>
                         )}
 
                         <div>
-                            <button
-                                className="w-full btn-gray"
+                            <Button
+                                variant="secondary"
+                                className="w-full h-[50px] text-[17px] font-semibold"
                                 disabled
                                 aria-disabled="true"
                             >
                                 <ExternalLink className="w-[20px] h-[20px]" />
                                 Buy
-                            </button>
+                            </Button>
                             <p className="mt-[6px] text-[12px] text-muted-foreground/50 text-center">
                                 comnig soon
                             </p>

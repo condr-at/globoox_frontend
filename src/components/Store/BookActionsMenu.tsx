@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { Eye, EyeOff, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
+import { uiIconCircleButton, uiMenuItemButton } from '@/components/ui/button-styles';
 
 interface BookActionsMenuProps {
   onHide: () => void;
@@ -60,7 +61,7 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
       <button
         ref={triggerRef}
         type="button"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/80 backdrop-blur text-primary transition-colors hover:bg-[var(--fill-tertiary)] active:bg-[var(--fill-secondary)]"
+        className={`${uiIconCircleButton} h-8 w-8 bg-background/80 backdrop-blur text-primary`}
         onPointerDown={(e) => {
           e.stopPropagation();
         }}
@@ -92,7 +93,7 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
               e.stopPropagation();
               handleHide();
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--fill-tertiary)] active:bg-[var(--fill-secondary)]"
+            className={`${uiMenuItemButton} justify-start gap-3 text-[15px]`}
           >
             {hideLabel === 'Unhide' ? (
               <Eye className="w-4 h-4 text-primary" />
@@ -113,7 +114,7 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
               e.stopPropagation();
               handleDelete();
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[var(--fill-tertiary)] active:bg-[var(--fill-secondary)]"
+            className={`${uiMenuItemButton} justify-start gap-3 text-[15px]`}
           >
             <Trash2 className="w-4 h-4 text-destructive" />
             <span className="text-[15px] text-destructive">Delete</span>

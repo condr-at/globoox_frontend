@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { User, HelpCircle, LogOut, Loader2, FlaskConical } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { uiMenuItemButton } from '@/components/ui/button-styles';
 import { Separator } from '@/components/ui/separator';
 import PageHeader from '@/components/ui/PageHeader';
 import { createClient } from '@/lib/supabase/client';
@@ -100,7 +101,7 @@ export default function SettingsPage() {
 
                         {/* Alpha Tester */}
                         {!isAlpha && (
-                            <Card className="shadow-none">
+                            <Card className="shadow-none overflow-hidden">
                                 <CardContent className="p-4 flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
                                         <FlaskConical className="w-5 h-5 text-violet-500 shrink-0" />
@@ -126,8 +127,8 @@ export default function SettingsPage() {
                             <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-muted-foreground">
                                 Appearance
                             </p>
-                            <Card className="shadow-none">
-                                <CardContent className="p-0">
+                            <Card className="shadow-none overflow-hidden">
+                                <CardContent className="p-0 overflow-hidden">
                                     <IOSSettingsRow
                                         label="Mode"
                                         value={currentMode}
@@ -150,11 +151,11 @@ export default function SettingsPage() {
                             <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-muted-foreground">
                                 Other
                             </p>
-                            <Card className="shadow-none">
-                                <CardContent className="p-0">
-                                    <Button variant="ghost" asChild className="w-full justify-start h-12 px-4 rounded-none">
+                            <Card className="shadow-none overflow-hidden">
+                                <CardContent className="p-0 overflow-hidden">
+                                    <Button variant="ghost" asChild className={`${uiMenuItemButton} h-12 !rounded-none justify-start gap-3`}>
                                         <a href="mailto:support@globoox.co">
-                                            <HelpCircle className="w-5 h-5 mr-3" />
+                                            <HelpCircle className="w-5 h-5" />
                                             Help & Support
                                         </a>
                                     </Button>
@@ -163,14 +164,14 @@ export default function SettingsPage() {
                                     </div>
                                     <Button
                                         variant="ghost"
-                                        className="w-full justify-start h-12 px-4 rounded-none text-destructive hover:text-destructive"
+                                        className={`${uiMenuItemButton} h-12 !rounded-none justify-start gap-3 text-destructive hover:text-destructive`}
                                         onClick={handleSignOut}
                                         disabled={signingOut}
                                     >
                                         {signingOut ? (
-                                            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+                                            <Loader2 className="w-5 h-5 animate-spin" />
                                         ) : (
-                                            <LogOut className="w-5 h-5 mr-3" />
+                                            <LogOut className="w-5 h-5" />
                                         )}
                                         Sign Out
                                     </Button>

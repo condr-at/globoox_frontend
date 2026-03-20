@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import IOSBottomDrawer from '@/components/ui/ios-bottom-drawer';
 import IOSDialogHeaderCenterLarge from '@/components/ui/ios-dialog-header-center-large';
 import IOSIcon from '@/components/ui/ios-icon';
+import { uiIconCircleButton } from '@/components/ui/button-styles';
 
 interface IOSFlowDialogProps {
   open: boolean;
@@ -32,7 +33,7 @@ export default function IOSFlowDialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="absolute right-5 top-4 z-30 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--fill-tertiary)] text-muted-foreground transition-colors hover:bg-[var(--fill-secondary)] active:bg-[var(--fill-primary)]"
+            className={`${uiIconCircleButton} absolute right-5 top-4 z-30`}
             aria-label="Close"
           >
             <IOSIcon icon={X} strokeWidth={2.1} />

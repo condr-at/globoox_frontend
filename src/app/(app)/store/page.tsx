@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { StoreBookCard } from '@/components/Store/BookCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { uiIconCircleButton } from '@/components/ui/button-styles';
 import PageHeader from '@/components/ui/PageHeader';
 import { Search, X } from 'lucide-react';
 import amazonBooks from '@/data/amazon-books.json';
@@ -44,7 +45,7 @@ export default function StorePage() {
                     {search && (
                         <button
                             onClick={() => setSearch('')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted active:bg-muted/80 transition-colors"
+                            className={`${uiIconCircleButton} absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 p-1 bg-transparent text-muted-foreground`}
                         >
                             <X className="w-3 h-3 text-muted-foreground" />
                         </button>

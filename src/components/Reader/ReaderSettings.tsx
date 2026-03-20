@@ -5,6 +5,7 @@ import { Settings, Type, Check } from 'lucide-react';
 import { useAppTheme } from '@/lib/hooks/useAppTheme';
 import IOSBottomDrawer from '@/components/ui/ios-bottom-drawer';
 import IOSBottomDrawerHeader from '@/components/ui/ios-bottom-drawer-header';
+import { uiIconTriggerButton } from '@/components/ui/button-styles';
 import { useAppStore } from '@/lib/store';
 import { trackFontSizeChanged } from '@/lib/posthog';
 
@@ -40,7 +41,7 @@ export default function ReaderSettings({
             {externalOpen === undefined && (
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="flex items-center justify-center min-w-[44px] min-h-[44px] text-primary transition-opacity hover:opacity-80 active:opacity-70"
+                    className={uiIconTriggerButton}
                 >
                     <Settings className="w-[20px] h-[20px]" />
                 </button>
@@ -75,7 +76,7 @@ export default function ReaderSettings({
                                             const mode = t.id.endsWith('dark') ? 'dark' : 'light';
                                             setAppTheme(mode, palette);
                                         }}
-                                        className="flex flex-col items-center gap-[6px] transition-opacity hover:opacity-85 active:opacity-70"
+                                        className="cursor-pointer flex flex-col items-center gap-[6px] transition-opacity hover:opacity-85 active:opacity-70"
                                         aria-label={t.label}
                                         aria-pressed={isActive}
                                     >
