@@ -99,6 +99,7 @@ export default function MyBooksPage() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const scopeKey = isAuthenticated && user?.id ? user.id : 'guest';
   const { books, loading, error, hideBook, unhideBook, removeBook, refresh } = useBooks({ scopeKey });
+  const authRefreshDoneRef = useRef<string | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [progressData, setProgressData] = useState<Record<string, ProgressRow>>({});
@@ -114,6 +115,7 @@ export default function MyBooksPage() {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [sortDrawerOpen, setSortDrawerOpen] = useState(false);
+  const progressRef = useRef(progress);
   const sortTriggerRef = useRef<HTMLButtonElement>(null);
   const sortMenuRef = useRef<HTMLDivElement>(null);
   const { menuStyle, isPositioned } = useAdaptiveDropdown({
@@ -143,6 +145,14 @@ export default function MyBooksPage() {
       window.history.replaceState({}, '', '/my-books');
     }
   }, [authLoading, isAuthenticated]);
+
+  // When auth scope becomes ready, force one canonical refresh for /api/books?status=all.
+  useEffect(() => {
+    if (authLoading || !isAuthenticated || !user?.id) return;
+    if (authRefreshDoneRef.current === user.id) return;
+    authRefreshDoneRef.current = user.id;
+    void refresh(true);
+  }, [authLoading, isAuthenticated, refresh, user?.id]);
 
   const handleUploadClick = () => {
     if (isAuthenticated) {
@@ -319,8 +329,6 @@ export default function MyBooksPage() {
 
     return 0;
   }, [progress, progressData]);
-
-  const progressRef = useRef(progress);
 
   useEffect(() => {
     progressRef.current = progress;

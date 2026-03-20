@@ -34,9 +34,25 @@ export function useBooks(options?: { scopeKey?: string }) {
   // loading=true only when there is absolutely no cached data yet (very first visit)
   const [loading, setLoading] = useState(!cached)
   const [error, setError] = useState<string | null>(null)
-  const revalidating = useRef(false)
+  const revalidating = useRef<string | null>(null)
   const hasSuccessfulBooksFetch = useRef(Boolean(cached))
   const authRetryDone = useRef(false)
+  const activeCacheKeyRef = useRef(cacheKey)
+
+  const commitBooks = useCallback((nextBooks: ApiBook[], fetchedAt = Date.now()) => {
+    if (activeCacheKeyRef.current !== cacheKey) return
+    booksCache.set(cacheKey, { data: nextBooks, fetchedAt })
+    setBooks(nextBooks)
+    void setCachedBooksList(scopeKey, 'all', nextBooks)
+    nextBooks.forEach((b) => void setCachedBookMeta(scopeKey, b))
+  }, [cacheKey, scopeKey])
+
+  useEffect(() => {
+    activeCacheKeyRef.current = cacheKey
+    revalidating.current = null
+    authRetryDone.current = false
+    hasSuccessfulBooksFetch.current = Boolean(booksCache.get(cacheKey))
+  }, [cacheKey])
 
   // Hydrate from persisted IndexedDB cache (fast reloads)
   useEffect(() => {
@@ -85,8 +101,8 @@ export function useBooks(options?: { scopeKey?: string }) {
     if (!force && isFresh) return
 
     // Prevent concurrent fetches
-    if (revalidating.current) return
-    revalidating.current = true
+    if (revalidating.current === cacheKey) return
+    revalidating.current = cacheKey
 
     // Clear stale entry when forced so we don't risk showing it again on next mount
     if (force) booksCache.delete(cacheKey)
@@ -95,32 +111,39 @@ export function useBooks(options?: { scopeKey?: string }) {
     // Don't set loading=true here — we already have data to show
     try {
       const data = await fetchBooks(listStatus)
-      booksCache.set(cacheKey, { data, fetchedAt: Date.now() })
-      setBooks(data)
-      void setCachedBooksList(scopeKey, 'all', data)
-      data.forEach((b) => void setCachedBookMeta(scopeKey, b))
-      hasSuccessfulBooksFetch.current = true
-
-      // Auth/session race guard: immediately retry once when a fresh authenticated fetch returns empty.
-      if (isAuthenticatedScope && data.length === 0 && !authRetryDone.current) {
+      const needsAuthStabilization = isAuthenticatedScope && !authRetryDone.current
+      if (!needsAuthStabilization) {
+        commitBooks(data)
+        hasSuccessfulBooksFetch.current = true
+      } else {
+        // First authenticated fetch can still race before proxy session is fully ready.
+        // Show data immediately, then do one short retry and only persist the retry result as fresh.
+        if (activeCacheKeyRef.current === cacheKey) {
+          setBooks(data)
+        }
         authRetryDone.current = true
-        await new Promise((resolve) => setTimeout(resolve, 1200))
-        const retryData = await fetchBooks(listStatus)
-        booksCache.set(cacheKey, { data: retryData, fetchedAt: Date.now() })
-        setBooks(retryData)
-        void setCachedBooksList(scopeKey, 'all', retryData)
-        retryData.forEach((b) => void setCachedBookMeta(scopeKey, b))
+
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 1200))
+          const retryData = await fetchBooks(listStatus)
+          commitBooks(retryData)
+          hasSuccessfulBooksFetch.current = true
+        } catch {
+          // Fallback: keep current data but mark it near-stale so a follow-up refresh retries quickly.
+          commitBooks(data, Date.now() - STALE_TIME_MS + 1)
+          hasSuccessfulBooksFetch.current = true
+        }
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load books'
       setError(message)
       hasSuccessfulBooksFetch.current = true
     } finally {
-      revalidating.current = false
+      if (revalidating.current === cacheKey) revalidating.current = null
       // Only clear the initial loading spinner (first ever load)
       setLoading(false)
     }
-  }, [cacheKey, isAuthenticatedScope, listStatus, scopeKey])
+  }, [cacheKey, commitBooks, isAuthenticatedScope, listStatus])
 
   // On mount: show cache immediately, revalidate if stale
   useEffect(() => {

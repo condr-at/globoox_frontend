@@ -222,6 +222,9 @@ export function positionCacheInvalidateAll() {
 function buildGetCacheKey(path: string, options?: RequestInit): string | null {
   const method = (options?.method ?? 'GET').toUpperCase()
   if (method !== 'GET') return null
+  // Books payload is auth-sensitive and can race immediately after login.
+  // Skip short-lived response cache to avoid guest/auth mixing in UI state.
+  if (path.startsWith('/api/books')) return null
   const body = typeof options?.body === 'string' ? options.body : ''
   return `${path}::${body}`
 }
