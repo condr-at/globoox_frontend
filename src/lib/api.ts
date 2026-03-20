@@ -205,6 +205,7 @@ const GET_CACHE_TTL_MS = 2000
 const inflightGetRequests = new Map<string, Promise<unknown>>()
 const recentGetResponses = new Map<string, { expiresAt: number; value: unknown }>()
 const inflightChromeTranslationRequests = new Map<string, Promise<unknown>>()
+let browserTokenCache: { token: string | null; expiresAt: number } | null = null
 
 // Reading position cache with TTL (30 seconds)
 const POSITION_CACHE_TTL_MS = 30000
@@ -223,6 +224,65 @@ function buildGetCacheKey(path: string, options?: RequestInit): string | null {
   return `${path}::${body}`
 }
 
+function findAccessTokenDeep(value: unknown): string | null {
+  if (!value) return null
+  if (typeof value === 'string') {
+    try {
+      return findAccessTokenDeep(JSON.parse(value))
+    } catch {
+      return null
+    }
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const token = findAccessTokenDeep(item)
+      if (token) return token
+    }
+    return null
+  }
+  if (typeof value === 'object') {
+    const obj = value as Record<string, unknown>
+    const direct = obj.access_token
+    if (typeof direct === 'string' && direct.length > 0) return direct
+    for (const nested of Object.values(obj)) {
+      const token = findAccessTokenDeep(nested)
+      if (token) return token
+    }
+  }
+  return null
+}
+
+async function getBrowserAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
+  const now = Date.now()
+  if (browserTokenCache && browserTokenCache.expiresAt > now) return browserTokenCache.token
+
+  let token: string | null = null
+  try {
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    token = session?.access_token ?? null
+
+    // Fallback for environments where session storage shape differs.
+    if (!token) {
+      for (let i = 0; i < window.localStorage.length; i += 1) {
+        const key = window.localStorage.key(i)
+        if (!key || !key.includes('auth-token')) continue
+        const raw = window.localStorage.getItem(key)
+        if (!raw) continue
+        token = findAccessTokenDeep(raw)
+        if (token) break
+      }
+    }
+  } catch {
+    token = null
+  }
+
+  browserTokenCache = { token, expiresAt: now + 3000 }
+  return token
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const key = buildGetCacheKey(path, options)
   if (key) {
@@ -236,9 +296,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   const fetchPromise = (async () => {
     const hasBody = typeof options?.body === 'string' && options.body.length > 0
-    const headers = hasBody
+    const baseHeaders = hasBody
       ? { 'Content-Type': 'application/json', ...(options?.headers || {}) }
-      : options?.headers
+      : { ...(options?.headers || {}) }
+
+    const headers = new Headers(baseHeaders as HeadersInit)
+    if (!headers.has('Authorization')) {
+      const token = await getBrowserAccessToken()
+      if (token) headers.set('Authorization', `Bearer ${token}`)
+    }
 
     const method = (options?.method ?? 'GET').toUpperCase()
     const startTime = performance.now()
