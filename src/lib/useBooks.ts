@@ -25,6 +25,7 @@ export function invalidateBooksCache() {
 export function useBooks(options?: { scopeKey?: string }) {
   const scopeKey = options?.scopeKey ?? 'guest'
   const isAuthenticatedScope = scopeKey !== 'guest'
+  const listStatus = isAuthenticatedScope ? 'all' : 'active'
 
   // Initialise from cache immediately — no skeleton on repeated visits
   const cached = booksCache.get('all')
@@ -92,7 +93,7 @@ export function useBooks(options?: { scopeKey?: string }) {
     setError(null)
     // Don't set loading=true here — we already have data to show
     try {
-      const data = await fetchBooks('all')
+      const data = await fetchBooks(listStatus)
       booksCache.set('all', { data, fetchedAt: Date.now() })
       setBooks(data)
       void setCachedBooksList(scopeKey, 'all', data)
@@ -103,7 +104,7 @@ export function useBooks(options?: { scopeKey?: string }) {
       if (isAuthenticatedScope && data.length === 0 && !authRetryDone.current) {
         authRetryDone.current = true
         await new Promise((resolve) => setTimeout(resolve, 1200))
-        const retryData = await fetchBooks('all')
+        const retryData = await fetchBooks(listStatus)
         booksCache.set('all', { data: retryData, fetchedAt: Date.now() })
         setBooks(retryData)
         void setCachedBooksList(scopeKey, 'all', retryData)
@@ -118,7 +119,7 @@ export function useBooks(options?: { scopeKey?: string }) {
       // Only clear the initial loading spinner (first ever load)
       setLoading(false)
     }
-  }, [isAuthenticatedScope, scopeKey])
+  }, [isAuthenticatedScope, listStatus, scopeKey])
 
   // On mount: show cache immediately, revalidate if stale
   useEffect(() => {

@@ -35,6 +35,12 @@ Current behavior for `/my-books`:
 
 This is a mitigation layer; backend proxy/session consistency is still the source of truth.
 
+## Known Limitations
+
+- Current frontend guards (skeleton + one retry + diagnostics) reduce symptom frequency but do not eliminate root causes in server/proxy session propagation.
+- If backend proxy resolves a request as guest (`x-authenticated: false`) right after login, Library can still transiently show empty state.
+- The final fix is backend/session-path deterministic auth resolution for `/api/books*`, not additional frontend retries.
+
 ## API Surface (current)
 
 Core endpoints used by Reader/Library:

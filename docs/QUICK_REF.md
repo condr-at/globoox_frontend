@@ -92,6 +92,11 @@ If user logs in and still sees no books:
    - one automatic retry runs on first empty authenticated response.
 4. If still empty, force a full reload and re-check headers.
 
+## Known Limitations
+
+- Frontend mitigations do not fully replace a deterministic backend/proxy auth fix.
+- Occasional post-login guest responses are still possible while server session propagation is unstable.
+
 ## shadcn/ui Commands
 ```bash
 npx shadcn@latest add button
