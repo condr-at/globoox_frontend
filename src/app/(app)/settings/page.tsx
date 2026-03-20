@@ -7,6 +7,7 @@ import { User, HelpCircle, LogOut, Loader2, FlaskConical } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { uiMenuItemButton } from '@/components/ui/button-styles';
+import IOSItemsStack from '@/components/ui/ios-items-stack';
 import { Separator } from '@/components/ui/separator';
 import PageHeader from '@/components/ui/PageHeader';
 import { createClient } from '@/lib/supabase/client';
@@ -127,8 +128,9 @@ export default function SettingsPage() {
                             <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-muted-foreground">
                                 Appearance
                             </p>
-                            <Card className="shadow-none overflow-hidden">
-                                <CardContent className="p-0 overflow-hidden">
+                            <Card className="shadow-none">
+                                <CardContent className="p-0">
+                                    <IOSItemsStack>
                                     <IOSSettingsRow
                                         label="Mode"
                                         value={currentMode}
@@ -142,6 +144,7 @@ export default function SettingsPage() {
                                         options={COLOR_THEMES}
                                         onChange={(id) => setAppTheme(currentMode, id as 'globoox' | 'default')}
                                     />
+                                    </IOSItemsStack>
                                 </CardContent>
                             </Card>
                         </div>
@@ -151,8 +154,9 @@ export default function SettingsPage() {
                             <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-muted-foreground">
                                 Other
                             </p>
-                            <Card className="shadow-none overflow-hidden">
-                                <CardContent className="p-0 overflow-hidden">
+                            <Card className="shadow-none">
+                                <CardContent className="p-0">
+                                    <IOSItemsStack>
                                     <Button variant="ghost" asChild className={`${uiMenuItemButton} h-12 !rounded-none justify-start gap-3`}>
                                         <a href="mailto:support@globoox.co">
                                             <HelpCircle className="w-5 h-5" />
@@ -175,6 +179,7 @@ export default function SettingsPage() {
                                         )}
                                         Sign Out
                                     </Button>
+                                    </IOSItemsStack>
                                 </CardContent>
                             </Card>
                         </div>

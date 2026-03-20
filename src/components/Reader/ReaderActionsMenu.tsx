@@ -7,6 +7,7 @@ import TableOfContents from './TableOfContents';
 import ReaderSettings from './ReaderSettings';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
 import { uiIconTriggerButton, uiMenuItemButton } from '@/components/ui/button-styles';
+import IOSItemsStack from '@/components/ui/ios-items-stack';
 
 interface ReaderActionsMenuProps {
   book: {
@@ -68,9 +69,10 @@ export default function ReaderActionsMenu({
       {effectiveOpen && (
         <div
           ref={menuRef}
-          className="fixed py-1 w-56 bg-[var(--bg-grouped-secondary)] rounded-xl shadow-lg border border-[var(--separator)] overflow-hidden z-[100]"
+          className="fixed w-56 z-[100]"
           style={menuStyle}
         >
+        <IOSItemsStack className="py-1 bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
           <button
             onClick={() => handleAction('toc')}
             className={uiMenuItemButton}
@@ -94,6 +96,7 @@ export default function ReaderActionsMenu({
             </div>
             <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
           </button>
+        </IOSItemsStack>
         </div>
       )}
 

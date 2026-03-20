@@ -5,6 +5,7 @@ import { ChevronDown, Check } from 'lucide-react';
 import { useAppStore, Language, languageNames } from '@/lib/store';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
 import { uiDropdownItemButton, uiTextActionButton } from '@/components/ui/button-styles';
+import IOSItemsStack from '@/components/ui/ios-items-stack';
 
 interface LanguageSwitchProps {
   availableLanguages: Language[];
@@ -71,9 +72,10 @@ export default function LanguageSwitch({
       {effectiveOpen && (
         <div
           ref={menuRef}
-          className="fixed py-[8px] w-[192px] bg-[var(--bg-grouped-secondary)] rounded-[12px] shadow-lg border border-[var(--separator)] overflow-hidden z-[100]"
+          className="fixed w-[192px] z-[100]"
           style={externalOpen === undefined ? menuStyle : { top: 'calc(env(safe-area-inset-top) + 60px)', right: '16px' }}
         >
+        <IOSItemsStack className="py-[8px] bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
           {availableLanguages.map((lang, index) => (
             <div key={lang}>
               <button
@@ -90,6 +92,7 @@ export default function LanguageSwitch({
               ) : null}
             </div>
           ))}
+        </IOSItemsStack>
         </div>
       )}
     </div>

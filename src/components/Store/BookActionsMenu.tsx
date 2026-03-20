@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { Eye, EyeOff, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
 import { uiIconCircleButton, uiMenuItemButton } from '@/components/ui/button-styles';
+import IOSItemsStack from '@/components/ui/ios-items-stack';
 
 interface BookActionsMenuProps {
   onHide: () => void;
@@ -77,13 +78,14 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
       {isOpen && (
         <div
           ref={menuRef}
-          className="fixed py-1 w-44 bg-[var(--bg-grouped-secondary)] rounded-xl shadow-lg border border-[var(--separator)] overflow-hidden z-[100]"
+          className="fixed w-44 z-[100]"
           style={{
             ...menuStyle,
             visibility: menuVisible && isPositioned ? 'visible' : 'hidden',
             opacity: menuVisible && isPositioned ? 1 : 0
           }}
         >
+        <IOSItemsStack className="py-1 bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
           <button
             type="button"
             onPointerDown={(e) => {
@@ -119,6 +121,7 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
             <Trash2 className="w-4 h-4 text-destructive" />
             <span className="text-[15px] text-destructive">Delete</span>
           </button>
+        </IOSItemsStack>
         </div>
       )}
     </div>

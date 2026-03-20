@@ -26,6 +26,7 @@ import IOSIconFeatureListItem from '@/components/ui/ios-icon-feature-list-item';
 import IOSReaderHeader from '@/components/ui/ios-reader-header';
 import IOSBottomDrawer from '@/components/ui/ios-bottom-drawer';
 import IOSBottomDrawerHeader from '@/components/ui/ios-bottom-drawer-header';
+import IOSItemsStack from '@/components/ui/ios-items-stack';
 import { Button } from '@/components/ui/button';
 import {
   uiDrawerItemButton,
@@ -33,6 +34,7 @@ import {
   uiFilterPillActive,
   uiFilterPillBase,
   uiFilterPillInactive,
+  uiMenuItemButton,
   uiTextActionButton,
   uiTextActionButtonPressed,
 } from '@/components/ui/button-styles';
@@ -529,7 +531,7 @@ export default function ComponentsPreviewPage() {
             <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
               <p className="text-sm font-medium text-foreground">Dropdown Row</p>
               <p className="mt-1 text-xs text-muted-foreground">For desktop dropdown menus.</p>
-              <div className="mt-3 w-full max-w-[260px] overflow-hidden rounded-xl border border-[var(--separator)] bg-[var(--bg-grouped-secondary)]">
+              <IOSItemsStack className="mt-3 w-full max-w-[260px] border border-[var(--separator)] bg-[var(--bg-grouped-secondary)]">
                 <button type="button" className={uiDropdownItemButton}>
                   <span>Recently Added</span>
                   <span className="text-primary">✓</span>
@@ -538,13 +540,13 @@ export default function ComponentsPreviewPage() {
                 <button type="button" className={uiDropdownItemButton}>
                   <span>Title A → Z</span>
                 </button>
-              </div>
+              </IOSItemsStack>
             </div>
 
             <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
               <p className="text-sm font-medium text-foreground">Drawer Row</p>
               <p className="mt-1 text-xs text-muted-foreground">For iOS bottom-sheet lists on mobile.</p>
-              <div className="mt-3 overflow-hidden rounded-xl border border-[var(--separator)] bg-[var(--bg-grouped-secondary)]">
+              <IOSItemsStack className="mt-3 border border-[var(--separator)] bg-[var(--bg-grouped-secondary)]">
                 <button type="button" className={`${uiDrawerItemButton} border-b border-[var(--separator)]`}>
                   <span>Recently Read</span>
                   <span className="text-primary">✓</span>
@@ -552,7 +554,23 @@ export default function ComponentsPreviewPage() {
                 <button type="button" className={uiDrawerItemButton}>
                   <span>Title Z → A</span>
                 </button>
-              </div>
+              </IOSItemsStack>
+            </div>
+
+            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
+              <p className="text-sm font-medium text-foreground">Items Stack (Container Rule)</p>
+              <p className="mt-1 text-xs text-muted-foreground">Stack owns only clipping/radius. Rows own size/hover/pressed.</p>
+              <IOSItemsStack className="mt-3 border border-[var(--separator)] bg-[var(--bg-grouped-secondary)]">
+                <button type="button" className={uiMenuItemButton}>
+                  <span>Row A</span>
+                  <span className="text-muted-foreground">›</span>
+                </button>
+                <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />
+                <button type="button" className={uiMenuItemButton}>
+                  <span>Row B</span>
+                  <span className="text-primary">✓</span>
+                </button>
+              </IOSItemsStack>
             </div>
 
             <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
@@ -590,6 +608,7 @@ export default function ComponentsPreviewPage() {
               <p className="font-medium text-foreground">Rules</p>
               <ul className="mt-2 space-y-1">
                 <li>Use `uiTextActionButton` for text-only actions and add `uiTextActionButtonPressed` when a menu is open.</li>
+                <li>Use `IOSItemsStack` as the only clipping/radius owner for stacked interactive rows.</li>
                 <li>Use `uiDropdownItemButton` for popover/dropdown options.</li>
                 <li>Use `uiDrawerItemButton` for bottom-drawer list rows.</li>
                 <li>Use `Button` variants/sizes for primary product actions.</li>

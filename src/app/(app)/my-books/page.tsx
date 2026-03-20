@@ -6,6 +6,7 @@ import { ChevronDown, Check, SlidersHorizontal } from 'lucide-react';
 import IOSBottomDrawer from '@/components/ui/ios-bottom-drawer';
 import IOSBottomDrawerHeader from '@/components/ui/ios-bottom-drawer-header';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
+import IOSItemsStack from '@/components/ui/ios-items-stack';
 import {
   uiDrawerItemButton,
   uiDropdownItemButton,
@@ -390,7 +391,8 @@ export default function MyBooksPage() {
             </button>
 
             {filterDropdownOpen && (
-              <div className="absolute left-0 top-[calc(100%+8px)] py-[8px] w-[180px] bg-[var(--bg-grouped-secondary)] rounded-[12px] shadow-lg border border-[var(--separator)] overflow-hidden z-[100]">
+              <div className="absolute left-0 top-[calc(100%+8px)] w-[180px] z-[100]">
+              <IOSItemsStack className="py-[8px] bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
                 {([
                   { value: 'visible', label: 'Visible' },
                   { value: 'hidden', label: 'Hidden' },
@@ -407,6 +409,7 @@ export default function MyBooksPage() {
                     {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />}
                   </div>
                 ))}
+              </IOSItemsStack>
               </div>
             )}
           </div>
@@ -450,9 +453,10 @@ export default function MyBooksPage() {
           {sortDropdownOpen && (
             <div
               ref={sortMenuRef}
-              className="fixed py-[8px] w-[200px] bg-[var(--bg-grouped-secondary)] rounded-[12px] shadow-lg border border-[var(--separator)] overflow-hidden z-[100]"
+              className="fixed w-[200px] z-[100]"
               style={{ ...menuStyle, visibility: isPositioned ? 'visible' : 'hidden' }}
             >
+            <IOSItemsStack className="py-[8px] bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
               {([
                 { value: 'recently_added', label: 'Recently Added' },
                 { value: 'recently_opened', label: 'Recently Read' },
@@ -470,6 +474,7 @@ export default function MyBooksPage() {
                   {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />}
                 </div>
               ))}
+            </IOSItemsStack>
             </div>
           )}
         </div>

@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { ChevronsUpDown, Check } from 'lucide-react';
 import IOSIcon from '@/components/ui/ios-icon';
 import { uiDropdownItemButton, uiMenuItemButton } from '@/components/ui/button-styles';
+import IOSItemsStack from '@/components/ui/ios-items-stack';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
 import { cn } from '@/lib/utils';
 
@@ -61,9 +62,10 @@ export default function IOSSettingsRow({
       {open && (
         <div
           ref={menuRef}
-          className="fixed py-[8px] w-[200px] bg-[var(--bg-grouped-secondary)] rounded-[12px] shadow-lg border border-[var(--separator)] overflow-hidden z-[100]"
+          className="fixed w-[200px] z-[100]"
           style={{ ...menuStyle, visibility: isPositioned ? 'visible' : 'hidden' }}
         >
+        <IOSItemsStack className="py-[8px] bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
           {options.map((opt, i, arr) => (
             <div key={opt.id}>
               <button
@@ -76,6 +78,7 @@ export default function IOSSettingsRow({
               {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />}
             </div>
           ))}
+        </IOSItemsStack>
         </div>
       )}
     </div>
