@@ -382,7 +382,7 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
                 fontFamily: "'Inter', sans-serif",
               }}
             >
-              Start Reading Free
+              Start Reading For Free
             </button>
             </div>
 
@@ -498,7 +498,7 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
               cursor: 'pointer',
             }}
           >
-            Start Reading Free
+            Start Reading For Free
           </button>
         </div>
       </section>
