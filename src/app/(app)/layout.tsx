@@ -48,16 +48,10 @@ export default function RootLayout({
       <script dangerouslySetInnerHTML={{ __html: `
           (function() {
             try {
-              var theme = localStorage.getItem('globoox-theme');
               var palette = localStorage.getItem('globoox-palette') || 'globoox';
               var mode = localStorage.getItem('globoox-mode') || 'system';
-              var cls;
-              if (mode === 'system' || !theme || theme === 'system') {
-                var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                cls = palette === 'globoox' ? (dark ? 'forest-dark' : 'forest-light') : (dark ? 'dark' : 'light');
-              } else {
-                cls = theme;
-              }
+              var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+              var cls = palette === 'globoox' ? (dark ? 'forest-dark' : 'forest-light') : (dark ? 'dark' : 'light');
               document.documentElement.classList.remove('light', 'dark', 'forest-light', 'forest-dark');
               document.documentElement.classList.add(cls);
             } catch(e) {}
