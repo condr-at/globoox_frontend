@@ -31,7 +31,7 @@ export default function ReaderSettings({
     const setIsOpen = setExternalOpen !== undefined ? setExternalOpen : setInternalOpen;
 
     const { theme, setAppTheme } = useAppTheme();
-    const { settings, setFontSize } = useAppStore();
+    const { settings, setFontSize, setPageLayoutMode } = useAppStore();
     const fontSizeBeforeRef = useRef(settings.fontSize);
     const fontSizeSliderProgress = `${((settings.fontSize - 14) / (32 - 14)) * 100}%`;
     const sliderEdgeBoxClassName = 'flex h-5 w-5 shrink-0 items-center justify-center';
@@ -160,6 +160,38 @@ export default function ReaderSettings({
                         </div>
                         <p className="text-center text-[13px] text-muted-foreground/50 mt-[8px]">
                             {settings.fontSize}px
+                        </p>
+                    </div>
+
+                    {/* Page Layout */}
+                    <div>
+                        <p className="text-[15px] text-muted-foreground mb-[12px]">Page Layout</p>
+                        <div className="grid grid-cols-2 gap-[8px]">
+                            <button
+                                type="button"
+                                onClick={() => setPageLayoutMode('single')}
+                                className="rounded-[12px] border px-3 py-2 text-[14px] transition-colors"
+                                style={{
+                                    borderColor: settings.pageLayoutMode === 'single' ? 'var(--system-blue)' : 'var(--separator)',
+                                    background: settings.pageLayoutMode === 'single' ? 'color-mix(in srgb, var(--system-blue) 14%, transparent)' : 'transparent',
+                                }}
+                            >
+                                Single Page
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setPageLayoutMode('spread')}
+                                className="rounded-[12px] border px-3 py-2 text-[14px] transition-colors"
+                                style={{
+                                    borderColor: settings.pageLayoutMode === 'spread' ? 'var(--system-blue)' : 'var(--separator)',
+                                    background: settings.pageLayoutMode === 'spread' ? 'color-mix(in srgb, var(--system-blue) 14%, transparent)' : 'transparent',
+                                }}
+                            >
+                                Two-Page Spread
+                            </button>
+                        </div>
+                        <p className="text-[12px] text-muted-foreground/60 mt-[8px]">
+                            Spread mode activates on wide screens.
                         </p>
                     </div>
 
