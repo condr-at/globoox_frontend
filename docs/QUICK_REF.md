@@ -49,7 +49,6 @@ public/
   covers/                # Book covers
 docs/
   api-architecture.md    # Full API spec
-  faststart.md           # MVP roadmap (RU)
 ```
 
 ## Critical Rules
@@ -89,7 +88,6 @@ npx shadcn@latest add separator
 
 ## Links
 - **API Architecture:** `docs/api-architecture.md`
-- **Fast Start (RU):** `docs/faststart.md`
 - **Parent API:** `../BACKEND_API.md`
 - **Parent DB Schema:** `../supabase/schema.sql`
 - **shadcn config:** `components.json`

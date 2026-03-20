@@ -27,6 +27,7 @@
   --system-orange: #FF9500;
   --system-red: #FF3B30;
   --system-yellow: #FFCC00;
+  --danger-fg: #FF3B30;
 
   /* ---- Neutral Scale ---- */
   --system-gray: #8E8E93;
@@ -62,7 +63,7 @@
   --radius: 0.625rem;
   --primary: var(--system-blue);
   --primary-foreground: #FFFFFF;
-  --destructive: var(--system-red);
+  --destructive: var(--danger-fg);
   --background: var(--bg-primary);
   --foreground: var(--label-primary);
   --card: var(--bg-grouped-secondary);
@@ -101,6 +102,7 @@
   --system-orange: #FF9F0A;
   --system-red: #FF453A;
   --system-yellow: #FFD60A;
+  --danger-fg: #FF453A;
 
   /* ---- Neutral Scale ---- */
   --system-gray: #8E8E93;
@@ -149,6 +151,7 @@
   --system-orange: #E8B89A;
   --system-red: #C05A3A;
   --system-yellow: #E8B89A;
+  --danger-fg: #c8241b;
   --system-gray: #7A8C7B;
   --system-gray2: #B8C4B9;
   --system-gray3: #B8C4B9;
@@ -184,6 +187,7 @@
   --system-orange: #E8B89A;
   --system-red: #E8B89A;
   --system-yellow: #E8B89A;
+  --danger-fg: #FF6B5E;
   --system-gray: #7A8C7B;
   --system-gray2: #4D5E4E;
   --system-gray3: #3D5040;
