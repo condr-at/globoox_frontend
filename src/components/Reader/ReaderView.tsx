@@ -48,11 +48,13 @@ const LAST_PAGE_SENTINEL = '__LAST_PAGE__';
 const SPREAD_MIN_VIEWPORT_PX = 1408;
 const SPREAD_GAP_PX = 120;
 const SPREAD_SIDE_PADDING_PX = 40;
+const SPREAD_MAX_COLUMN_PX = 560;
 const LAYOUT_SIGNIFICANT_DELTA_PX = 2;
 const REPAGINATE_DEBOUNCE_MS = 160;
 const PAGE_SHELL_CLASS = 'reader-page container max-w-2xl mx-auto px-4 h-full';
 const SPREAD_PAGE_SHELL_CLASS = 'reader-page container max-w-2xl mx-auto h-full';
 const IS_DEV = process.env.NODE_ENV === 'development';
+const SHOW_READER_DEBUG_OVERLAY = false;
 
 interface ReaderViewProps {
     bookId: string;
@@ -77,12 +79,19 @@ type ReaderDebugSnapshot = {
     status: 'ANALYZING' | 'STABLE';
     cause: 'none' | 'width_jitter' | 'mode_flap' | 'repaginate_without_width_change' | 'unknown';
     targetWidth: number;
+    rawWidth: number;
+    resolvedWidth: number;
     pageWidth: number;
     spread: boolean;
     widthFlips: number;
     widthRange: number;
     modeFlips: number;
     paginateRuns2s: number;
+    hasShellRef: boolean;
+    pagesReady: boolean;
+    visiblePagesReady: boolean;
+    isLoading: boolean;
+    computeGateBlocked: boolean;
 };
 
 async function waitForMeasuredImages(container: HTMLElement | null): Promise<void> {
@@ -326,6 +335,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     const contentAreaRef = useRef<HTMLDivElement>(null);
     const pageViewportRef = useRef<HTMLDivElement>(null);
     const measureContainerRef = useRef<HTMLDivElement>(null);
+    const widthProbeShellRef = useRef<HTMLDivElement>(null);
     const blockMeasureRefs = useRef<Map<string, HTMLElement>>(new Map());
 
     const [pageHeight, setPageHeight] = useState(0);
@@ -341,7 +351,6 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     const [remoteAnchorReady, setRemoteAnchorReady] = useState(false);
     const [layoutCacheReadyKey, setLayoutCacheReadyKey] = useState('');
     const currentPageIdxRef = useRef(0);
-    const [activeColumnShellEl, setActiveColumnShellEl] = useState<HTMLDivElement | null>(null);
     const [rawColumnWidthPx, setRawColumnWidthPx] = useState(0);
     const [resolvedColumnWidthPx, setResolvedColumnWidthPx] = useState(0);
     const spreadModeEnabled = settings.pageLayoutMode === 'spread' && pageWidth >= SPREAD_MIN_VIEWPORT_PX;
@@ -394,17 +403,18 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     }, [normalizedCurrentPageIdx, currentPageIdx]);
 
     useEffect(() => {
-        if (!activeColumnShellEl) return;
+        const probeEl = widthProbeShellRef.current;
+        if (!probeEl) return;
         const update = () => {
-            const rect = activeColumnShellEl.getBoundingClientRect();
+            const rect = probeEl.getBoundingClientRect();
             const width = Math.max(0, Math.round(rect.width));
             setRawColumnWidthPx((prev) => (prev === width ? prev : width));
         };
         const ro = new ResizeObserver(update);
-        ro.observe(activeColumnShellEl);
+        ro.observe(probeEl);
         update();
         return () => ro.disconnect();
-    }, [activeColumnShellEl]);
+    }, [spreadModeEnabled, pageWidth]);
 
     // Stabilize measured width before using it in pagination key/compute.
     // This avoids feedback loops from 1px oscillation near spread thresholds.
@@ -457,12 +467,19 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             status: 'ANALYZING',
             cause: 'unknown',
             targetWidth: resolvedColumnWidthPx || rawColumnWidthPx,
+            rawWidth: rawColumnWidthPx,
+            resolvedWidth: resolvedColumnWidthPx,
             pageWidth,
             spread: spreadModeEnabled,
             widthFlips,
             widthRange,
             modeFlips,
             paginateRuns2s,
+            hasShellRef: !!widthProbeShellRef.current,
+            pagesReady,
+            visiblePagesReady,
+            isLoading: chaptersLoading || isContentLoading,
+            computeGateBlocked: pageHeight === 0 || pageWidth === 0 || resolvedColumnWidthPx === 0 || displayBlocks.length === 0,
         });
 
         if (analyzeTimerRef.current != null) {
@@ -492,12 +509,19 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                 status: 'STABLE',
                 cause,
                 targetWidth: resolvedColumnWidthPx || rawColumnWidthPx,
+                rawWidth: rawColumnWidthPx,
+                resolvedWidth: resolvedColumnWidthPx,
                 pageWidth,
                 spread: spreadModeEnabled,
                 widthFlips: widthFlipsStable,
                 widthRange: widthRangeStable,
                 modeFlips: modeFlipsStable,
                 paginateRuns2s: paginateRunsStable,
+                hasShellRef: !!widthProbeShellRef.current,
+                pagesReady,
+                visiblePagesReady,
+                isLoading: chaptersLoading || isContentLoading,
+                computeGateBlocked: pageHeight === 0 || pageWidth === 0 || resolvedColumnWidthPx === 0 || displayBlocks.length === 0,
             });
             analyzeTimerRef.current = null;
         }, 1200);
@@ -508,7 +532,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                 analyzeTimerRef.current = null;
             }
         };
-    }, [rawColumnWidthPx, resolvedColumnWidthPx, pageWidth, spreadModeEnabled]);
+    }, [rawColumnWidthPx, resolvedColumnWidthPx, pageWidth, spreadModeEnabled, pagesReady, visiblePagesReady, chaptersLoading, isContentLoading, pageHeight, displayBlocks.length]);
 
     useEffect(() => {
         if (!pagesReady || isSourceLang || isContentLoading) return;
@@ -673,7 +697,6 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
         if (pageHeight === 0 || pageWidth === 0 || resolvedColumnWidthPx === 0 || normalizedBlocks.length === 0) return;
 
         let cancelled = false;
-        setVisiblePagesReady(false);
 
         async function measureAndCompute() {
             if (IS_DEV) {
@@ -1663,7 +1686,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     // ─── Render ───────────────────────────────────────────────────────────────
     return (
         <div className="bg-background" style={{ position: 'fixed', inset: 0, overflow: 'hidden', overscrollBehavior: 'none' } as React.CSSProperties}>
-            {IS_DEV && debugSnapshot && (
+            {IS_DEV && SHOW_READER_DEBUG_OVERLAY && debugSnapshot && (
                 <div
                     style={{
                         position: 'fixed',
@@ -1683,6 +1706,9 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                     <div>{`STATUS=${debugSnapshot.status}`}</div>
                     <div>{`CAUSE=${debugSnapshot.cause}`}</div>
                     <div>{`w=${debugSnapshot.targetWidth} page=${debugSnapshot.pageWidth} spread=${debugSnapshot.spread ? '1' : '0'}`}</div>
+                    <div>{`raw=${debugSnapshot.rawWidth} resolved=${debugSnapshot.resolvedWidth} shellRef=${debugSnapshot.hasShellRef ? '1' : '0'}`}</div>
+                    <div>{`loading=${debugSnapshot.isLoading ? '1' : '0'} ready=${debugSnapshot.pagesReady ? '1' : '0'} visible=${debugSnapshot.visiblePagesReady ? '1' : '0'}`}</div>
+                    <div>{`gateBlocked=${debugSnapshot.computeGateBlocked ? '1' : '0'}`}</div>
                     <div>{`wf=${debugSnapshot.widthFlips} wr=${debugSnapshot.widthRange}px mf=${debugSnapshot.modeFlips} p2s=${debugSnapshot.paginateRuns2s}`}</div>
                 </div>
             )}
@@ -1839,12 +1865,44 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                             </div>
                         ))}
                     </div>
+                    {/* Width probe — always mounted to avoid cold-start deadlocks */}
+                    <div
+                        aria-hidden="true"
+                        style={{
+                            position: 'fixed',
+                            top: '-9999px',
+                            left: 0,
+                            right: 0,
+                            visibility: 'hidden',
+                            pointerEvents: 'none',
+                            zIndex: -1,
+                        }}
+                    >
+                        {spreadModeEnabled ? (
+                            <div
+                                className="mx-auto flex w-full items-stretch justify-center"
+                                style={{
+                                    columnGap: `${SPREAD_GAP_PX}px`,
+                                    paddingInline: `${SPREAD_SIDE_PADDING_PX}px`,
+                                }}
+                            >
+                                <div className="w-full shrink-0 overflow-hidden" style={{ maxWidth: `${SPREAD_MAX_COLUMN_PX}px` }}>
+                                    <div ref={widthProbeShellRef} className={SPREAD_PAGE_SHELL_CLASS} />
+                                </div>
+                                <div className="w-full shrink-0 overflow-hidden" style={{ maxWidth: `${SPREAD_MAX_COLUMN_PX}px` }}>
+                                    <div className={SPREAD_PAGE_SHELL_CLASS} />
+                                </div>
+                            </div>
+                        ) : (
+                            <div ref={widthProbeShellRef} className={PAGE_SHELL_CLASS} />
+                        )}
+                    </div>
 
                     {/* Visible page */}
                     <TranslationGlow>
                         <div className="h-full select-none md:select-text" lang={activeLang}>
                             {isLoading || !visiblePagesReady ? (
-                                <div className={PAGE_SHELL_CLASS} ref={setActiveColumnShellEl}>
+                                <div className={PAGE_SHELL_CLASS}>
                                     <Skeleton className="h-7 w-64 mb-5" />
                                     <div className="space-y-5">
                                         {[100, 95, 88, 100, 72, 100, 90, 85, 100, 60, 100, 92].map((width, i) => (
@@ -1864,19 +1922,19 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                                         paddingInline: `${SPREAD_SIDE_PADDING_PX}px`,
                                     }}
                                 >
-                                    <div className="h-full overflow-hidden">
-                                        <div className={SPREAD_PAGE_SHELL_CLASS} ref={setActiveColumnShellEl}>
+                                    <div className="h-full w-full shrink-0 overflow-hidden" style={{ maxWidth: `${SPREAD_MAX_COLUMN_PX}px` }}>
+                                        <div className={SPREAD_PAGE_SHELL_CLASS}>
                                             {renderPageBlocks(currentPageBlocks)}
                                         </div>
                                     </div>
-                                    <div className="h-full overflow-hidden">
+                                    <div className="h-full w-full shrink-0 overflow-hidden" style={{ maxWidth: `${SPREAD_MAX_COLUMN_PX}px` }}>
                                         <div className={SPREAD_PAGE_SHELL_CLASS}>
                                             {spreadRightPageBlocks.length > 0 ? renderPageBlocks(spreadRightPageBlocks) : null}
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className={PAGE_SHELL_CLASS} ref={setActiveColumnShellEl}>
+                                <div className={PAGE_SHELL_CLASS}>
                                     {renderPageBlocks(currentPageBlocks)}
                                 </div>
                             )}
