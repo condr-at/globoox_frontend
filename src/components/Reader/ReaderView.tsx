@@ -12,6 +12,7 @@ import { useViewportTranslation } from '@/lib/hooks/useViewportTranslation';
 import { usePageGestures } from '@/lib/hooks/usePageGestures';
 import { computePages, findPageForBlock, findPageForBlockAndSentence, findPageByBlockPosition, normalizeBlocks } from '@/lib/paginatorUtils';
 import { ContentBlock } from '@/lib/api';
+import { applyTypografToBlocks } from '@/lib/typograf';
 import { useAuth } from '@/lib/hooks/useAuth';
 import {
     getCachedChapterBlockIds,
@@ -643,14 +644,19 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
         return () => ro.disconnect();
     }, []);
 
+    const typographedBlocks = useMemo(
+        () => applyTypografToBlocks(displayBlocks, activeLang),
+        [displayBlocks, activeLang]
+    );
+
     // Normalized blocks split lists into items but keep paragraphs intact
-    const normalizedBlocks = useMemo(() => normalizeBlocks(displayBlocks), [displayBlocks]);
+    const normalizedBlocks = useMemo(() => normalizeBlocks(typographedBlocks), [typographedBlocks]);
 
     // ID of the first image block in chapter 1 — only it should be rendered as the book cover.
     // Images in all other chapters are relative EPUB paths that cannot be resolved and are hidden.
     const firstImageBlockId = useMemo(
-        () => currentChapterIndex === 1 ? displayBlocks.find((b) => b.type === 'image')?.id : undefined,
-        [displayBlocks, currentChapterIndex]
+        () => currentChapterIndex === 1 ? typographedBlocks.find((b) => b.type === 'image')?.id : undefined,
+        [typographedBlocks, currentChapterIndex]
     );
 
     // Recompute pages when block structure, text content, or page height changes.
