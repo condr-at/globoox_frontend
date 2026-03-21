@@ -1642,6 +1642,8 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
         onToggleChrome: toggleChrome,
         enabled: !isTranslating && pagesReady,
         preserveScroll: allowInternalScroll,
+        spreadModeEnabled,
+        getViewportRect: () => pageViewportRef.current?.getBoundingClientRect() ?? null,
     });
 
     // ─── Keyboard navigation (ArrowLeft / ArrowRight) ───────────────────────

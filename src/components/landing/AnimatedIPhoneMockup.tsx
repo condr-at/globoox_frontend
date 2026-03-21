@@ -998,11 +998,23 @@ export function AnimatedIPhoneMockup({
           <StatusBar />
 
           <div style={{
+            position: 'absolute',
+            top: 22,
+            left: 0,
+            right: 0,
+            height: 12,
+            background: 'linear-gradient(to bottom, rgba(244,240,232,0.95) 0%, rgba(244,240,232,0) 100%)',
+            pointerEvents: 'none',
+            zIndex: 12,
+          }} />
+
+          <div style={{
             position: 'absolute', top: 22, left: 0, right: 0,
             height: 44, backgroundColor: C.header, borderBottom: `0.5px solid ${C.separator}`,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 12px',
-            transform: chromeVisible ? 'translateY(0)' : 'translateY(-66px)',
-            transition: 'transform 0.3s cubic-bezier(0.22,1,0.36,1)',
+            transform: chromeVisible ? 'translateY(0)' : 'translateY(-44px)',
+            opacity: chromeVisible ? 1 : 0,
+            transition: 'transform 0.3s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease-out',
             zIndex: 10,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 4, position: 'relative', overflow: 'hidden', borderRadius: 6, padding: '4px 8px' }}>
