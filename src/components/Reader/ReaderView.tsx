@@ -1683,6 +1683,14 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     const renderPageBlocks = useCallback((pageBlocks: ContentBlock[]) => {
         let firstPendingFound = false;
         let firstRenderableFound = false;
+        const renderableBlocks = pageBlocks.filter((block) => {
+            if (block.type !== 'image') return true;
+            const src = block.src;
+            const isAbsolute = src?.startsWith('http://') || src?.startsWith('https://') || src?.startsWith('data:') || src?.startsWith('/');
+            const isCoverImage = block.id === firstImageBlockId;
+            return isAbsolute || (isCoverImage && !!coverUrl);
+        });
+        const isSingleH1Page = renderableBlocks.length === 1 && renderableBlocks[0]?.type === 'heading' && renderableBlocks[0]?.level === 1;
         return pageBlocks.map((block) => {
             const blockId = block.parentId ?? block.id;
             const isCoverImage = block.id === firstImageBlockId;
@@ -1701,7 +1709,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             return (
                 <div
                     key={block.id}
-                    className={`flow-root${isFirstRenderable ? ' page-first-block' : ''}`}
+                    className={`flow-root${isFirstRenderable ? ' page-first-block' : ''}${isSingleH1Page ? ' page-single-h1' : ''}`}
                     ref={getRefCallback(blockId, block.type)}
                 >
                     <ContentBlockRenderer

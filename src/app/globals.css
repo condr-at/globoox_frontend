@@ -264,6 +264,22 @@ body {
   margin-top: 0 !important;
 }
 
+/* Dedicated chapter-title page: keep lone h1 vertically centered */
+.reader-page > .flow-root.page-single-h1 {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 8px;
+}
+
+.reader-page > .flow-root.page-single-h1 :is(h1, h2, h3, h4, h5, h6) {
+  width: 100%;
+  text-align: center;
+}
+
 /* ============================================
    iOS-like spinner
    ============================================ */

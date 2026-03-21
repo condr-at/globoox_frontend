@@ -547,6 +547,29 @@ function computePagesDom(
         pushCurrentPage()
       }
 
+      // Special case: h1 followed by h2 starts a chapter section.
+      // Keep h1 on its own centered page by forcing a break right after h1.
+      if (
+        isHeadingRunStart &&
+        block.type === 'heading' &&
+        block.level === 1 &&
+        nextBlock &&
+        nextBlock.type === 'heading' &&
+        nextBlock.level === 2
+      ) {
+        const h1Node = createMeasuredWrapper(block, fontSize, lang, lineHeightScale, measuredBlockRoots)
+        probe.appendChild(h1Node)
+        if (!fitsProbe(probe, effectiveHeight)) {
+          probe.removeChild(h1Node)
+          pushCurrentPage()
+          probe.appendChild(h1Node)
+        }
+        currentPage.push(block.id)
+        finalBlocks.push(block)
+        pushCurrentPage()
+        continue
+      }
+
       // Atomic heading-run placement: if 2+ consecutive headings fit, place them as a package.
       if (isHeadingRunStart) {
         let runEnd = i
@@ -961,12 +984,31 @@ function computePagesFallback(
     const block = blocks[i]
     const prevBlock = i > 0 ? blocks[i - 1] : undefined
     const isHeadingRunStart = block.type === 'heading' && (!prevBlock || prevBlock.type !== 'heading')
+    const nextBlock = i + 1 < blocks.length ? blocks[i + 1] : undefined
 
     // Rule: each heading run starts on a new page.
     if (isHeadingRunStart && currentPage.length > 0) {
       pages.push(currentPage)
       currentPage = []
       currentHeight = 0
+    }
+
+    if (
+      isHeadingRunStart &&
+      block.type === 'heading' &&
+      block.level === 1 &&
+      nextBlock &&
+      nextBlock.type === 'heading' &&
+      nextBlock.level === 2
+    ) {
+      const h = blockHeights.get(block.id) ?? 48
+      currentPage.push(block.id)
+      finalBlocks.push(block)
+      currentHeight = h
+      pages.push(currentPage)
+      currentPage = []
+      currentHeight = 0
+      continue
     }
 
     if (isHeadingRunStart) {
