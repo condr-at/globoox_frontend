@@ -486,6 +486,50 @@ function computePagesDom(
   try {
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i]
+      const prevBlock = i > 0 ? blocks[i - 1] : undefined
+      const isHeadingRunStart = block.type === 'heading' && (!prevBlock || prevBlock.type !== 'heading')
+
+      // Rule: each heading run starts on a new page.
+      // Apply only before the first heading in consecutive heading chains.
+      if (isHeadingRunStart && currentPage.length > 0) {
+        pushCurrentPage()
+      }
+
+      // Atomic heading-run placement: if 2+ consecutive headings fit, place them as a package.
+      if (isHeadingRunStart) {
+        let runEnd = i
+        while (runEnd + 1 < blocks.length && blocks[runEnd + 1].type === 'heading') {
+          runEnd++
+        }
+        if (runEnd > i) {
+          const runNodes: HTMLDivElement[] = []
+          let runFits = true
+          for (let j = i; j <= runEnd; j++) {
+            const headingNode = createMeasuredWrapper(blocks[j], fontSize, lang, lineHeightScale, measuredBlockRoots)
+            probe.appendChild(headingNode)
+            runNodes.push(headingNode)
+            if (!fitsProbe(probe, effectiveHeight)) {
+              runFits = false
+              break
+            }
+          }
+
+          if (runFits) {
+            for (let j = i; j <= runEnd; j++) {
+              currentPage.push(blocks[j].id)
+              finalBlocks.push(blocks[j])
+            }
+            i = runEnd
+            continue
+          }
+
+          // Cleanup and fallback to regular single-block logic below.
+          for (const node of runNodes) {
+            if (node.parentElement === probe) probe.removeChild(node)
+          }
+        }
+      }
+
       if (block.type !== 'paragraph') {
         const node = createMeasuredWrapper(block, fontSize, lang, lineHeightScale, measuredBlockRoots)
         probe.appendChild(node)
@@ -511,19 +555,28 @@ function computePagesDom(
             }
           }
 
-          // Heading lookahead: if heading fits but the next block won't, push heading to next page
-          if (block.type === 'heading' && currentPage.length >= minBlocksPerPage) {
-            const nextBlock = blocks[i + 1]
-            if (nextBlock && (nextBlock.type === 'paragraph' || nextBlock.type === 'quote')) {
-              const nextNode = createMeasuredWrapper(nextBlock, fontSize, lang, lineHeightScale, measuredBlockRoots)
-              probe.appendChild(nextNode)
-              const nextFits = fitsProbe(probe, effectiveHeight)
-              probe.removeChild(nextNode)
-              if (!nextFits) {
+          // Keep consecutive headings together.
+          if (block.type === 'heading') {
+            // 1) Keep consecutive headings on the same page.
+            let lookaheadIndex = i + 1
+            while (lookaheadIndex < blocks.length && blocks[lookaheadIndex].type === 'heading') {
+              const nextHeadingNode = createMeasuredWrapper(
+                blocks[lookaheadIndex],
+                fontSize,
+                lang,
+                lineHeightScale,
+                measuredBlockRoots,
+              )
+              probe.appendChild(nextHeadingNode)
+              const headingFits = fitsProbe(probe, effectiveHeight)
+              probe.removeChild(nextHeadingNode)
+              if (!headingFits) {
                 probe.removeChild(node)
                 pushCurrentPage()
                 probe.appendChild(node)
+                break
               }
+              lookaheadIndex++
             }
           }
           currentPage.push(block.id)
@@ -800,9 +853,55 @@ function computePagesFallback(
 
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]
+    const prevBlock = i > 0 ? blocks[i - 1] : undefined
+    const isHeadingRunStart = block.type === 'heading' && (!prevBlock || prevBlock.type !== 'heading')
+
+    // Rule: each heading run starts on a new page.
+    if (isHeadingRunStart && currentPage.length > 0) {
+      pages.push(currentPage)
+      currentPage = []
+      currentHeight = 0
+    }
+
+    if (isHeadingRunStart) {
+      let runEnd = i
+      while (runEnd + 1 < blocks.length && blocks[runEnd + 1].type === 'heading') {
+        runEnd++
+      }
+      if (runEnd > i && currentHeight === 0) {
+        let runHeight = 0
+        for (let j = i; j <= runEnd; j++) {
+          runHeight += blockHeights.get(blocks[j].id) ?? 48
+        }
+        if (runHeight <= effectiveHeight) {
+          for (let j = i; j <= runEnd; j++) {
+            const hb = blocks[j]
+            currentPage.push(hb.id)
+            finalBlocks.push(hb)
+            currentHeight += blockHeights.get(hb.id) ?? 48
+          }
+          i = runEnd
+          continue
+        }
+      }
+    }
+
     const h = blockHeights.get(block.id) ?? 48
 
     if (block.type === 'heading' && i < blocks.length - 1) {
+      // Keep consecutive headings together in fallback mode too.
+      let headingRunHeight = h
+      let j = i + 1
+      while (j < blocks.length && blocks[j].type === 'heading') {
+        headingRunHeight += blockHeights.get(blocks[j].id) ?? 48
+        j++
+      }
+      if (headingRunHeight > h && currentHeight + headingRunHeight > effectiveHeight && currentPage.length > 0) {
+        pages.push(currentPage)
+        currentPage = []
+        currentHeight = 0
+      }
+
       const nextBlock = blocks[i + 1]
       let nextH = blockHeights.get(nextBlock.id) ?? 48
       if (nextBlock.type === 'paragraph' && containerRef) {
