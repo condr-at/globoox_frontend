@@ -441,8 +441,8 @@ function TabBar({ activeTab }: { activeTab: 'books' | 'none' }) {
 // ─── status bar ───────────────────────────────────────────────────────────────
 function StatusBar() {
   return (
-    <div style={{ height: 22, backgroundColor: C.statusBar, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px 0' }}>
-      <span style={{ color: '#1F2B20', fontSize: 11, fontWeight: 700 }}>9:41</span>
+    <div style={{ position: 'relative', zIndex: 30, boxSizing: 'border-box', backgroundColor: C.statusBar, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px 0' }}>
+      <span style={{ color: '#1F2B20', fontSize: 11, lineHeight: 1, fontWeight: 700 }}>9:41</span>
       <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
         <div style={{ width: 19, height: 9.5, border: '1.5px solid #1F2B20', borderRadius: 2, position: 'relative', opacity: 0.9 }}>
           <div style={{ position: 'absolute', right: -4, top: '50%', transform: 'translateY(-50%)', width: 3, height: 5, backgroundColor: '#1F2B20', borderRadius: '0 1px 1px 0' }} />
