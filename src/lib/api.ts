@@ -57,7 +57,7 @@ export interface ParagraphBlock extends BaseBlock {
 
 export interface HeadingBlock extends BaseBlock {
   type: 'heading'
-  level: 1 | 2 | 3
+  level: 1 | 2 | 3 | 4 | 5 | 6
   text: string
 }
 

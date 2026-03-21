@@ -110,6 +110,26 @@ function applyParagraphStyles(el: HTMLElement, fontSize: number, lang: string, i
   el.style.setProperty('-webkit-hyphens', 'auto')
 }
 
+function getHeadingTypography(level: number): {
+  className: string
+  sizeScale: number
+  italic: boolean
+} {
+  if (level === 1) {
+    return { className: 'font-medium mb-3 mt-6', sizeScale: 1.6, italic: false }
+  }
+  if (level === 2) {
+    return { className: 'font-medium mb-2 mt-5', sizeScale: 1.35, italic: false }
+  }
+  if (level === 3) {
+    return { className: 'font-medium mb-2 mt-4', sizeScale: 1.18, italic: false }
+  }
+  if (level === 4 || level === 5) {
+    return { className: 'font-normal mb-2 mt-4', sizeScale: 1.06, italic: true }
+  }
+  return { className: 'font-normal mb-2 mt-4', sizeScale: 1.06, italic: false }
+}
+
 function createBlockElement(block: ContentBlock, fontSize: number, lang: string, lineHeightScale: number): HTMLElement {
   switch (block.type) {
     case 'paragraph': {
@@ -119,15 +139,13 @@ function createBlockElement(block: ContentBlock, fontSize: number, lang: string,
       return el
     }
     case 'heading': {
-      const tag = `h${block.level}` as 'h1' | 'h2' | 'h3'
+      const normalizedLevel = Math.max(1, Math.min(6, Number(block.level) || 1))
+      const tag = `h${normalizedLevel}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+      const headingTypography = getHeadingTypography(normalizedLevel)
       const el = document.createElement(tag)
-      el.className =
-        block.level === 1
-          ? 'text-xxl font-bold mb-3 mt-6'
-          : block.level === 2
-            ? 'text-xl font-semibold mb-2 mt-5'
-            : 'text-lg font-semibold mb-2 mt-4'
-      if (fontSize) el.style.fontSize = `${fontSize}px`
+      el.className = headingTypography.className
+      if (fontSize) el.style.fontSize = `${fontSize * headingTypography.sizeScale}px`
+      if (headingTypography.italic) el.style.fontStyle = 'italic'
       el.textContent = block.text
       return el
     }

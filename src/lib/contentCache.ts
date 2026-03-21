@@ -162,7 +162,7 @@ function withStore<T>(storeName: string, mode: IDBTransactionMode, fn: (store: I
 
 type SkeletonBlock =
   | { id: string; position: number; type: 'paragraph' | 'quote'; fallbackText: string }
-  | { id: string; position: number; type: 'heading'; level: 1 | 2 | 3; fallbackText: string }
+  | { id: string; position: number; type: 'heading'; level: 1 | 2 | 3 | 4 | 5 | 6; fallbackText: string }
   | { id: string; position: number; type: 'list'; ordered: boolean; fallbackItems: string[] }
   | { id: string; position: number; type: 'image'; src: string; alt: string; caption?: string }
   | { id: string; position: number; type: 'hr' }
