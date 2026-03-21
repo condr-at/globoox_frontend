@@ -56,7 +56,7 @@ const PAGINATION_ALGO_VERSION = 'v2026-03-21-heading-run';
 const PAGE_SHELL_CLASS = 'reader-page container max-w-2xl mx-auto px-4 h-full';
 const SPREAD_PAGE_SHELL_CLASS = 'reader-page container max-w-2xl mx-auto h-full';
 const IS_DEV = process.env.NODE_ENV === 'development';
-const SHOW_READER_DEBUG_OVERLAY = true;
+const SHOW_READER_DEBUG_OVERLAY = false;
 
 interface ReaderViewProps {
     bookId: string;
