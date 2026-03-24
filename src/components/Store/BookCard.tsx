@@ -16,19 +16,28 @@ function useCompressedCover(src: string, maxWidth = 480): string {
   const [compressed, setCompressed] = useState(src);
   const isDataUri = src.startsWith('data:');
 
+  // Reset compressed to new src when src changes (fixes stale cover race condition)
+  useEffect(() => {
+    setCompressed(src);
+  }, [src]);
+
   useEffect(() => {
     if (!isDataUri) return;
     let cancelled = false;
     const img = new window.Image();
     img.onload = () => {
       if (cancelled) return;
+      // Guard against 0-dimension images producing black canvas
+      if (img.naturalWidth === 0 || img.naturalHeight === 0) return;
       const scale = Math.min(1, maxWidth / img.naturalWidth);
       const w = Math.round(img.naturalWidth * scale);
       const h = Math.round(img.naturalHeight * scale);
       const canvas = document.createElement('canvas');
       canvas.width = w;
       canvas.height = h;
-      canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.drawImage(img, 0, 0, w, h);
       const webp = canvas.toDataURL('image/webp', 0.80);
       // Fall back to JPEG if WebP is not supported (very rare)
       setCompressed(webp.startsWith('data:image/webp') ? webp : canvas.toDataURL('image/jpeg', 0.75));
