@@ -612,14 +612,14 @@ export function updateBookLanguage(bookId: string, lang: string): Promise<ApiBoo
   })
 }
 
-export function fetchReadingPosition(bookId: string): Promise<ReadingPosition> {
+export function fetchReadingPosition(bookId: string, signal?: AbortSignal): Promise<ReadingPosition> {
   // Check cache first
   const cached = positionCache.get(bookId)
   if (cached && cached.expiresAt > Date.now()) {
     return Promise.resolve(cached.data)
   }
 
-  return request<ReadingPosition>(`/api/books/${bookId}/reading-position`)
+  return request<ReadingPosition>(`/api/books/${bookId}/reading-position`, { signal })
     .then((data) => {
       positionCache.set(bookId, {
         data,

@@ -119,6 +119,7 @@ export default function MyBooksPage() {
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [sortDrawerOpen, setSortDrawerOpen] = useState(false);
   const progressRef = useRef(progress);
+  const readingPositionControllersRef = useRef<Set<AbortController>>(new Set());
   const sortTriggerRef = useRef<HTMLButtonElement>(null);
   const sortMenuRef = useRef<HTMLDivElement>(null);
   const { menuStyle, isPositioned } = useAdaptiveDropdown({
@@ -240,9 +241,30 @@ export default function MyBooksPage() {
 
   // Revalidate reading positions from server so Recently Read is consistent cross-device.
   useEffect(() => {
+    const controllers = readingPositionControllersRef.current;
+    const abortAllReadingPositionRequests = () => {
+      controllers.forEach((controller) => controller.abort());
+      controllers.clear();
+    };
+
+    const handleNavigationIntent = () => {
+      abortAllReadingPositionRequests();
+    };
+
+    window.addEventListener('globoox:navigation-intent', handleNavigationIntent);
+    return () => {
+      window.removeEventListener('globoox:navigation-intent', handleNavigationIntent);
+      abortAllReadingPositionRequests();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isAuthenticated || books.length === 0) return;
 
+    const controllers = readingPositionControllersRef.current;
     let cancelled = false;
+    const controller = new AbortController();
+    controllers.add(controller);
     void (async () => {
       const updates: Array<{ bookId: string; remote: Awaited<ReturnType<typeof fetchReadingPosition>> } | null> = [];
       const CONCURRENCY = 4;
@@ -251,7 +273,7 @@ export default function MyBooksPage() {
         const batchUpdates = await Promise.all(
           batch.map(async (book) => {
             try {
-              const remote = await fetchReadingPosition(book.id);
+              const remote = await fetchReadingPosition(book.id, controller.signal);
               void setCachedReadingPosition(scopeKey, book.id, { position: remote, updatedAt: remote.updated_at ?? null });
               return { bookId: book.id, remote };
             } catch {
@@ -314,6 +336,8 @@ export default function MyBooksPage() {
 
     return () => {
       cancelled = true;
+      controller.abort();
+      controllers.delete(controller);
     };
   }, [books, isAuthenticated, scopeKey, syncVersions.progress, updateServerProgress]);
 
@@ -494,7 +518,7 @@ export default function MyBooksPage() {
         <section>
           {(loading || stabilizing) ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="aspect-[2/3] rounded-md bg-muted animate-pulse" />
               ))}
             </div>

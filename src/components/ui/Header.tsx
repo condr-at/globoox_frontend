@@ -1,13 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { BookOpen, ShoppingBag, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import IOSIcon from '@/components/ui/ios-icon';
 
 export default function Header() {
     const pathname = usePathname();
+    const router = useRouter();
+
+    useEffect(() => {
+        router.prefetch('/my-books');
+        router.prefetch('/settings');
+    }, [router]);
+    const notifyNavigationIntent = (targetPath: string) => {
+        if (typeof window === 'undefined') return;
+        window.dispatchEvent(new CustomEvent('globoox:navigation-intent', { detail: { targetPath } }));
+    };
 
     const isActive = (path: string) => {
         if (path === '/my-books') {
@@ -52,7 +63,7 @@ export default function Header() {
                             : 'text-muted-foreground'
                     }`}
                 >
-                    <Link href="/my-books">
+                    <Link href="/my-books" onClick={() => notifyNavigationIntent('/my-books')}>
                         <IOSIcon icon={BookOpen} strokeWidth={isActive('/my-books') ? 1.5 : 1.5} />
                         <span className="text-[12px] font-medium">My Books</span>
                     </Link>
@@ -68,7 +79,7 @@ export default function Header() {
                             : 'text-muted-foreground'
                     }`}
                 >
-                    <Link href="/settings">
+                    <Link href="/settings" onClick={() => notifyNavigationIntent('/settings')}>
                         <IOSIcon icon={Settings} strokeWidth={isActive('/settings') ? 1.5 : 1.5} />
                         <span className="text-[12px] font-medium">Settings</span>
                     </Link>
