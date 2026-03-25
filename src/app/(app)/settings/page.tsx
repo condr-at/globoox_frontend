@@ -14,19 +14,9 @@ import { createClient } from '@/lib/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useAppTheme } from '@/lib/hooks/useAppTheme';
+import { APP_THEME_MODE_OPTIONS, APP_THEME_PALETTE_OPTIONS } from '@/lib/theme-options';
 import JoinAlphaDialog from '@/components/JoinAlphaDialog';
 import IOSSettingsRow from '@/components/ui/ios-settings-row';
-
-const MODES = [
-    { id: 'system', label: 'Browser Default' },
-    { id: 'light', label: 'Light' },
-    { id: 'dark', label: 'Dark' },
-] as const;
-
-const COLOR_THEMES = [
-    { id: 'globoox', label: 'Globoox', lightTheme: 'forest-light', darkTheme: 'forest-dark' },
-    { id: 'default', label: 'Default', lightTheme: 'light', darkTheme: 'dark' },
-] as const;
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -132,16 +122,16 @@ export default function SettingsPage() {
                                 <CardContent className="p-0">
                                     <IOSItemsStack>
                                     <IOSSettingsRow
-                                        label="Mode"
+                                        label="Dark mode"
                                         value={currentMode}
-                                        options={MODES}
+                                        options={APP_THEME_MODE_OPTIONS}
                                         onChange={(id) => setAppTheme(id as 'light' | 'dark' | 'system', currentColorTheme)}
                                     />
                                     <div className="ml-4 h-px bg-[var(--separator-opaque)]" />
                                     <IOSSettingsRow
-                                        label="Theme"
+                                        label="Color theme"
                                         value={currentColorTheme}
-                                        options={COLOR_THEMES}
+                                        options={APP_THEME_PALETTE_OPTIONS}
                                         onChange={(id) => setAppTheme(currentMode, id as 'globoox' | 'default')}
                                     />
                                     </IOSItemsStack>

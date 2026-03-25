@@ -8,12 +8,13 @@ import IOSBottomDrawerHeader from '@/components/ui/ios-bottom-drawer-header';
 import { uiIconTriggerButton } from '@/components/ui/button-styles';
 import { useAppStore } from '@/lib/store';
 import { trackFontSizeChanged } from '@/lib/posthog';
+import { APP_THEME_PALETTE_OPTIONS } from '@/lib/theme-options';
 
 const THEMES = [
-    { id: 'light', label: 'iOS Light', bg: '#F6F6FA', accent: '#007AFF', text: '#000000' },
-    { id: 'dark', label: 'iOS Dark', bg: '#09090B', accent: '#0A84FF', text: '#FFFFFF' },
-    { id: 'forest-light', label: 'Forest Light', bg: '#F4F0E8', accent: '#C05A3A', text: '#2C3B2D' },
-    { id: 'forest-dark', label: 'Forest Dark', bg: '#1A2419', accent: '#E8B89A', text: '#F4F0E8' },
+    { id: 'light', label: `${APP_THEME_PALETTE_OPTIONS.find((p) => p.id === 'default')?.label ?? 'Default'} Light`, bg: '#F6F6FA', accent: '#007AFF', text: '#000000' },
+    { id: 'dark', label: `${APP_THEME_PALETTE_OPTIONS.find((p) => p.id === 'default')?.label ?? 'Default'} Dark`, bg: '#09090B', accent: '#0A84FF', text: '#FFFFFF' },
+    { id: 'forest-light', label: `${APP_THEME_PALETTE_OPTIONS.find((p) => p.id === 'globoox')?.label ?? 'Globoox'} Light`, bg: '#F4F0E8', accent: '#C05A3A', text: '#2C3B2D' },
+    { id: 'forest-dark', label: `${APP_THEME_PALETTE_OPTIONS.find((p) => p.id === 'globoox')?.label ?? 'Globoox'} Dark`, bg: '#1A2419', accent: '#E8B89A', text: '#F4F0E8' },
 ] as const;
 
 interface ReaderSettingsProps {
