@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { useAppStore, Language, languageNames } from '@/lib/store';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
-import { uiDropdownItemButton, uiTextActionButton } from '@/components/ui/button-styles';
+import { uiDropdownItemButton, uiHeaderControlHitArea, uiTextActionButton } from '@/components/ui/button-styles';
 import IOSItemsStack from '@/components/ui/ios-items-stack';
 
 interface LanguageSwitchProps {
@@ -62,7 +62,7 @@ export default function LanguageSwitch({
           ref={triggerRef}
           onClick={() => setIsOpen(!effectiveOpen)}
           disabled={disabled}
-          className={`${uiTextActionButton} relative flex items-center gap-[4px] px-[8px] min-w-[44px] min-h-[44px] after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-[-4px]`}
+          className={`${uiTextActionButton} ${uiHeaderControlHitArea} flex items-center gap-[4px] px-[8px] min-w-[44px] min-h-[44px]`}
         >
           <span className="text-[15px] font-medium">{activeLanguage.toUpperCase()}</span>
           <ChevronDown className={`w-[16px] h-[16px] transition-transform ${effectiveOpen ? 'rotate-180' : ''}`} />

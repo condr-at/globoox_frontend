@@ -303,6 +303,7 @@ export default function ComponentsPreviewPage() {
       builtOn: 'Reader top chrome layout',
       useWhen: 'Top header in ReaderView with back, title, language, and trailing actions.',
       avoidWhen: 'Modal headers or generic page headers.',
+      notes: 'Use one shared header-control pattern: icon controls use `uiIconTriggerButton`, text+icon uses `uiTextActionButton`, all controls keep 44x44 touch geometry, rounded corners, and shared `uiHeaderControlHitArea`.',
       inlinePreview: (
         <div className="relative overflow-hidden">
           <IOSReaderHeader
@@ -605,6 +606,9 @@ export default function ComponentsPreviewPage() {
                 <li>Use `uiDrawerItemButton` for bottom-drawer list rows.</li>
                 <li>Use `Button` variants/sizes for primary product actions.</li>
                 <li>Use `IOSAction*` only inside iOS dialog footers.</li>
+                <li>In reader header controls, keep visual styles by button type and always add `uiHeaderControlHitArea` for a shared touch target.</li>
+                <li>Reader header controls must stay in one geometry pattern: min 44x44 and rounded corners for back, language, and overflow buttons.</li>
+                <li>Do not customize `::after` hit-area offsets per header button; use `uiHeaderControlHitArea` as the single source.</li>
                 <li>Do not hardcode black/white hover colors; rely on semantic fill tokens.</li>
               </ul>
             </div>

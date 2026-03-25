@@ -6,7 +6,7 @@ import { Language } from '@/lib/store';
 import TableOfContents from './TableOfContents';
 import ReaderSettings from './ReaderSettings';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
-import { uiIconTriggerButton, uiMenuItemButton } from '@/components/ui/button-styles';
+import { uiHeaderControlHitArea, uiIconTriggerButton, uiMenuItemButton } from '@/components/ui/button-styles';
 import IOSItemsStack from '@/components/ui/ios-items-stack';
 
 interface ReaderActionsMenuProps {
@@ -60,7 +60,7 @@ export default function ReaderActionsMenu({
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`${uiIconTriggerButton} relative inline-flex after:absolute after:inset-y-[-10px] after:left-[-4px] after:right-[-10px]`}
+        className={`${uiIconTriggerButton} ${uiHeaderControlHitArea} inline-flex`}
         disabled={disabled}
       >
         <MoreHorizontal className="w-6 h-6" />

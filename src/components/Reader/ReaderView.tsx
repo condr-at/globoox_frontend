@@ -42,6 +42,7 @@ import IOSAlertDialog from '@/components/ui/ios-alert-dialog';
 import IOSIcon from '@/components/ui/ios-icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import TranslationLimitDialog from '@/components/TranslationLimitDialog';
+import { uiHeaderControlHitArea, uiIconTriggerButton } from '@/components/ui/button-styles';
 
 // Source of a navigation event. Any source other than manual_scroll is a "jump"
 // that aborts in-flight prefetch requests and updates readingAnchor immediately.
@@ -1805,21 +1806,20 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             >
                 <div className="flex h-11 items-center px-4">
                     <div className="flex h-full items-center justify-start shrink-0">
-                        <Button variant="ghost" size="icon" asChild className="text-primary -ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px]">
-                            <Link
-                                href="/my-books"
-                                onClick={() => {
-                                    try {
-                                        sessionStorage.setItem(
-                                            'globoox:last_read_book',
-                                            JSON.stringify({ bookId, at: Date.now() })
-                                        );
-                                    } catch { /* ignore */ }
-                                }}
-                            >
-                                <IOSIcon icon={ChevronLeft} className="text-primary" strokeWidth={2} />
-                            </Link>
-                        </Button>
+                        <Link
+                            href="/my-books"
+                            onClick={() => {
+                                try {
+                                    sessionStorage.setItem(
+                                        'globoox:last_read_book',
+                                        JSON.stringify({ bookId, at: Date.now() })
+                                    );
+                                } catch { /* ignore */ }
+                            }}
+                            className={`${uiIconTriggerButton} ${uiHeaderControlHitArea} -ml-2 flex-shrink-0`}
+                        >
+                            <IOSIcon icon={ChevronLeft} className="text-primary" strokeWidth={2} />
+                        </Link>
                     </div>
 
                     <div className="min-w-0 flex-1 px-2">
