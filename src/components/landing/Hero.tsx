@@ -468,18 +468,18 @@ export function Hero({ variant = 'centered', withBooks = false, title, subtitle,
                 }}
               >
               <FloatingScript style={{ top: '15%', left: '10%', animation: 'float 8s infinite ease-in-out' }}>
-                哲学
+                科学
               </FloatingScript>
               <FloatingScript
                 style={{ bottom: '20%', right: '15%', animation: 'float 8s infinite ease-in-out', animationDelay: '2s', fontSize: '42px' }}
               >
-                Poésie
+                Biographie
               </FloatingScript>
               <FloatingScript style={{ top: '25%', right: '20%', animation: 'float 8s infinite ease-in-out', animationDelay: '4s' }}>
-                قصة
+                علم النفس
               </FloatingScript>
               <FloatingScript style={{ bottom: '10%', left: '25%', animation: 'float 8s infinite ease-in-out', animationDelay: '1s' }}>
-                History
+                Memoir
               </FloatingScript>
               <div className="hero-books-row" style={{ display: 'flex', gap: '16px', transform: 'rotate(5deg)', alignItems: 'flex-end' }}>
                 <BookSpine

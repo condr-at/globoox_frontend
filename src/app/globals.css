@@ -152,6 +152,12 @@
   --sidebar-primary-foreground: #FFFFFF;
 }
 
+/* Neutral — Light (explicit override for subtle skeleton contrast) */
+.light {
+  --muted: #E8E8EE;
+  --accent: #E8E8EE;
+}
+
 /* Forest & Terracotta — Light */
 .forest-light {
   --system-blue: #C05A3A;
@@ -190,6 +196,9 @@
     0 10px 24px rgba(22, 31, 23, 0.18);
 
   --primary-foreground: #FFFFFF;
+  /* Keep skeleton surfaces distinct from page background in forest light. */
+  --muted: #E8E1D6;
+  --accent: #E8E1D6;
 }
 
 /* Forest & Terracotta — Dark */
