@@ -118,10 +118,10 @@ export function CompareSlider() {
           <div className="compare-text-pad" style={{ flex: 1, overflow: 'hidden', padding: '28px 32px' }}>
             <div style={{ maxWidth: '480px', margin: '0 auto' }}>
               <h3 style={{ fontSize: '18px', fontWeight: 400, marginBottom: '14px', fontFamily: "'Lora', serif" }}>
-                In Search of the Soul's Edge
+                In Search of the Soul&apos;s Edge
               </h3>
               <p style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '10px' }}>
-                Of course, science today cannot boast of having fully deciphered every secret of the human psyche. Many unsolved problems still remain unresolved. The main one among them is that neurobiologists cannot yet even theoretically imagine how a perceiving subject—the "I"—can be constructed from individual neurons and synapses.
+                Of course, science today cannot boast of having fully deciphered every secret of the human psyche. Many unsolved problems still remain unresolved. The main one among them is that neurobiologists cannot yet even theoretically imagine how a perceiving subject-the &quot;I&quot;-can be constructed from individual neurons and synapses.
               </p>
               <p style={{ fontSize: '14px', lineHeight: 1.8, margin: 0 }}>
                 But the trend is obvious: one by one, the most important aspects of the human personality, considered until very recently out of reach for the natural sciences (for example, memory, emotions, and even morality), are confidently moving into the material sphere, revealing their physiological, cellular, biochemical nature and evolutionary roots.

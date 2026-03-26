@@ -27,8 +27,8 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
       await joinAlpha(token);
       refreshAlphaStatus();
       setStatus('success');
-    } catch (err: any) {
-      setErrorMessage(err?.message || 'Invalid or expired token');
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : 'Invalid or expired token');
       setStatus('error');
     }
   };

@@ -97,7 +97,7 @@ export function useAuth() {
             console.log('[useAuth] Profile not found, creating...');
             return supabase
               .from('profiles')
-              .insert({ id: userId } as any)
+              .insert({ id: userId })
               .then(() => {
                 cachedAdminUserId = userId;
                 cachedIsAdmin = false;
@@ -110,7 +110,7 @@ export function useAuth() {
 
           if (!error && data) {
             const nextIsAdmin = data.is_admin || false;
-            const nextIsAlpha = (data as any).is_alpha || false;
+            const nextIsAlpha = data.is_alpha || false;
             cachedAdminUserId = userId;
             cachedIsAdmin = nextIsAdmin;
             cachedIsAlpha = nextIsAlpha;

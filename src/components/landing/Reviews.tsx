@@ -135,7 +135,7 @@ export function Reviews() {
                   flex: 1,
                 }}
               >
-                "{review.text}"
+                &quot;{review.text}&quot;
               </p>
 
               {/* Author */}
@@ -217,7 +217,7 @@ export function Reviews() {
                   flex: 1,
                 }}
               >
-                "{review.text}"
+                &quot;{review.text}&quot;
               </p>
 
               {/* Author */}

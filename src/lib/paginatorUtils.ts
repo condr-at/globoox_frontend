@@ -964,7 +964,7 @@ function splitParagraphByHeight(
     }
   }
 
-  let firstPart = words.slice(0, best).join(' ')
+  const firstPart = words.slice(0, best).join(' ')
   const restWords = words.slice(best)
 
   // Manual intra-word hyphen split is disabled in fallback mode too.
