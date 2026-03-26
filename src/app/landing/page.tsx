@@ -77,7 +77,7 @@ export default async function LandingPage() {
 
         <section id="start" aria-label="Get started">
           <CTA
-            heading="Start with your first book."
+            heading="Start with your first book"
             description="Upload your EPUB and enjoy it in your language."
             buttonText="Upload Your First Book"
           />

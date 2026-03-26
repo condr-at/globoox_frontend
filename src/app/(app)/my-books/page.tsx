@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, Check, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, Check, SlidersHorizontal, BookMarked, Smartphone, Globe } from 'lucide-react';
 import IOSBottomDrawer from '@/components/ui/ios-bottom-drawer';
 import IOSBottomDrawerHeader from '@/components/ui/ios-bottom-drawer-header';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
@@ -19,7 +19,6 @@ import {
 import BookCard from '@/components/Store/BookCard';
 import DeleteBookConfirmDialog from '@/components/Store/DeleteBookConfirmDialog';
 import UploadBookModal from '@/components/UploadBookModal';
-import SignInToUploadModal from '@/components/SignInToUploadModal';
 import { useAppStore } from '@/lib/store';
 import { useBooks } from '@/lib/useBooks';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -105,7 +104,6 @@ export default function MyBooksPage() {
   });
   const authRefreshDoneRef = useRef<string | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [progressData, setProgressData] = useState<Record<string, ProgressRow>>({});
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const [isDeletingBook, setIsDeletingBook] = useState(false);
@@ -166,7 +164,7 @@ export default function MyBooksPage() {
     if (isAuthenticated) {
       setIsUploadOpen(true);
     } else {
-      setIsSignInOpen(true);
+      window.location.href = '/auth?next=/my-books';
     }
   };
 
@@ -449,12 +447,17 @@ export default function MyBooksPage() {
       <GoogleOneTap />
       <PageHeader
         title="My Books"
-        action={{ label: isAuthenticated ? 'Add' : 'Sign In', onClick: handleUploadClick }}
+        action={authLoading ? undefined : {
+          label: isAuthenticated ? 'Upload' : 'Sign In',
+          onClick: handleUploadClick,
+          className: isAuthenticated ? '' : 'bg-primary text-primary-foreground hover:bg-primary/90 px-4 h-8 rounded-full text-[13px]',
+        }}
       />
 
       <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top)+72px)] pb-4 space-y-6 overflow-x-clip">
         {error && <p className="text-sm text-destructive">{error}</p>}
 
+        {(authLoading || isAuthenticated) && (
         <div className="flex items-center gap-2 relative">
           <div className="relative hidden max-[395px]:block">
             <button
@@ -562,6 +565,7 @@ export default function MyBooksPage() {
             </div>
           )}
         </div>
+        )}
 
 
         <section>
@@ -605,6 +609,42 @@ export default function MyBooksPage() {
             </>
           )}
         </section>
+
+        {!isAuthenticated && !authLoading && (
+          <section className="rounded-3xl border border-[var(--separator)] bg-[var(--bg-grouped-secondary)] p-4 sm:p-5">
+            <div className="space-y-3">
+              <div>
+                <h2 className="text-[17px] leading-6 font-semibold">Upload your own books</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Sign in to upload and translate your own EPUBs.
+                </p>
+              </div>
+              <ul className="space-y-2 text-sm text-foreground/90">
+                <li className="flex items-center gap-2">
+                  <BookMarked className="size-4 text-primary" />
+                  <span>Your library stays saved</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Smartphone className="size-4 text-primary" />
+                  <span>Reading progress syncs across devices</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Globe className="size-4 text-primary" />
+                  <span>Translate EPUBs with AI</span>
+                </li>
+              </ul>
+              <div className="pt-1">
+                <Button
+                  size="sm"
+                  className="h-8 rounded-full px-4"
+                  onClick={() => { window.location.href = '/auth?next=/my-books'; }}
+                >
+                  Sign In
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
 
       <footer className="container max-w-2xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-muted-foreground">
@@ -648,11 +688,6 @@ export default function MyBooksPage() {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onUploaded={() => refresh(true)}
-      />
-
-      <SignInToUploadModal
-        isOpen={isSignInOpen}
-        onClose={() => setIsSignInOpen(false)}
       />
 
       <DeleteBookConfirmDialog

@@ -69,3 +69,4 @@ temp/verify-hidden-two-tabs.mjs
 temp/verify-hidden-visual.mjs
 temp/verify-hide-unhide-two-origins.mjs
 temp/verify-login-ui.mjs
+temp/check-header-scroll-small.js
