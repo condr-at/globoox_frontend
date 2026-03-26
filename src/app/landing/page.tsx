@@ -1,5 +1,5 @@
-'use client';
-
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
 import { Hero } from '@/components/landing/Hero';
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { PrivacyManifest } from '@/components/landing/PrivacyManifest';
@@ -9,7 +9,16 @@ import { QualityAssuranceV2 } from '@/components/landing/QualityAssuranceV2';
 import { CTA } from '@/components/landing/CTA';
 import { Footer } from '@/components/landing/Footer';
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect('/my-books');
+  }
+
   return (
     <>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, background: 'var(--parchment)', pointerEvents: 'none', zIndex: 0 }} />

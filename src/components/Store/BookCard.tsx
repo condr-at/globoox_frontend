@@ -180,6 +180,16 @@ function useCoverAccent(src: string): string {
 
 function useImageAspect(src: string): { aspect: number | null; isReady: boolean } {
   const cacheKey = useMemo(() => `globoox:cover-aspect:${hashString(src)}`, [src]);
+  const cachedAspect = useMemo(() => {
+    if (!src || typeof window === 'undefined') return null;
+    try {
+      const cached = window.localStorage.getItem(cacheKey);
+      const parsed = cached ? Number(cached) : NaN;
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    } catch {
+      return null;
+    }
+  }, [src, cacheKey]);
   const [aspect, setAspect] = useState<number | null>(() => {
     if (!src || typeof window === 'undefined') return null;
     try {
@@ -190,28 +200,12 @@ function useImageAspect(src: string): { aspect: number | null; isReady: boolean 
       return null;
     }
   });
-  const [isReady, setIsReady] = useState<boolean>(() => !src || aspect !== null);
 
   useEffect(() => {
-    if (!src) {
-      setAspect(null);
-      setIsReady(true);
-      return;
-    }
+    if (!src) return;
 
-    try {
-      const cached = window.localStorage.getItem(cacheKey);
-      const parsed = cached ? Number(cached) : NaN;
-      if (Number.isFinite(parsed) && parsed > 0) {
-        setAspect(parsed);
-        setIsReady(true);
-        return;
-      }
-    } catch {
-      // noop
-    }
+    if (cachedAspect !== null) return;
 
-    setIsReady(false);
     let cancelled = false;
     const img = new window.Image();
     img.crossOrigin = 'anonymous';
@@ -220,7 +214,6 @@ function useImageAspect(src: string): { aspect: number | null; isReady: boolean 
       if (cancelled || img.naturalHeight === 0) return;
       const nextAspect = img.naturalWidth / img.naturalHeight;
       setAspect(nextAspect);
-      setIsReady(true);
       try {
         window.localStorage.setItem(cacheKey, String(nextAspect));
       } catch {
@@ -228,14 +221,14 @@ function useImageAspect(src: string): { aspect: number | null; isReady: boolean 
       }
     }).catch(() => {
       if (cancelled) return;
-      setIsReady(true);
     });
     return () => {
       cancelled = true;
     };
-  }, [src, cacheKey]);
+  }, [src, cacheKey, cachedAspect]);
 
-  return { aspect, isReady };
+  if (!src) return { aspect: null, isReady: true };
+  return { aspect: cachedAspect ?? aspect, isReady: true };
 }
 
 function getContainFrameStyle(imageAspect: number | null): CSSProperties {
@@ -285,8 +278,8 @@ export default function BookCard({
   const hasActions = isAuthenticated && Boolean(onHide || onDelete);
   const sourceCover = (cover ?? '').trim();
   const displayCover = useCompressedCover(sourceCover);
-  const [isImageFailed, setIsImageFailed] = useState(false);
-  const hasValidCover = Boolean(displayCover) && !isImageFailed;
+  const [failedCoverSrc, setFailedCoverSrc] = useState<string | null>(null);
+  const hasValidCover = Boolean(displayCover) && failedCoverSrc !== displayCover;
   const coverAccent = useCoverAccent(displayCover);
   const { aspect: coverAspect, isReady: isAspectReady } = useImageAspect(hasValidCover ? displayCover : '');
   const coverFrameStyle = getContainFrameStyle(coverAspect);
@@ -306,10 +299,6 @@ export default function BookCard({
   const ambientShadowColor = hasValidCover
     ? (isDarkTheme ? 'rgba(196, 202, 212, 0.20)' : 'rgba(18, 24, 36, 0.16)')
     : `color-mix(in srgb, ${fallbackColor} 46%, transparent)`;
-
-  useEffect(() => {
-    setIsImageFailed(false);
-  }, [displayCover]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -332,44 +321,44 @@ export default function BookCard({
         }
       }}
     >
-      <Link
-        href={`/reader/${id}`}
-        className={`block transition-transform ${isMenuOpen ? 'pointer-events-none' : 'active:scale-[0.98]'}`}
-        tabIndex={isMenuOpen ? -1 : 0}
-        aria-disabled={isMenuOpen}
-        onClick={(event) => {
-          if (isMenuOpen) {
-            event.preventDefault();
-          } else {
-            onOpen?.();
-          }
-        }}
-      >
-        <div className="relative mb-2">
+      <div className="relative mb-2">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-[4%] right-[4%] bottom-[-14px] h-[34px] rounded-full blur-[8px]"
+          style={{
+            opacity: 'var(--book-reflex-opacity)',
+            background: `radial-gradient(ellipse at center, rgba(${coverAccent} / 0.72) 0%, rgba(${coverAccent} / 0.52) 42%, rgba(${coverAccent} / 0.20) 70%, rgba(${coverAccent} / 0) 90%)`,
+          }}
+        />
+        {hasActions && (
           <div
-            aria-hidden="true"
-            className="pointer-events-none absolute left-[4%] right-[4%] bottom-[-14px] h-[34px] rounded-full blur-[8px]"
-            style={{
-              opacity: 'var(--book-reflex-opacity)',
-              background: `radial-gradient(ellipse at center, rgba(${coverAccent} / 0.72) 0%, rgba(${coverAccent} / 0.52) 42%, rgba(${coverAccent} / 0.20) 70%, rgba(${coverAccent} / 0) 90%)`,
-            }}
-          />
+            className={`absolute z-20 pointer-events-none transition-opacity ${showMenuButton ? 'opacity-100' : 'opacity-0'}`}
+            style={{ ...effectiveCoverFrameStyle, left: 0, bottom: 0 }}
+          >
+            <div className="absolute top-1 right-1 pointer-events-auto">
+              <BookActionsMenu
+                onHide={() => onHide?.(id)}
+                onDelete={() => onDelete?.(id)}
+                hideLabel={hideLabel}
+                onOpenChange={setIsMenuOpen}
+              />
+            </div>
+          </div>
+        )}
+        <Link
+          href={`/reader/${id}`}
+          className={`block transition-transform ${isMenuOpen ? 'pointer-events-none' : 'active:scale-[0.98]'}`}
+          tabIndex={isMenuOpen ? -1 : 0}
+          aria-disabled={isMenuOpen}
+          onClick={(event) => {
+            if (isMenuOpen) {
+              event.preventDefault();
+            } else {
+              onOpen?.();
+            }
+          }}
+        >
           <div className="aspect-[2/3] relative">
-            {hasActions && (
-              <div
-                className={`absolute z-20 pointer-events-none transition-opacity ${showMenuButton ? 'opacity-100' : 'opacity-0'}`}
-                style={{ ...effectiveCoverFrameStyle, left: 0, bottom: 0 }}
-              >
-                <div className="absolute top-1 right-1 pointer-events-auto">
-                  <BookActionsMenu
-                    onHide={() => onHide?.(id)}
-                    onDelete={() => onDelete?.(id)}
-                    hideLabel={hideLabel}
-                    onOpenChange={setIsMenuOpen}
-                  />
-                </div>
-              </div>
-            )}
             <div className="absolute left-0 bottom-0" style={effectiveCoverFrameStyle}>
               <div className="relative h-full w-full">
                 <div
@@ -390,7 +379,7 @@ export default function BookCard({
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 45vw, 180px"
-                      onError={() => setIsImageFailed(true)}
+                      onError={() => setFailedCoverSrc(displayCover)}
                     />
                   ) : hasValidCover ? (
                     <Skeleton className="h-full w-full rounded-[3px] bg-muted animate-pulse" />
@@ -410,7 +399,21 @@ export default function BookCard({
               </div>
             </div>
           </div>
-        </div>
+        </Link>
+      </div>
+      <Link
+        href={`/reader/${id}`}
+        className={`block ${isMenuOpen ? 'pointer-events-none' : ''}`}
+        tabIndex={isMenuOpen ? -1 : 0}
+        aria-disabled={isMenuOpen}
+        onClick={(event) => {
+          if (isMenuOpen) {
+            event.preventDefault();
+          } else {
+            onOpen?.();
+          }
+        }}
+      >
         <p className="text-sm font-medium mb-0.5 line-clamp-2 leading-snug">{title}</p>
         <p className="text-xs text-muted-foreground line-clamp-1">{author}</p>
       </Link>
@@ -441,8 +444,8 @@ export function StoreBookCard({
   hasDemo,
 }: StoreBookCardProps) {
   const sourceCover = (cover ?? '').trim();
-  const [isImageFailed, setIsImageFailed] = useState(false);
-  const hasValidCover = Boolean(sourceCover) && !isImageFailed;
+  const [failedCoverSrc, setFailedCoverSrc] = useState<string | null>(null);
+  const hasValidCover = Boolean(sourceCover) && failedCoverSrc !== sourceCover;
   const { aspect: coverAspect, isReady: isAspectReady } = useImageAspect(hasValidCover ? sourceCover : '');
   const coverFrameStyle = getContainFrameStyle(coverAspect);
   const effectiveCoverFrameStyle = isAspectReady ? coverFrameStyle : { width: '100%', height: '100%' };
@@ -460,10 +463,6 @@ export function StoreBookCard({
   const ambientShadowColor = hasValidCover
     ? (isDarkTheme ? 'rgba(196, 202, 212, 0.20)' : 'rgba(18, 24, 36, 0.16)')
     : `color-mix(in srgb, ${fallbackColor} 46%, transparent)`;
-
-  useEffect(() => {
-    setIsImageFailed(false);
-  }, [sourceCover]);
 
   return (
     <Link href={`/store/${id}`} className="block active:scale-[0.98] transition-transform">
@@ -490,7 +489,7 @@ export function StoreBookCard({
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 45vw, 180px"
-                      onError={() => setIsImageFailed(true)}
+                      onError={() => setFailedCoverSrc(sourceCover)}
                     />
                   ) : hasValidCover ? (
                     <Skeleton className="h-full w-full rounded-[3px] bg-muted animate-pulse" />

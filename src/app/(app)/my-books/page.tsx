@@ -449,7 +449,7 @@ export default function MyBooksPage() {
       <GoogleOneTap />
       <PageHeader
         title="My Books"
-        action={{ label: 'Add', onClick: handleUploadClick }}
+        action={{ label: isAuthenticated ? 'Add' : 'Sign In', onClick: handleUploadClick }}
       />
 
       <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top)+72px)] pb-4 space-y-6 overflow-x-clip">
