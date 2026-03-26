@@ -24,9 +24,9 @@ function getTypograf(locale: string): Typograf {
     return tp;
 }
 
-function processText(tp: Typograf, value: string): string {
+function processText(tp: Typograf, value: string, isFrenchLocale: boolean): string {
     const processed = tp.execute(normalizeSoftWrapHyphens(value));
-    return normalizeFrenchGuillemets(processed);
+    return isFrenchLocale ? normalizeFrenchGuillemets(processed) : processed;
 }
 
 // EPUB/OCR sources sometimes store legacy line-wrap hyphenation as "fu- ture".
@@ -58,7 +58,7 @@ export function applyTypografToBlocks(blocks: ContentBlock[], lang?: string | nu
             case 'heading': {
                 const source = block.text;
                 try {
-                    const text = processText(tp, source);
+                    const text = processText(tp, source, isFrenchLocale);
                     if (text === source) return block;
                     return { ...block, text };
                 } catch {
@@ -73,7 +73,7 @@ export function applyTypografToBlocks(blocks: ContentBlock[], lang?: string | nu
                 let changed = false;
                 const items = block.items.map((item) => {
                     try {
-                        const next = processText(tp, item);
+                        const next = processText(tp, item, isFrenchLocale);
                         if (next !== item) changed = true;
                         return next;
                     } catch {
