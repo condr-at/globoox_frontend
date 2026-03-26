@@ -26,14 +26,13 @@ export function useChapterContent(chapterId: string | null, lang?: string) {
     const controller = new AbortController()
     abortControllerRef.current = controller
 
-    setError(null)
-    setHasServerSnapshot(false)
-
     void (async () => {
       const cached = await getCachedChapterContent(chapterId, lang)
       if (controller.signal.aborted) return
+      setError(null)
 
       const hadCached = !!cached
+      setHasServerSnapshot(hadCached)
       if (cached) {
         setBlocks(cached.blocks)
         setBlocksLang(lang)

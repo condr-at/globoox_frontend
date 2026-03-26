@@ -56,7 +56,7 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
           </Link>
 
           <nav className="landing-header-links" style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
-            {navItems.map((item, index) => (
+            {navItems.map((item) => (
               <div key={item.href} style={{ display: 'flex', alignItems: 'center' }}>
                 <a
                   href={item.href}

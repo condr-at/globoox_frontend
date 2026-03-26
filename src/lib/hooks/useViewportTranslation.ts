@@ -298,13 +298,12 @@ export function useViewportTranslation({
   }, [])
 
   // Flush + reset session when book or language changes (not on chapter change)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     return () => {
       flushSession()
       resetSession()
     }
-  }, [bookId, lang])
+  }, [bookId, lang, flushSession, resetSession])
 
   // Debounce timer
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -575,7 +574,7 @@ export function useViewportTranslation({
         if (isMountedRef.current) setIsTranslatingAny(false)
       }
     }
-  }, [updatePendingBlockIds])
+  }, [updatePendingBlockIds, flushSession, resetSession, SESSION_INACTIVITY_MS])
 
   // Schedule a debounced flush
   const scheduleFlush = useCallback((isHighPriority = false) => {
@@ -996,7 +995,7 @@ export function useViewportTranslation({
       // so translated blocks can still be persisted to IndexedDB.
       observerRef.current?.disconnect()
     }
-  }, [])
+  }, [flushSession])
 
   // Enqueue a set of block IDs for prefetch translation (e.g. next page) - LOW PRIORITY
   // All blocks are added to the queue first, then a single flush is triggered.

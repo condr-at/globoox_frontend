@@ -272,7 +272,7 @@ export async function parseEpub(file: File): Promise<ParsedEpub> {
               blocks = extractBlocks(rootEl);
             }
           }
-        } catch (err) {
+        } catch {
           Sentry.addBreadcrumb({
             category: 'epub',
             message: 'Chapter parse failed',
@@ -291,7 +291,7 @@ export async function parseEpub(file: File): Promise<ParsedEpub> {
       }
 
       section.unload();
-    } catch (err) {
+    } catch {
       Sentry.addBreadcrumb({
         category: 'epub',
         message: 'Section load failed',

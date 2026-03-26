@@ -448,7 +448,7 @@ export default function MyBooksPage() {
       <PageHeader
         title="My Books"
         action={authLoading ? undefined : {
-          label: isAuthenticated ? 'Upload' : 'Sign In',
+          label: isAuthenticated ? 'Upload book' : 'Sign In',
           onClick: handleUploadClick,
           className: isAuthenticated ? '' : 'bg-primary text-primary-foreground hover:bg-primary/90 px-4 h-8 rounded-full text-[13px]',
         }}

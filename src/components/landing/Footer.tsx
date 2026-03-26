@@ -19,11 +19,6 @@ function LegalModal({
   sections: Array<{ heading: string; body: string[] }>;
 }) {
   const titleId = useId();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -48,7 +43,7 @@ function LegalModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, onOpenChange]);
 
-  if (!mounted || !open || typeof document === 'undefined') return null;
+  if (!open || typeof document === 'undefined') return null;
 
   return createPortal(
     <div

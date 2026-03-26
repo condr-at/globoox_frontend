@@ -187,7 +187,7 @@ function SchematicPlaceholder({
 export default function ComponentsPreviewPage() {
   const [activeOverlay, setActiveOverlay] = useState<OverlayKey>(null);
   const [alertLoading, setAlertLoading] = useState(false);
-  const [alertDestructive, setAlertDestructive] = useState(false);
+  const [alertDestructive] = useState(false);
   const sheetTitleId = useId();
   const sheetDescriptionId = useId();
 

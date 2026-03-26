@@ -27,7 +27,7 @@ export function useSyncCheck() {
     // Avoid hammering the backend on frequent tab switches / rapid remounts.
     const MIN_INTERVAL_MS = 30_000
 
-    const check = async (reason: 'mount' | 'visibility') => {
+    const check = async () => {
         // Avoid invalidating caches based on default (non-rehydrated) timestamps.
         if (!hasHydrated) return
 
@@ -77,14 +77,14 @@ export function useSyncCheck() {
 
     // Run on mount
     useEffect(() => {
-        void check('mount')
+        void check()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     // Run every time the user comes back to the tab
     useEffect(() => {
         const handleVisibility = () => {
-            if (document.visibilityState === 'visible') void check('visibility')
+            if (document.visibilityState === 'visible') void check()
         }
         document.addEventListener('visibilitychange', handleVisibility)
         return () => document.removeEventListener('visibilitychange', handleVisibility)

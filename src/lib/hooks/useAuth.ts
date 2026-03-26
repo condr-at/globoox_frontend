@@ -18,47 +18,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(cachedUser === undefined);
   const adminFetchInFlightRef = useRef<Promise<void> | null>(null);
 
-  useEffect(() => {
-    const supabase = createClient();
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const nextUser = session?.user ?? null;
-      cachedUser = nextUser;
-      setUser(nextUser);
-      if (session?.user) {
-        fetchProfileStatus(session.user.id);
-      } else {
-        cachedIsAdmin = false;
-        cachedIsAlpha = false;
-        setIsAdmin(false);
-        setIsAlpha(false);
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      const nextUser = session?.user ?? null;
-      cachedUser = nextUser;
-      setUser(nextUser);
-      if (session?.user) {
-        fetchProfileStatus(session.user.id);
-      } else {
-        cachedIsAdmin = false;
-        cachedIsAlpha = false;
-        setIsAdmin(false);
-        setIsAlpha(false);
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchProfileStatus = async (userId: string) => {
+  async function fetchProfileStatus(userId: string) {
     const now = Date.now();
     if (
       cachedAdminUserId === userId &&
@@ -131,7 +91,47 @@ export function useAuth() {
     }
 
     setLoading(false);
-  };
+  }
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const nextUser = session?.user ?? null;
+      cachedUser = nextUser;
+      setUser(nextUser);
+      if (session?.user) {
+        fetchProfileStatus(session.user.id);
+      } else {
+        cachedIsAdmin = false;
+        cachedIsAlpha = false;
+        setIsAdmin(false);
+        setIsAlpha(false);
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUser = session?.user ?? null;
+      cachedUser = nextUser;
+      setUser(nextUser);
+      if (session?.user) {
+        fetchProfileStatus(session.user.id);
+      } else {
+        cachedIsAdmin = false;
+        cachedIsAlpha = false;
+        setIsAdmin(false);
+        setIsAlpha(false);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const refreshAlphaStatus = () => {
     cachedAdminFetchedAt = undefined; // invalidate cache

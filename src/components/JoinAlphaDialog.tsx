@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import IOSAlertDialog from '@/components/ui/ios-alert-dialog';
 import { joinWaitlist } from '@/lib/api';
 
@@ -16,10 +16,10 @@ export default function JoinAlphaDialog({
   userEmail,
 }: JoinAlphaDialogProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-
-  useEffect(() => {
-    if (open) setStatus('idle');
-  }, [open]);
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) setStatus('idle');
+    onOpenChange(nextOpen);
+  };
 
   const handleSendRequest = async () => {
     setStatus('loading');
@@ -53,12 +53,12 @@ export default function JoinAlphaDialog({
   return (
     <IOSAlertDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={handleOpenChange}
       title={status === 'success' ? 'Request Sent' : 'Join Alpha Program'}
       description={description}
       confirmLabel={status === 'success' ? 'Done' : status === 'loading' ? 'Sending...' : 'Send Request'}
       cancelLabel="Not Now"
-      onConfirm={status === 'success' ? () => onOpenChange(false) : handleSendRequest}
+      onConfirm={status === 'success' ? () => handleOpenChange(false) : handleSendRequest}
       showCancel={status !== 'success'}
       loading={status === 'loading'}
     />

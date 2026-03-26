@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { BookOpen, Languages, Sparkles } from 'lucide-react';
 import IOSFeatureDialog from '@/components/ui/ios-feature-dialog';
 import { IOSAction, IOSActionDivider, IOSActionStack } from '@/components/ui/ios-action-group';
@@ -25,10 +25,10 @@ export default function TranslationLimitDialog({
   userEmail,
 }: TranslationLimitDialogProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-
-  useEffect(() => {
-    if (open) setStatus('idle');
-  }, [open]);
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) setStatus('idle');
+    onOpenChange(nextOpen);
+  };
 
   const handleSendRequest = async () => {
     setStatus('loading');
@@ -62,13 +62,13 @@ export default function TranslationLimitDialog({
   return (
     <IOSFeatureDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={handleOpenChange}
       title={status === 'success' ? 'Request Sent' : 'Translation Limit Reached'}
       description={description}
       footer={(
         <IOSActionStack>
           {status === 'success' ? (
-            <IOSAction emphasized onClick={() => onOpenChange(false)}>
+            <IOSAction emphasized onClick={() => handleOpenChange(false)}>
               Done
             </IOSAction>
           ) : (
@@ -77,7 +77,7 @@ export default function TranslationLimitDialog({
                 {status === 'loading' ? 'Sending...' : 'Send Access Request'}
               </IOSAction>
               <IOSActionDivider />
-              <IOSAction onClick={() => onOpenChange(false)} disabled={status === 'loading'}>
+              <IOSAction onClick={() => handleOpenChange(false)} disabled={status === 'loading'}>
                 Not Now
               </IOSAction>
             </>
