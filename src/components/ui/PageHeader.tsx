@@ -6,6 +6,7 @@ import { uiTextActionButton } from '@/components/ui/button-styles';
 type PageHeaderAction = {
   label: string;
   onClick: () => void;
+  className?: string;
 };
 
 type PageHeaderProps = {
@@ -23,56 +24,43 @@ export default function PageHeader({
   action,
   children,
 }: PageHeaderProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const isCollapsedRef = useRef(false);
-  const lastYRef = useRef(0);
-  const collapseAnchorYRef = useRef(0);
+  const [collapseProgress, setCollapseProgress] = useState(0);
+  const collapseProgressRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const setCollapsedState = (next: boolean) => {
-      if (isCollapsedRef.current === next) return;
-      isCollapsedRef.current = next;
-      setIsCollapsed(next);
+    const updateProgress = () => {
+      rafRef.current = null;
+      const y = Math.max(window.scrollY, 0);
+      const nextProgress = Math.max(0, Math.min(1, y / collapseThreshold));
+      if (Math.abs(collapseProgressRef.current - nextProgress) < 0.001) return;
+      collapseProgressRef.current = nextProgress;
+      setCollapseProgress(nextProgress);
     };
 
     const onScroll = () => {
-      const y = Math.max(window.scrollY, 0);
-      const lastY = lastYRef.current;
-      const isScrollingUp = y < lastY;
-      const isScrollingDown = y > lastY;
-      const collapsed = isCollapsedRef.current;
-
-      if (y <= collapseThreshold) {
-        setCollapsedState(false);
-        collapseAnchorYRef.current = y;
-      } else if (!collapsed) {
-        if (isScrollingDown && y > collapseThreshold) {
-          setCollapsedState(true);
-          collapseAnchorYRef.current = y;
-        }
-      } else if (isScrollingUp) {
-        if (collapseAnchorYRef.current - y >= expandDelta) {
-          setCollapsedState(false);
-          collapseAnchorYRef.current = y;
-        }
-      } else if (isScrollingDown) {
-        collapseAnchorYRef.current = y;
-      }
-
-      lastYRef.current = y;
+      if (rafRef.current != null) return;
+      rafRef.current = window.requestAnimationFrame(updateProgress);
     };
 
-    const initialY = Math.max(window.scrollY, 0);
-    lastYRef.current = initialY;
-    collapseAnchorYRef.current = initialY;
-    isCollapsedRef.current = initialY > collapseThreshold;
-    setIsCollapsed(isCollapsedRef.current);
+    updateProgress();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafRef.current != null) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
+    };
   }, [collapseThreshold, expandDelta]);
 
-  const paddingTop = isCollapsed ? 8 : 16;
-  const paddingBottom = isCollapsed ? 8 : 16;
+  const isCollapsed = collapseProgress >= 1;
+  const paddingTop = 16 - (8 * collapseProgress);
+  const paddingBottom = 16 - (8 * collapseProgress);
+  const titleFontSize = 24 - (8 * collapseProgress);
+  const titleLineHeight = 32 - (8 * collapseProgress);
+  const actionOpacity = 1 - collapseProgress;
+  const actionScale = 1 - collapseProgress;
+  const isActionHidden = collapseProgress >= 0.98;
 
   return (
     <header className="mobile-ui-no-select pt-[env(safe-area-inset-top)] fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-xl border-b">
@@ -81,11 +69,11 @@ export default function PageHeader({
         style={{ paddingTop, paddingBottom }}
       >
         <h1
-          className={[
-            'font-medium transition-[font-size,line-height] duration-300 ease-in-out',
-            '-mt-1',
-            isCollapsed ? 'text-base' : 'text-2xl',
-          ].join(' ')}
+          className="font-medium -mt-1"
+          style={{
+            fontSize: `${titleFontSize}px`,
+            lineHeight: `${titleLineHeight}px`,
+          }}
         >
           {title}
         </h1>
@@ -94,14 +82,14 @@ export default function PageHeader({
           {action ? (
             <button
               onClick={action.onClick}
-              className={`${uiTextActionButton} h-9 text-[15px] font-medium transition-[opacity,transform] duration-300 ease-in-out px-2`}
+              className={`${uiTextActionButton} h-9 text-[15px] font-medium transition-[opacity,transform] duration-300 ease-in-out px-2 ${action.className ?? ''}`}
               style={{
-                opacity: isCollapsed ? 0 : 1,
-                transform: isCollapsed ? 'scale(0)' : 'scale(1)',
+                opacity: actionOpacity,
+                transform: `scale(${actionScale})`,
                 transformOrigin: 'right center',
-                pointerEvents: isCollapsed ? 'none' : 'auto',
+                pointerEvents: isActionHidden ? 'none' : 'auto',
               }}
-              tabIndex={isCollapsed ? -1 : 0}
+              tabIndex={isActionHidden ? -1 : 0}
             >
               {action.label}
             </button>

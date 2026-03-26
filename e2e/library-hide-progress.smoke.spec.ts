@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type APIRequestContext } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -19,7 +19,7 @@ const SUPABASE_ANON_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
   readEnvValue('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
-async function createAccessToken(request: Parameters<typeof test>[0]['request']): Promise<string> {
+async function createAccessToken(request: APIRequestContext): Promise<string> {
   if (!SUPABASE_ANON_KEY) {
     throw new Error('Missing SUPABASE anon key for smoke test auth bootstrap')
   }

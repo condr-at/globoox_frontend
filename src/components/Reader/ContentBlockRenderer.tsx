@@ -98,6 +98,8 @@ export default function ContentBlockRenderer({
     
     return (
       <figure className="my-4 select-none">
+        {/* EPUB images are dynamic runtime content; next/image cannot precompute dimensions here. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageSrc}
           alt={block.alt}

@@ -1,7 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { use, useState } from 'react';
 import Link from 'next/link';
 import { FlaskConical, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,6 @@ interface JoinAlphaPageProps {
 
 export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
   const { token } = use(searchParams);
-  const router = useRouter();
   const { user, isAlpha, loading: authLoading, refreshAlphaStatus } = useAuth();
   const [status, setStatus] = useState<'idle' | 'joining' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -27,16 +25,13 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
       await joinAlpha(token);
       refreshAlphaStatus();
       setStatus('success');
-    } catch (err: any) {
-      setErrorMessage(err?.message || 'Invalid or expired token');
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : 'Invalid or expired token');
       setStatus('error');
     }
   };
 
-  // If user is already alpha, show success immediately
-  useEffect(() => {
-    if (!authLoading && isAlpha) setStatus('success');
-  }, [authLoading, isAlpha]);
+  const effectiveStatus = !authLoading && isAlpha ? 'success' : status;
 
   if (authLoading) {
     return (
@@ -93,7 +88,7 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
     <div className="min-h-screen flex items-center justify-center p-6">
       <Card className="w-full max-w-sm">
         <CardContent className="p-6 flex flex-col items-center gap-4 text-center">
-          {status === 'success' ? (
+          {effectiveStatus === 'success' ? (
             <>
               <CheckCircle className="w-14 h-14 text-green-500" />
               <div>
@@ -106,7 +101,7 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
                 <Link href="/my-books">Go to My Books</Link>
               </Button>
             </>
-          ) : status === 'error' ? (
+          ) : effectiveStatus === 'error' ? (
             <>
               <XCircle className="w-14 h-14 text-destructive" />
               <div>
@@ -131,12 +126,12 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
               <Button
                 className="w-full bg-violet-600 hover:bg-violet-700 text-white"
                 onClick={handleJoin}
-                disabled={status === 'joining'}
+                disabled={effectiveStatus === 'joining'}
               >
-                {status === 'joining' ? (
+                {effectiveStatus === 'joining' ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : null}
-                {status === 'joining' ? 'Activating…' : 'Activate Alpha Access'}
+                {effectiveStatus === 'joining' ? 'Activating…' : 'Activate Alpha Access'}
               </Button>
             </>
           )}

@@ -9,7 +9,6 @@ const T1_BTN_FLASH    = 80;
 const T1_PAUSE_EMPTY  = 1100;
 const T1_TAP_FLASH    = 350;
 const T1_SPINNER      = 1600;
-const T1_FILE_APPEAR  = 500;
 const T1_PAUSE_FILE   = 900;
 const T1_UPLOAD_TAP   = 120;
 const T1_UPLOADING    = 2000;
@@ -211,28 +210,6 @@ function Spinner() {
   );
 }
 
-function MiniCover({ color, progress = 0, tapped = false }: { color: string; progress?: number; tapped?: boolean }) {
-  return (
-    <div style={{
-      width: '100%', aspectRatio: '2/3', borderRadius: 6,
-      backgroundColor: color, position: 'relative', overflow: 'hidden',
-      boxShadow: `0 2px 8px ${C.coverShadow}`,
-      transform: tapped ? 'scale(0.93)' : 'scale(1)',
-      transition: 'transform 0.12s ease-out',
-    }}>
-      <div style={{ position: 'absolute', bottom: 10, left: 7, right: 7 }}>
-        <div style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginBottom: 3, width: '88%' }} />
-        <div style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.7)', marginBottom: 3, width: '65%' }} />
-        <div style={{ height: 2, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.4)', width: '50%' }} />
-      </div>
-      {progress > 0 && (
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2.5, backgroundColor: C.progressBg }}>
-          <div style={{ height: '100%', width: `${progress}%`, backgroundColor: C.accent }} />
-        </div>
-      )}
-    </div>
-  );
-}
 
 function SkelLine({ w = '100%', h = 13, mb = 10 }: { w?: string | number; h?: number; mb?: number }) {
   return (
@@ -275,7 +252,6 @@ function UploadDrawer({ open, phase, uploadPct }: { open: boolean; phase: Phase;
   const showSpinner  = phase === 'p1-spinner';
   const showFile     = phase === 'p1-file-ready' || phase === 'p1-upload-tap' || phase === 'p1-uploading' || phase === 'p1-upload-done';
   const tapFlash     = phase === 'p1-tap-flash';
-  const isUploading  = phase === 'p1-uploading';
   const isDone       = phase === 'p1-upload-done';
   const showProgress = phase === 'p1-uploading' || phase === 'p1-upload-done';
   const btnActive    = phase === 'p1-file-ready';
@@ -724,7 +700,6 @@ export function ContinuousMockup({
     if (step === 0) runPhase1();
     else if (step === 1) runPhase2();
     else runPhase3('idle');
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runPhase1, runPhase2, runPhase3]);
 
   // external jump handler — instant, no fade
@@ -732,8 +707,7 @@ export function ContinuousMockup({
     if (jumpTo == null) return;
     clearTimers();
     runFromStep(jumpTo);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jumpTo]);
+  }, [jumpTo, clearTimers, runFromStep]);
 
   const runCycle = useCallback(() => {
 
@@ -741,7 +715,6 @@ export function ContinuousMockup({
     setSwipeDir(null);
     setRevealedCount(5);
     runPhase1();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runPhase1]);
 
   useEffect(() => {

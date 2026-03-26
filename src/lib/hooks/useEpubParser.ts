@@ -195,14 +195,24 @@ export async function parseEpub(file: File): Promise<ParsedEpub> {
   flattenToc(navigation.toc, 1, null);
 
   // Step 2: Build href->section lookup once (fast)
-  const sectionMap = new Map<string, any>();
-  spine.each((item: any) => {
-    if (item.href) {
-      sectionMap.set(item.href, item);
+  type EpubSection = {
+    href: string;
+    load: (loader: (path: string) => Promise<unknown>) => Promise<void>;
+    unload: () => void;
+    document?: Document | null;
+  };
+  const sectionMap = new Map<string, EpubSection>();
+  spine.each((item: unknown) => {
+    if (!item || typeof item !== 'object' || !('href' in item)) return;
+    const candidate = item as Partial<EpubSection> & { href?: unknown };
+    const href = candidate.href;
+    if (typeof href === 'string' && href.length > 0) {
+      if (typeof candidate.load !== 'function' || typeof candidate.unload !== 'function') return;
+      sectionMap.set(href, candidate as EpubSection);
       // Also map by filename only
-      const filename = item.href.split('/').pop();
+      const filename = href.split('/').pop();
       if (filename && !sectionMap.has(filename)) {
-        sectionMap.set(filename, item);
+        sectionMap.set(filename, candidate as EpubSection);
       }
     }
   });
@@ -262,7 +272,7 @@ export async function parseEpub(file: File): Promise<ParsedEpub> {
               blocks = extractBlocks(rootEl);
             }
           }
-        } catch (err) {
+        } catch {
           Sentry.addBreadcrumb({
             category: 'epub',
             message: 'Chapter parse failed',
@@ -281,7 +291,7 @@ export async function parseEpub(file: File): Promise<ParsedEpub> {
       }
 
       section.unload();
-    } catch (err) {
+    } catch {
       Sentry.addBreadcrumb({
         category: 'epub',
         message: 'Section load failed',

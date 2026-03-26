@@ -8,7 +8,6 @@ const T_BTN_FLASH       = 80;    // одно мигание кнопки Add
 const T_PAUSE_EMPTY     = 1100;  // смотрим на пустой drawer
 const T_TAP_FLASH       = 350;   // вспышка зоны выбора
 const T_SPINNER         = 1600;  // спиннер
-const T_FILE_APPEAR     = 500;   // файл появляется
 const T_PAUSE_FILE      = 900;   // пауза на файле — кнопка Upload активна
 const T_UPLOAD_TAP      = 120;   // flash кнопки Upload перед стартом
 const T_UPLOADING       = 2000;  // прогресс 0→100
@@ -110,7 +109,6 @@ function UploadDrawer({ open, phase, uploadPct }: {
   const showSpinner     = phase === 'spinner';
   const showFile        = phase === 'file-ready' || phase === 'upload-tap' || phase === 'uploading' || phase === 'upload-done';
   const tapFlash        = phase === 'tap-flash';
-  const isUploading     = phase === 'uploading';
   const isDone          = phase === 'upload-done';
   const uploadBtnActive = phase === 'file-ready';
   const uploadBtnTap    = phase === 'upload-tap';

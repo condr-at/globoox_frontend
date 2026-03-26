@@ -159,6 +159,7 @@ export function UsageAnimation({ label = 'How it works', heading = 'Three simple
           gap: '0',
         }}>
         {/* Left monogram */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/monogram.svg"
           alt=""
@@ -229,6 +230,7 @@ export function UsageAnimation({ label = 'How it works', heading = 'Three simple
         </div>{/* /layout */}
         </div>{/* /card */}
         {/* Right monogram (mirrored) */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/monogram.svg"
           alt=""

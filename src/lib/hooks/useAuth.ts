@@ -18,6 +18,81 @@ export function useAuth() {
   const [loading, setLoading] = useState(cachedUser === undefined);
   const adminFetchInFlightRef = useRef<Promise<void> | null>(null);
 
+  async function fetchProfileStatus(userId: string) {
+    const now = Date.now();
+    if (
+      cachedAdminUserId === userId &&
+      cachedIsAdmin !== undefined &&
+      cachedIsAlpha !== undefined &&
+      cachedAdminFetchedAt !== undefined &&
+      now - cachedAdminFetchedAt < ADMIN_STALE_MS
+    ) {
+      setIsAdmin(cachedIsAdmin);
+      setIsAlpha(cachedIsAlpha);
+      setLoading(false);
+      return;
+    }
+
+    if (adminFetchInFlightRef.current) {
+      await adminFetchInFlightRef.current;
+      setLoading(false);
+      return;
+    }
+
+    const supabase = createClient();
+
+    try {
+      adminFetchInFlightRef.current = Promise.resolve(
+        supabase
+          .from('profiles')
+          .select('is_admin, is_alpha')
+          .eq('id', userId)
+          .single()
+      )
+        .then(({ data, error }) => {
+          console.log('[useAuth] Fetched profile status:', { data, error, userId });
+
+          if (error?.code === 'PGRST116') {
+            // Profile doesn't exist, create it
+            console.log('[useAuth] Profile not found, creating...');
+            return supabase
+              .from('profiles')
+              .insert({ id: userId })
+              .then(() => {
+                cachedAdminUserId = userId;
+                cachedIsAdmin = false;
+                cachedIsAlpha = false;
+                cachedAdminFetchedAt = Date.now();
+                setIsAdmin(false);
+                setIsAlpha(false);
+              });
+          }
+
+          if (!error && data) {
+            const nextIsAdmin = data.is_admin || false;
+            const nextIsAlpha = data.is_alpha || false;
+            cachedAdminUserId = userId;
+            cachedIsAdmin = nextIsAdmin;
+            cachedIsAlpha = nextIsAlpha;
+            cachedAdminFetchedAt = Date.now();
+            setIsAdmin(nextIsAdmin);
+            setIsAlpha(nextIsAlpha);
+            console.log('[useAuth] isAdmin:', nextIsAdmin, 'isAlpha:', nextIsAlpha);
+          }
+        })
+        .finally(() => {
+          adminFetchInFlightRef.current = null;
+        });
+
+      await adminFetchInFlightRef.current;
+    } catch (e) {
+      console.warn('Could not fetch profile status:', e);
+      adminFetchInFlightRef.current = null;
+    }
+
+    setLoading(false);
+  }
+
   useEffect(() => {
     const supabase = createClient();
 
@@ -57,81 +132,6 @@ export function useAuth() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const fetchProfileStatus = async (userId: string) => {
-    const now = Date.now();
-    if (
-      cachedAdminUserId === userId &&
-      cachedIsAdmin !== undefined &&
-      cachedIsAlpha !== undefined &&
-      cachedAdminFetchedAt !== undefined &&
-      now - cachedAdminFetchedAt < ADMIN_STALE_MS
-    ) {
-      setIsAdmin(cachedIsAdmin);
-      setIsAlpha(cachedIsAlpha);
-      setLoading(false);
-      return;
-    }
-
-    if (adminFetchInFlightRef.current) {
-      await adminFetchInFlightRef.current;
-      setLoading(false);
-      return;
-    }
-
-    const supabase = createClient();
-
-    try {
-      adminFetchInFlightRef.current = Promise.resolve(
-        supabase
-          .from('profiles')
-          .select('is_admin, is_alpha')
-          .eq('id', userId)
-          .single()
-      )
-        .then(({ data, error }) => {
-          console.log('[useAuth] Fetched profile status:', { data, error, userId });
-
-          if (error?.code === 'PGRST116') {
-            // Profile doesn't exist, create it
-            console.log('[useAuth] Profile not found, creating...');
-            return supabase
-              .from('profiles')
-              .insert({ id: userId } as any)
-              .then(() => {
-                cachedAdminUserId = userId;
-                cachedIsAdmin = false;
-                cachedIsAlpha = false;
-                cachedAdminFetchedAt = Date.now();
-                setIsAdmin(false);
-                setIsAlpha(false);
-              });
-          }
-
-          if (!error && data) {
-            const nextIsAdmin = data.is_admin || false;
-            const nextIsAlpha = (data as any).is_alpha || false;
-            cachedAdminUserId = userId;
-            cachedIsAdmin = nextIsAdmin;
-            cachedIsAlpha = nextIsAlpha;
-            cachedAdminFetchedAt = Date.now();
-            setIsAdmin(nextIsAdmin);
-            setIsAlpha(nextIsAlpha);
-            console.log('[useAuth] isAdmin:', nextIsAdmin, 'isAlpha:', nextIsAlpha);
-          }
-        })
-        .finally(() => {
-          adminFetchInFlightRef.current = null;
-        });
-
-      await adminFetchInFlightRef.current;
-    } catch (e) {
-      console.warn('Could not fetch profile status:', e);
-      adminFetchInFlightRef.current = null;
-    }
-
-    setLoading(false);
-  };
 
   const refreshAlphaStatus = () => {
     cachedAdminFetchedAt = undefined; // invalidate cache

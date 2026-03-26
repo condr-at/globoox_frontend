@@ -121,7 +121,6 @@ export default function AppleIntelligenceGlow({ bookId }: AppleIntelligenceGlowP
       const topEdge = innerWidth - 2 * borderRadius;
       const rightEdge = innerHeight - 2 * borderRadius;
       const bottomEdge = innerWidth - 2 * borderRadius;
-      const leftEdge = innerHeight - 2 * borderRadius;
       const cornerArc = (Math.PI * borderRadius) / 2;
 
       let dist = progress * perimeter;
@@ -189,7 +188,7 @@ export default function AppleIntelligenceGlow({ bookId }: AppleIntelligenceGlowP
     };
 
     // Draw layers (inside glow - toward center)
-    LAYER_CONFIGS.forEach((layer, layerIndex) => {
+    LAYER_CONFIGS.forEach((layer) => {
       const points = 180;
       const colorOffset = (time * layer.speedMultiplier * 0.3) % 1;
       

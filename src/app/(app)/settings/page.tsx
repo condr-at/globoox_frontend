@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { User, HelpCircle, LogOut, Loader2, FlaskConical } from 'lucide-react';
@@ -64,10 +65,12 @@ export default function SettingsPage() {
                             <CardContent className="p-6">
                                 <div className="flex items-center gap-4">
                                     {avatarUrl ? (
-                                        <img
+                                        <Image
                                             src={avatarUrl}
                                             alt={displayName}
                                             className="w-16 h-16 rounded-full object-cover"
+                                            width={64}
+                                            height={64}
                                         />
                                     ) : (
                                         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">

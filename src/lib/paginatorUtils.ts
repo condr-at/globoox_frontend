@@ -1,18 +1,5 @@
 import { ContentBlock, ParagraphBlock } from './api'
 import { getLineHeightMultiplier, getLineHeightStyle } from './readerTypography'
-import { hyphenateSync as hyphenRu } from 'hyphen/ru'
-import { hyphenateSync as hyphenEn } from 'hyphen/en-us'
-import { hyphenateSync as hyphenFr } from 'hyphen/fr'
-import { hyphenateSync as hyphenDe } from 'hyphen/de'
-import { hyphenateSync as hyphenEs } from 'hyphen/es'
-
-const hyphenators: Record<string, (text: string) => string> = {
-  ru: hyphenRu,
-  en: hyphenEn,
-  fr: hyphenFr,
-  de: hyphenDe,
-  es: hyphenEs,
-}
 
 const PAGE_HEIGHT_BUFFER_PX = 6
 const PARAGRAPH_FRAGMENT_LAST_CLASS = 'mb-2'
@@ -51,26 +38,6 @@ interface SplitResult {
   restPart: string
 }
 
-type HyphenPolicy = {
-  minLeft: number
-  minRight: number
-  minWordLen: number
-}
-
-const DEFAULT_HYPHEN_POLICY: HyphenPolicy = {
-  minLeft: 3,
-  minRight: 3,
-  minWordLen: 6,
-}
-
-const HYPHEN_POLICY_BY_LANG: Record<string, HyphenPolicy> = {
-  ru: { minLeft: 3, minRight: 3, minWordLen: 6 },
-  en: { minLeft: 3, minRight: 3, minWordLen: 6 },
-  de: { minLeft: 4, minRight: 3, minWordLen: 7 },
-  fr: { minLeft: 3, minRight: 3, minWordLen: 6 },
-  es: { minLeft: 3, minRight: 3, minWordLen: 6 },
-}
-
 export interface ComputedPagesResult {
   pages: string[][]
   finalBlocks: ContentBlock[]
@@ -78,38 +45,6 @@ export interface ComputedPagesResult {
 }
 
 type MeasuredBlockRoots = Map<string, HTMLElement>
-
-function hyphenateWord(word: string, lang: string): string[] {
-  const hyphenator = hyphenators[lang] ?? hyphenators.en
-  return hyphenator(word).split('\u00AD')
-}
-
-function resolveLangBase(lang: string): string {
-  return (lang || '').toLowerCase().split('-')[0] || 'en'
-}
-
-function getHyphenPolicy(lang: string): HyphenPolicy {
-  return HYPHEN_POLICY_BY_LANG[resolveLangBase(lang)] ?? DEFAULT_HYPHEN_POLICY
-}
-
-function isProtectedNoBreakToken(word: string): boolean {
-  if (!word) return true
-  const lower = word.toLowerCase()
-  if (/https?:\/\//.test(lower) || lower.includes('www.') || lower.includes('@')) return true
-  if (/^\d+([.,:/-]\d+)*$/.test(word)) return true
-  if (/^(doi|isbn)[:\s]/i.test(word)) return true
-  if (/^[A-Z]{2,6}$/.test(word)) return true
-  if (/[’']/.test(word)) return true
-  return false
-}
-
-function canHyphenateWordByPolicy(word: string, lang: string): boolean {
-  const policy = getHyphenPolicy(lang)
-  if (word.length < policy.minWordLen) return false
-  if (isProtectedNoBreakToken(word)) return false
-  if (!/\p{L}/u.test(word)) return false
-  return true
-}
 
 export function normalizeBlocks(blocks: ContentBlock[]): ContentBlock[] {
   const result: ContentBlock[] = []
@@ -964,7 +899,7 @@ function splitParagraphByHeight(
     }
   }
 
-  let firstPart = words.slice(0, best).join(' ')
+  const firstPart = words.slice(0, best).join(' ')
   const restWords = words.slice(best)
 
   // Manual intra-word hyphen split is disabled in fallback mode too.
