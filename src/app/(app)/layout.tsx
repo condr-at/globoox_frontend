@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'Globoox',
-  description: 'Reading app that translates ebooks into your language with AI',
+  description: 'Reading app that instantly translates ebooks into your native language with Al. Upload EPUBs and read in English, French, Spanish or Russian',
   keywords: [
     'reading',
     'books',
@@ -43,14 +43,14 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Globoox — AI-Powered Ebook Translation',
     description:
-      'Reading app that translates ebooks into your language with AI.',
+      'Reading app that instantly translates ebooks into your native language with Al. Upload EPUBs and read in English, French, Spanish or Russian',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Globoox — AI-Powered Ebook Translation',
     description:
-      'Upload any EPUB and read it in your native language with AI translation.',
+      'Reading app that instantly translates ebooks into your native language with Al. Upload EPUBs and read in English, French, Spanish or Russian',
   },
 };
 
