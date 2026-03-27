@@ -1,20 +1,22 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type AppPalette = 'globoox' | 'default';
 export type AppMode = 'light' | 'dark' | 'system';
 export type AppThemeClass = 'light' | 'dark' | 'forest-light' | 'forest-dark';
 
 const THEME_CLASSES: AppThemeClass[] = ['light', 'dark', 'forest-light', 'forest-dark'];
-const PALETTE_KEY = 'globoox-palette';
-const MODE_KEY = 'globoox-mode';
 
 function resolveClass(mode: AppMode, palette: AppPalette): AppThemeClass {
-  const dark = mode === 'dark' || (mode === 'system' && typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  return palette === 'globoox'
-    ? (dark ? 'forest-dark' : 'forest-light')
-    : (dark ? 'dark' : 'light');
+  const dark =
+    mode === 'dark' ||
+    (mode === 'system' &&
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
+  return palette === 'globoox' ? (dark ? 'forest-dark' : 'forest-light') : (dark ? 'dark' : 'light');
 }
 
 function applyClass(cls: AppThemeClass) {
@@ -23,33 +25,39 @@ function applyClass(cls: AppThemeClass) {
   el.classList.add(cls);
 }
 
-function readStored(): { mode: AppMode; palette: AppPalette } {
-  try {
-    return {
-      mode: (localStorage.getItem(MODE_KEY) as AppMode) || 'system',
-      palette: (localStorage.getItem(PALETTE_KEY) as AppPalette) || 'globoox',
-    };
-  } catch {
-    return { mode: 'system', palette: 'globoox' };
-  }
-}
+type AppThemeState = {
+  mode: AppMode;
+  palette: AppPalette;
+  setAppTheme: (mode: AppMode, palette: AppPalette) => void;
+};
+
+const useAppThemeStore = create<AppThemeState>()(
+  persist(
+    (set) => ({
+      mode: 'system',
+      palette: 'globoox',
+      setAppTheme: (mode, palette) => set({ mode, palette }),
+    }),
+    {
+      name: 'globoox-app-theme',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        mode: state.mode,
+        palette: state.palette,
+      }),
+    },
+  ),
+);
 
 export function useAppTheme() {
-  const [mode, setModeState] = useState<AppMode>(() => {
-    if (typeof window === 'undefined') return 'system';
-    return readStored().mode;
-  });
-  const [palette, setPaletteState] = useState<AppPalette>(() => {
-    if (typeof window === 'undefined') return 'globoox';
-    return readStored().palette;
-  });
+  const mode = useAppThemeStore((state) => state.mode);
+  const palette = useAppThemeStore((state) => state.palette);
+  const setThemeState = useAppThemeStore((state) => state.setAppTheme);
 
-  // Apply on mount and when mode/palette change
   useEffect(() => {
     applyClass(resolveClass(mode, palette));
   }, [mode, palette]);
 
-  // Listen for system theme changes when mode === 'system'
   useEffect(() => {
     if (mode !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -58,16 +66,15 @@ export function useAppTheme() {
     return () => mq.removeEventListener('change', handler);
   }, [mode, palette]);
 
-  const setAppTheme = useCallback((newMode: AppMode, newPalette: AppPalette) => {
-    localStorage.setItem(MODE_KEY, newMode);
-    localStorage.setItem(PALETTE_KEY, newPalette);
-    setModeState(newMode);
-    setPaletteState(newPalette);
+  const setAppTheme = (newMode: AppMode, newPalette: AppPalette) => {
+    setThemeState(newMode, newPalette);
     applyClass(resolveClass(newMode, newPalette));
-  }, []);
+  };
 
-  // Current resolved theme class (for ReaderSettings compatibility)
-  const theme: AppThemeClass = resolveClass(mode, palette);
-
-  return { mode, palette, theme, setAppTheme };
+  return {
+    mode,
+    palette,
+    theme: resolveClass(mode, palette) as AppThemeClass,
+    setAppTheme,
+  };
 }
