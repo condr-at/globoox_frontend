@@ -64,8 +64,27 @@ export default function RootLayout({
       <script dangerouslySetInnerHTML={{ __html: `
           (function() {
             try {
-              var palette = localStorage.getItem('globoox-palette') || 'globoox';
-              var mode = localStorage.getItem('globoox-mode') || 'system';
+              var mode = 'dark';
+              var palette = 'globoox';
+              var raw = localStorage.getItem('globoox-app-theme');
+              if (raw) {
+                try {
+                  var parsed = JSON.parse(raw);
+                  if (parsed && parsed.state) {
+                    if (parsed.state.mode === 'light' || parsed.state.mode === 'dark' || parsed.state.mode === 'system') {
+                      mode = parsed.state.mode;
+                    }
+                    if (parsed.state.palette === 'globoox' || parsed.state.palette === 'default') {
+                      palette = parsed.state.palette;
+                    }
+                  }
+                } catch (_e) {}
+              } else {
+                var legacyMode = localStorage.getItem('globoox-mode');
+                var legacyPalette = localStorage.getItem('globoox-palette');
+                if (legacyMode === 'light' || legacyMode === 'dark' || legacyMode === 'system') mode = legacyMode;
+                if (legacyPalette === 'globoox' || legacyPalette === 'default') palette = legacyPalette;
+              }
               var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
               var cls = palette === 'globoox' ? (dark ? 'forest-dark' : 'forest-light') : (dark ? 'dark' : 'light');
               document.documentElement.classList.remove('light', 'dark', 'forest-light', 'forest-dark');

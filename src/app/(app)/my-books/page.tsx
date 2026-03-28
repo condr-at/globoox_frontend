@@ -98,10 +98,7 @@ export default function MyBooksPage() {
   const { progress, touchLastRead, updateServerProgress, syncVersions } = useAppStore();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const scopeKey = isAuthenticated && user?.id ? user.id : 'guest';
-  const { books, loading, stabilizing, error, hideBook, unhideBook, removeBook, refresh } = useBooks({
-    scopeKey,
-    stabilizeOnMount: true,
-  });
+  const { books, loading, error, hideBook, unhideBook, removeBook, refresh } = useBooks({ scopeKey });
   const authRefreshDoneRef = useRef<string | null>(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [progressData, setProgressData] = useState<Record<string, ProgressRow>>({});
@@ -569,7 +566,7 @@ export default function MyBooksPage() {
 
 
         <section>
-          {(loading || stabilizing) ? (
+          {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="aspect-[2/3] rounded-md bg-muted animate-pulse" />
