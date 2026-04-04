@@ -8,7 +8,7 @@ import { getCachedBookMeta, touchCachedLastRead } from '@/lib/contentCache';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useAppStore } from '@/lib/store';
 import { READER_THEME_CONFIGS, getReaderUiColors } from '@/lib/readerTheme';
-import { getThemeStyle } from '@/lib/themes';
+import { getThemeStyle, isThemeId } from '@/lib/themes';
 
 interface ReaderPageProps {
   params: Promise<{ id: string }>;
@@ -19,11 +19,12 @@ export default function ReaderPage({ params }: ReaderPageProps) {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const touchLastRead = useAppStore((s) => s.touchLastRead);
   const readerThemeId = useAppStore((s) => s.settings.readerTheme);
+  const safeReaderThemeId = isThemeId(readerThemeId) ? readerThemeId : 'light';
   const [book, setBook] = useState<ApiBook | null>(() => getCachedBookById(id) ?? null);
   const [loading, setLoading] = useState(() => !getCachedBookById(id));
   const [notFound, setNotFound] = useState(false);
-  const readerUiColors = getReaderUiColors(READER_THEME_CONFIGS[readerThemeId] ?? READER_THEME_CONFIGS['light']);
-  const themeStyle = getThemeStyle(readerThemeId);
+  const readerUiColors = getReaderUiColors(READER_THEME_CONFIGS[safeReaderThemeId] ?? READER_THEME_CONFIGS.light);
+  const themeStyle = getThemeStyle(safeReaderThemeId);
 
   useEffect(() => {
     // Mark book as "recently opened" immediately, so Library sort by "recently opened" updates even if user doesn't turn a page.

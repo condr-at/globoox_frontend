@@ -104,13 +104,20 @@ export function isAppPalette(value: unknown): value is AppPalette {
   return value === 'globoox' || value === 'default';
 }
 
+export function isThemeId(value: unknown): value is ThemeId {
+  return typeof value === 'string' && value in THEME_DEFINITIONS;
+}
+
 export function resolveThemeId(mode: AppMode, palette: AppPalette, prefersDark: boolean): ThemeId {
   const dark = mode === 'dark' || (mode === 'system' && prefersDark);
   return palette === 'globoox' ? (dark ? 'forest-dark' : 'forest-light') : (dark ? 'dark' : 'light');
 }
 
-export function getThemeDefinition(themeId: ThemeId): ThemeDefinition {
-  return THEME_DEFINITIONS[themeId];
+export function getThemeDefinition(themeId: ThemeId | string | null | undefined): ThemeDefinition {
+  if (isThemeId(themeId)) {
+    return THEME_DEFINITIONS[themeId];
+  }
+  return THEME_DEFINITIONS.light;
 }
 
 export const THEME_CSS_VARIABLES: Record<ThemeId, ThemeCssVariables> = {
@@ -272,15 +279,16 @@ export const THEME_CSS_VARIABLES: Record<ThemeId, ThemeCssVariables> = {
   },
 };
 
-export function getThemeCssVariables(themeId: ThemeId): ThemeCssVariables {
-  const cssVars = THEME_CSS_VARIABLES[themeId];
+export function getThemeCssVariables(themeId: ThemeId | string | null | undefined): ThemeCssVariables {
+  const resolvedThemeId = isThemeId(themeId) ? themeId : 'light';
+  const cssVars = THEME_CSS_VARIABLES[resolvedThemeId];
   const theme = getThemeDefinition(themeId);
   const isDark = theme.mode === 'dark';
   const readerBorder = `rgba(${isDark ? '244, 240, 232' : '44, 59, 45'}, ${isDark ? '0.16' : '0.12'})`;
   const readerMuted = `rgba(${isDark ? '244, 240, 232' : '44, 59, 45'}, ${isDark ? '0.7' : '0.62'})`;
   const readerSubtle = `rgba(${isDark ? '244, 240, 232' : '44, 59, 45'}, ${isDark ? '0.52' : '0.46'})`;
   const readerQuote = `rgba(${isDark ? '244, 240, 232' : '44, 59, 45'}, ${isDark ? '0.82' : '0.78'})`;
-  const readerChromeBg = `rgba(${themeId === 'light' ? '246, 246, 250' : themeId === 'dark' ? '9, 9, 11' : themeId === 'forest-light' ? '244, 240, 232' : '26, 36, 25'}, ${isDark ? '0.9' : '0.92'})`;
+  const readerChromeBg = `rgba(${resolvedThemeId === 'light' ? '246, 246, 250' : resolvedThemeId === 'dark' ? '9, 9, 11' : resolvedThemeId === 'forest-light' ? '244, 240, 232' : '26, 36, 25'}, ${isDark ? '0.9' : '0.92'})`;
   return {
     ...cssVars,
     '--primary': 'var(--system-blue)',
@@ -330,11 +338,11 @@ export function getThemeCssVariables(themeId: ThemeId): ThemeCssVariables {
   };
 }
 
-export function getThemeStyle(themeId: ThemeId): Record<string, string> {
+export function getThemeStyle(themeId: ThemeId | string | null | undefined): Record<string, string> {
   return getThemeCssVariables(themeId);
 }
 
-export function applyThemeToElement(element: HTMLElement, themeId: ThemeId) {
+export function applyThemeToElement(element: HTMLElement, themeId: ThemeId | string | null | undefined) {
   const theme = getThemeDefinition(themeId);
   const cssVars = getThemeCssVariables(themeId);
 
