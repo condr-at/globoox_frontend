@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useAppStore, Language, ReadingAnchor } from '@/lib/store';
-import { fetchContent, fetchReadingPosition, saveReadingPosition, updateBookLanguage, checkTranslationLimit } from '@/lib/api';
+import { fetchContent, fetchReadingPosition, saveReadingPosition, translateBlocksStreaming, updateBookLanguage, checkTranslationLimit } from '@/lib/api';
 import { useChapters } from '@/lib/hooks/useChapters';
 import { useChapterContent } from '@/lib/hooks/useChapterContent';
 import { useReaderMetadataTranslations } from '@/lib/hooks/useReaderMetadataTranslations';
@@ -16,9 +16,11 @@ import { applyTypografToBlocks } from '@/lib/typograf';
 import { useAuth } from '@/lib/hooks/useAuth';
 import {
     clearCachedChapterLayouts,
+    getCachedChapterContent,
     getCachedChapterBlockIds,
     getCachedChapterLayout,
     getCachedReadingPosition,
+    setCachedTranslatedBlockText,
     setCachedChapterContent,
     setCachedChapterLayout,
     setCachedReadingPosition,
@@ -63,6 +65,8 @@ const PAGE_SHELL_CLASS = 'reader-page container max-w-2xl mx-auto px-4 h-full';
 const SPREAD_PAGE_SHELL_CLASS = 'reader-page container max-w-2xl mx-auto h-full';
 const IS_DEV = process.env.NODE_ENV === 'development';
 const SHOW_READER_DEBUG_OVERLAY = false;
+const PREFETCH_FORWARD_TARGET_CHARS = 5000;
+const NEXT_CHAPTER_PREFETCH_TARGET_CHARS = 5000;
 
 interface ReaderViewProps {
     bookId: string;
@@ -126,6 +130,29 @@ async function waitForMeasuredImages(container: HTMLElement | null): Promise<voi
             img.addEventListener('error', handleDone, { once: true });
         });
     }));
+}
+
+function getBlockCharacterCount(block: ContentBlock): number {
+    if (block.type === 'paragraph' || block.type === 'quote' || block.type === 'heading') {
+        return (block.text ?? '').length;
+    }
+    if (block.type === 'list') {
+        return (block.items ?? []).reduce((sum, item) => sum + item.length, 0);
+    }
+    return 0;
+}
+
+function collectBlockIdsWithinCharacterBudget(blocks: ContentBlock[], targetChars: number, startIndex = 0): { ids: string[]; totalChars: number } {
+    const ids: string[] = [];
+    let totalChars = 0;
+
+    for (const block of blocks.slice(startIndex)) {
+        ids.push(block.id);
+        totalChars += getBlockCharacterCount(block);
+        if (totalChars >= targetChars) break;
+    }
+
+    return { ids, totalChars };
 }
 
 function getSentenceIndex(block: ContentBlock): number {
@@ -399,7 +426,6 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     }, [spreadModeEnabled]);
 
     // Translation windows are block-based around the current reading position.
-    const PREFETCH_BLOCKS_FORWARD = 20;
     const PREFETCH_BLOCKS_BACKWARD = 10;
     const HIGH_PRIORITY_VISIBLE_BLOCKS = 2;
 
@@ -591,26 +617,39 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             const anchorIdx = anchorBlockId ? displayBlocks.findIndex((block) => block.id === anchorBlockId) : -1;
             const chapterIdx = currentChapterIndex - 1;
 
-            const loadChapterIds = async (idx: number): Promise<string[]> => {
+            const loadChapterBlocks = async (idx: number): Promise<ContentBlock[]> => {
                 const chapter = chapters[idx];
                 if (!chapter) return [];
-                const cachedIds = await getCachedChapterBlockIds(chapter.id);
-                if (cachedIds.length > 0) return cachedIds;
+                const cachedChapter = await getCachedChapterContent(chapter.id, activeLang.toUpperCase());
+                if (cachedChapter?.blocks?.length) return cachedChapter.blocks;
                 try {
                     const nextBlocks = await fetchContent(chapter.id, activeLang.toUpperCase());
                     await setCachedChapterContent(chapter.id, activeLang.toUpperCase(), nextBlocks);
-                    return nextBlocks.map((block) => block.id);
+                    return nextBlocks;
                 } catch {
                     return [];
                 }
             };
 
             const forwardIds: string[] = [];
+            let forwardChars = 0;
             if (anchorIdx >= 0) {
-                forwardIds.push(...displayBlocks.slice(anchorIdx + 1).map((block) => block.id));
+                const currentChapterForward = collectBlockIdsWithinCharacterBudget(
+                    displayBlocks,
+                    PREFETCH_FORWARD_TARGET_CHARS,
+                    anchorIdx + 1,
+                );
+                forwardIds.push(...currentChapterForward.ids);
+                forwardChars += currentChapterForward.totalChars;
             }
-            for (let idx = chapterIdx + 1; forwardIds.length < PREFETCH_BLOCKS_FORWARD && idx < chapters.length; idx += 1) {
-                forwardIds.push(...(await loadChapterIds(idx)));
+            for (let idx = chapterIdx + 1; forwardChars < PREFETCH_FORWARD_TARGET_CHARS && idx < chapters.length; idx += 1) {
+                const chapterBlocks = await loadChapterBlocks(idx);
+                const nextChapterForward = collectBlockIdsWithinCharacterBudget(
+                    chapterBlocks,
+                    PREFETCH_FORWARD_TARGET_CHARS - forwardChars,
+                );
+                forwardIds.push(...nextChapterForward.ids);
+                forwardChars += nextChapterForward.totalChars;
             }
 
             const backwardIds: string[] = [];
@@ -618,11 +657,11 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                 backwardIds.unshift(...displayBlocks.slice(Math.max(0, anchorIdx - PREFETCH_BLOCKS_BACKWARD), anchorIdx).map((block) => block.id));
             }
             for (let idx = chapterIdx - 1; backwardIds.length < PREFETCH_BLOCKS_BACKWARD && idx >= 0; idx -= 1) {
-                const ids = await loadChapterIds(idx);
+                const ids = await getCachedChapterBlockIds(chapters[idx].id);
                 backwardIds.unshift(...ids);
             }
 
-            const boundedForwardIds = forwardIds.slice(0, PREFETCH_BLOCKS_FORWARD);
+            const boundedForwardIds = forwardIds;
             const boundedBackwardIds = backwardIds.slice(Math.max(0, backwardIds.length - PREFETCH_BLOCKS_BACKWARD));
 
             if (cancelled) return;
@@ -651,7 +690,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             }
 
             if (boundedForwardIds.length > 0) {
-                console.log(JSON.stringify({ event: 'prefetch_forward_enqueue', pageIdx: activePageIdx, totalBlocks: boundedForwardIds.length }));
+                console.log(JSON.stringify({ event: 'prefetch_forward_enqueue', pageIdx: activePageIdx, totalBlocks: boundedForwardIds.length, totalChars: forwardChars }));
                 enqueueBlocks(boundedForwardIds);
             }
             if (boundedBackwardIds.length > 0) {
@@ -666,6 +705,84 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             cancelled = true;
         };
     }, [activePageIdx, pagesReady, pages, enqueueBlocks, enqueueBlocksImmediate, isSourceLang, isContentLoading, resolveBlockIds, displayBlocks, reconcileBlocks, chapters, currentChapterIndex, activeLang]);
+
+    useEffect(() => {
+        if (!pagesReady || isSourceLang || isContentLoading) return;
+
+        const nextChapter = chapters[currentChapterIndex];
+        if (!nextChapter) return;
+
+        let cancelled = false;
+
+        const run = async () => {
+            let nextChapterBlocks = (await getCachedChapterContent(nextChapter.id, activeLang.toUpperCase()))?.blocks ?? [];
+            if (cancelled) return;
+
+            if (nextChapterBlocks.length === 0) {
+                try {
+                    nextChapterBlocks = await fetchContent(nextChapter.id, activeLang.toUpperCase());
+                    await setCachedChapterContent(nextChapter.id, activeLang.toUpperCase(), nextChapterBlocks);
+                } catch {
+                    return;
+                }
+            }
+
+            const pendingBlocks = nextChapterBlocks.filter((block) => (
+                isTranslatableBlock(block) && !block.targetLangReady
+            ));
+            if (pendingBlocks.length === 0) return;
+
+            const { ids: nextChapterIds, totalChars } = collectBlockIdsWithinCharacterBudget(
+                pendingBlocks,
+                NEXT_CHAPTER_PREFETCH_TARGET_CHARS,
+            );
+            if (nextChapterIds.length === 0) return;
+
+            const blocksById = new Map(nextChapterBlocks.map((block) => [block.id, block] as const));
+
+            console.log(JSON.stringify({
+                event: 'prefetch_next_chapter_enqueue',
+                currentChapterId,
+                nextChapterId: nextChapter.id,
+                totalBlocks: nextChapterIds.length,
+                totalChars,
+            }));
+
+            try {
+                await translateBlocksStreaming(
+                    nextChapter.id,
+                    activeLang.toUpperCase(),
+                    nextChapterIds,
+                    nextChapterIds[0] ?? null,
+                    'down',
+                    (result) => {
+                        if (cancelled) return;
+                        if (result.status !== 'ok' || !result.translatedText) return;
+
+                        const original = blocksById.get(result.blockId);
+                        if (!original) return;
+
+                        const translated = original.type === 'list'
+                            ? { ...original, items: result.translatedText.split('\n').filter(Boolean), targetLangReady: true, isTranslated: true, is_pending: false }
+                            : original.type === 'paragraph' || original.type === 'quote' || original.type === 'heading'
+                                ? { ...original, text: result.translatedText, targetLangReady: true, isTranslated: true, is_pending: false }
+                                : null;
+                        if (!translated) return;
+
+                        void setCachedTranslatedBlockText(nextChapter.id, activeLang.toUpperCase(), translated);
+                    },
+                );
+            } catch {
+                // best-effort warmup for next chapter
+            }
+        };
+
+        void run();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [pagesReady, isSourceLang, isContentLoading, chapters, currentChapterIndex, currentChapterId, activeLang]);
 
     // Measure the available height for content after the header
     useEffect(() => {

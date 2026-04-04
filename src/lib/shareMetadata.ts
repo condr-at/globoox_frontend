@@ -4,7 +4,7 @@ export const siteTitle = 'Globoox';
 export const sharedWidgetTitle = 'Globoox — Read Any Book in Your Language';
 
 export const sharedWidgetDescription =
-  'Reading app that instantly translates ebooks into your native language with Al. Upload EPUBs and read in English, French, Spanish or Russian';
+  'Reading app that instantly translates ebooks into your native language with Al. Upload EPUBs and read in English, French, Spanish or Russian.';
 
 export function createProductPageTitle(pageName: string): string {
   return `${pageName} | ${siteTitle}`;
