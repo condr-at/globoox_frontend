@@ -10,6 +10,7 @@ import { trackFontSizeChanged } from '@/lib/posthog';
 import { APP_THEME_PALETTE_OPTIONS } from '@/lib/theme-options';
 import { getReaderUiColors, READER_THEME_CONFIGS } from '@/lib/readerTheme';
 import { useReaderTheme } from '@/lib/hooks/useReaderTheme';
+import { getThemeStyle } from '@/lib/themes';
 
 const THEMES = [
     { id: 'light', label: `${APP_THEME_PALETTE_OPTIONS.find((p) => p.id === 'default')?.label ?? 'Default'} Light` },
@@ -33,6 +34,7 @@ export default function ReaderSettings({
     const setIsOpen = setExternalOpen !== undefined ? setExternalOpen : setInternalOpen;
     const readerTheme = useReaderTheme();
     const uiColors = getReaderUiColors(readerTheme);
+    const readerThemeStyle = getThemeStyle(readerTheme.id);
 
     const { settings, setFontSize, setPageLayoutMode, setReaderTheme } = useAppStore();
     const fontSizeBeforeRef = useRef(settings.fontSize);
@@ -63,7 +65,7 @@ export default function ReaderSettings({
                     />
                 )}
                 className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:overflow-hidden sm:rounded-[24px]"
-                style={{ backgroundColor: uiColors.surface, color: uiColors.text }}
+                style={{ ...readerThemeStyle, backgroundColor: uiColors.panelSurface, color: uiColors.text }}
             >
                 <div className="flex-1 overflow-y-auto p-5 pt-0 space-y-5 sm:min-h-0">
                     {/* Theme Picker */}

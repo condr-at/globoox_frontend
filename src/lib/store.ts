@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { ReaderThemeId } from '@/lib/themes';
 
 export type Language = 'en' | 'fr' | 'es' | 'de' | 'ru';
 export type PageLayoutMode = 'single' | 'spread';
-export type ReaderThemeId = 'light' | 'dark' | 'forest-light' | 'forest-dark';
 
 export const languageNames: Record<Language, string> = {
   en: 'English',

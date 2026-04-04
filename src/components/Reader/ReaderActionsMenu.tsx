@@ -10,6 +10,7 @@ import { uiHeaderControlHitArea, uiIconTriggerButton, uiMenuItemButton } from '@
 import IOSItemsStack from '@/components/ui/ios-items-stack';
 import { useReaderTheme } from '@/lib/hooks/useReaderTheme';
 import { getReaderUiColors } from '@/lib/readerTheme';
+import { getThemeStyle } from '@/lib/themes';
 
 interface ReaderActionsMenuProps {
   book: {
@@ -38,6 +39,7 @@ export default function ReaderActionsMenu({
   const [activeModal, setActiveModal] = useState<'none' | 'toc' | 'settings'>('none');
   const readerTheme = useReaderTheme();
   const uiColors = getReaderUiColors(readerTheme);
+  const readerThemeStyle = getThemeStyle(readerTheme.id);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -76,7 +78,7 @@ export default function ReaderActionsMenu({
           className="fixed w-56 z-[100]"
           style={menuStyle}
         >
-        <IOSItemsStack className="py-1 shadow-lg border" style={{ backgroundColor: uiColors.surface, borderColor: uiColors.border, color: uiColors.text }}>
+        <IOSItemsStack className="py-1 shadow-lg border" style={{ ...readerThemeStyle, backgroundColor: uiColors.panelSurface, borderColor: uiColors.border, color: uiColors.text }}>
           <button
             onClick={() => handleAction('toc')}
             className={uiMenuItemButton}

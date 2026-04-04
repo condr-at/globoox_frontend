@@ -2,6 +2,7 @@
 
 import { useId, useState } from 'react';
 import { Globe } from 'lucide-react';
+import { ReaderThemeProvider } from '@/components/Reader/ReaderThemeProvider';
 import ReaderSettings from '@/components/Reader/ReaderSettings';
 import TableOfContents from '@/components/Reader/TableOfContents';
 import DeleteBookConfirmDialog from '@/components/Store/DeleteBookConfirmDialog';
@@ -442,6 +443,7 @@ export default function ComponentsPreviewPage() {
   ];
 
   return (
+    <ReaderThemeProvider>
     <main className="min-h-screen bg-[var(--bg-grouped)] px-6 py-10">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <header className="max-w-4xl">
@@ -829,5 +831,6 @@ export default function ComponentsPreviewPage() {
         onOpenChange={(open) => !open && closeOverlay()}
       />
     </main>
+    </ReaderThemeProvider>
   );
 }

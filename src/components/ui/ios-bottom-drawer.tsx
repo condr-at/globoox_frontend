@@ -9,6 +9,7 @@ interface IOSBottomDrawerProps {
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   side?: 'bottom' | 'left' | 'right';
   labelledBy?: string;
   describedBy?: string;
@@ -46,6 +47,7 @@ export default function IOSBottomDrawer({
   onOpenChange,
   children,
   className,
+  style,
   side = 'bottom',
   labelledBy,
   describedBy,
@@ -126,6 +128,7 @@ export default function IOSBottomDrawer({
             : 'transform 240ms cubic-bezier(0.4, 0, 1, 1)',
         opacity: shouldDisableSlide ? (state === 'open' ? 1 : 0) : 1,
         willChange: shouldDisableSlide ? 'opacity' : 'transform',
+        ...style,
       })}
     >
       {canDrag && dragHandle ? (

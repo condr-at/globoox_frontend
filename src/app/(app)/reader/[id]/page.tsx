@@ -8,6 +8,7 @@ import { getCachedBookMeta, touchCachedLastRead } from '@/lib/contentCache';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useAppStore } from '@/lib/store';
 import { READER_THEME_CONFIGS, getReaderUiColors } from '@/lib/readerTheme';
+import { getThemeStyle } from '@/lib/themes';
 
 interface ReaderPageProps {
   params: Promise<{ id: string }>;
@@ -22,6 +23,7 @@ export default function ReaderPage({ params }: ReaderPageProps) {
   const [loading, setLoading] = useState(() => !getCachedBookById(id));
   const [notFound, setNotFound] = useState(false);
   const readerUiColors = getReaderUiColors(READER_THEME_CONFIGS[readerThemeId] ?? READER_THEME_CONFIGS['light']);
+  const themeStyle = getThemeStyle(readerThemeId);
 
   useEffect(() => {
     // Mark book as "recently opened" immediately, so Library sort by "recently opened" updates even if user doesn't turn a page.
@@ -85,7 +87,7 @@ export default function ReaderPage({ params }: ReaderPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-center" style={{ backgroundColor: readerUiColors.background, color: readerUiColors.text }}>
+      <div className="min-h-screen flex items-center justify-center p-6 text-center" style={{ ...themeStyle, backgroundColor: readerUiColors.background, color: readerUiColors.text }}>
         <div className="max-w-sm">
           <div className="mx-auto mb-4 h-8 w-8 rounded-full animate-pulse" style={{ backgroundColor: readerUiColors.border }} />
           <p className="text-lg font-semibold">Loading your book...</p>
@@ -99,7 +101,7 @@ export default function ReaderPage({ params }: ReaderPageProps) {
 
   if (notFound || !book) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-center" style={{ backgroundColor: readerUiColors.background, color: readerUiColors.text }}>
+      <div className="min-h-screen flex items-center justify-center p-6 text-center" style={{ ...themeStyle, backgroundColor: readerUiColors.background, color: readerUiColors.text }}>
         <div>
           <p className="text-lg font-semibold mb-2">Book not found</p>
           <Link href="/my-books" style={{ color: readerUiColors.accent }}>

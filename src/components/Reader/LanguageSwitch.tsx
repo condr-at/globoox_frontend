@@ -8,6 +8,7 @@ import { uiDropdownItemButton, uiHeaderControlHitArea, uiTextActionButton } from
 import IOSItemsStack from '@/components/ui/ios-items-stack';
 import { useReaderTheme } from '@/lib/hooks/useReaderTheme';
 import { getReaderUiColors } from '@/lib/readerTheme';
+import { getThemeStyle } from '@/lib/themes';
 
 interface LanguageSwitchProps {
   availableLanguages: Language[];
@@ -29,6 +30,7 @@ export default function LanguageSwitch({
   const [internalOpen, setInternalOpen] = useState(false);
   const readerTheme = useReaderTheme();
   const uiColors = getReaderUiColors(readerTheme);
+  const readerThemeStyle = getThemeStyle(readerTheme.id);
   const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
   const setIsOpen = setExternalOpen !== undefined ? setExternalOpen : setInternalOpen;
 
@@ -79,7 +81,7 @@ export default function LanguageSwitch({
           className="fixed w-[192px] z-[100]"
           style={externalOpen === undefined ? menuStyle : { top: 'calc(env(safe-area-inset-top) + 60px)', right: '16px' }}
         >
-        <IOSItemsStack className="py-[8px] shadow-lg border" style={{ backgroundColor: uiColors.surface, borderColor: uiColors.border, color: uiColors.text }}>
+        <IOSItemsStack className="py-[8px] shadow-lg border" style={{ ...readerThemeStyle, backgroundColor: uiColors.panelSurface, borderColor: uiColors.border, color: uiColors.text }}>
           {availableLanguages.map((lang, index) => (
             <div key={lang}>
               <button

@@ -65,12 +65,12 @@ function useThemeIsDark(): boolean {
   useEffect(() => {
     const root = document.documentElement;
     const apply = () => {
-      setIsDark(root.classList.contains('dark') || root.classList.contains('forest-dark'));
+      setIsDark(root.dataset.themeMode === 'dark' || root.classList.contains('dark') || root.classList.contains('forest-dark'));
     };
 
     apply();
     const observer = new MutationObserver(apply);
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    observer.observe(root, { attributes: true, attributeFilter: ['class', 'data-theme-mode'] });
     return () => observer.disconnect();
   }, []);
 

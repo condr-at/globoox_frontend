@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 interface IOSItemsStackProps {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 /**
@@ -13,9 +14,9 @@ interface IOSItemsStackProps {
  * Owns only clipping/radius rules; row behavior stays in child components.
  */
 const IOSItemsStack = React.forwardRef<HTMLDivElement, IOSItemsStackProps>(
-  ({ children, className }, ref) => {
+  ({ children, className, style }, ref) => {
     return (
-      <div ref={ref} className={cn('overflow-hidden rounded-xl', className)}>
+      <div ref={ref} className={cn('overflow-hidden rounded-xl', className)} style={style}>
         {children}
       </div>
     );

@@ -45,6 +45,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import TranslationLimitDialog from '@/components/TranslationLimitDialog';
 import { uiHeaderControlHitArea, uiIconTriggerButton } from '@/components/ui/button-styles';
 import { READER_THEME_CONFIGS, getReaderUiColors } from '@/lib/readerTheme';
+import { getThemeStyle } from '@/lib/themes';
 
 // Source of a navigation event. Any source other than manual_scroll is a "jump"
 // that aborts in-flight prefetch requests and updates readingAnchor immediately.
@@ -1766,7 +1767,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     // ─── Render ───────────────────────────────────────────────────────────────
     return (
         <ReaderThemeProvider>
-            <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', overscrollBehavior: 'none', backgroundColor: readerUiColors.background, color: readerUiColors.text } as React.CSSProperties}>
+            <div style={{ ...getThemeStyle(readerThemeConfig.id), position: 'fixed', inset: 0, overflow: 'hidden', overscrollBehavior: 'none', backgroundColor: readerUiColors.background, color: readerUiColors.text } as React.CSSProperties}>
                 {IS_DEV && SHOW_READER_DEBUG_OVERLAY && debugSnapshot && (
                 <div
                     style={{

@@ -8,6 +8,7 @@ import IOSBottomDrawerHeader from '@/components/ui/ios-bottom-drawer-header';
 import { uiIconTriggerButton, uiMenuItemButton } from '@/components/ui/button-styles';
 import { useReaderTheme } from '@/lib/hooks/useReaderTheme';
 import { getReaderUiColors } from '@/lib/readerTheme';
+import { getThemeStyle } from '@/lib/themes';
 
 interface Chapter {
     number: number;
@@ -41,6 +42,7 @@ export default function TableOfContents({
     const [internalOpen, setInternalOpen] = useState(false);
     const readerTheme = useReaderTheme();
     const uiColors = getReaderUiColors(readerTheme);
+    const readerThemeStyle = getThemeStyle(readerTheme.id);
 
     const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
     const setIsOpen = setExternalOpen !== undefined ? setExternalOpen : setInternalOpen;
@@ -97,7 +99,7 @@ export default function TableOfContents({
                     />
                 )}
                 className="mt-[max(56px,calc(env(safe-area-inset-top)+18px))] flex h-[calc(100dvh-max(56px,calc(env(safe-area-inset-top)+18px)))] max-h-none flex-col overflow-hidden rounded-t-[20px] shadow-[0_-12px_40px_rgba(0,0,0,0.16)] sm:mt-0 sm:max-h-[calc(100dvh-2rem)] sm:max-w-[640px] sm:overflow-hidden sm:rounded-[24px]"
-                style={{ backgroundColor: uiColors.surface, color: uiColors.text }}
+                style={{ ...readerThemeStyle, backgroundColor: uiColors.panelSurface, color: uiColors.text }}
             >
                 <div className="relative flex-1 overflow-hidden sm:min-h-0">
                     <div className={`h-full overflow-y-auto ${isContentPending ? 'blur-[3px] opacity-40' : ''}`}>

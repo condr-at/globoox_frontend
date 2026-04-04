@@ -3,23 +3,22 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import {
+  type AppMode,
+  type AppPalette,
+  type AppThemeClass,
+  applyThemeToElement,
+  getThemeDefinition,
+  isAppMode,
+  isAppPalette,
+  resolveThemeId,
+} from '@/lib/themes';
 
-export type AppPalette = 'globoox' | 'default';
-export type AppMode = 'light' | 'dark' | 'system';
-export type AppThemeClass = 'light' | 'dark' | 'forest-light' | 'forest-dark';
+export type { AppMode, AppPalette, AppThemeClass } from '@/lib/themes';
 
-const THEME_CLASSES: AppThemeClass[] = ['light', 'dark', 'forest-light', 'forest-dark'];
 const APP_THEME_STORAGE_KEY = 'globoox-app-theme';
 const LEGACY_MODE_KEY = 'globoox-mode';
 const LEGACY_PALETTE_KEY = 'globoox-palette';
-
-function isMode(value: unknown): value is AppMode {
-  return value === 'light' || value === 'dark' || value === 'system';
-}
-
-function isPalette(value: unknown): value is AppPalette {
-  return value === 'globoox' || value === 'default';
-}
 
 function readStoredTheme(): { mode: AppMode; palette: AppPalette } {
   if (typeof window === 'undefined') return { mode: 'dark', palette: 'globoox' };
@@ -30,7 +29,7 @@ function readStoredTheme(): { mode: AppMode; palette: AppPalette } {
       const parsed = JSON.parse(raw) as { state?: { mode?: unknown; palette?: unknown } };
       const mode = parsed?.state?.mode;
       const palette = parsed?.state?.palette;
-      if (isMode(mode) && isPalette(palette)) {
+      if (isAppMode(mode) && isAppPalette(palette)) {
         return { mode, palette };
       }
     }
@@ -42,8 +41,8 @@ function readStoredTheme(): { mode: AppMode; palette: AppPalette } {
     const legacyMode = localStorage.getItem(LEGACY_MODE_KEY);
     const legacyPalette = localStorage.getItem(LEGACY_PALETTE_KEY);
     return {
-      mode: isMode(legacyMode) ? legacyMode : 'dark',
-      palette: isPalette(legacyPalette) ? legacyPalette : 'globoox',
+      mode: isAppMode(legacyMode) ? legacyMode : 'dark',
+      palette: isAppPalette(legacyPalette) ? legacyPalette : 'globoox',
     };
   } catch {
     return { mode: 'dark', palette: 'globoox' };
@@ -51,18 +50,12 @@ function readStoredTheme(): { mode: AppMode; palette: AppPalette } {
 }
 
 function resolveClass(mode: AppMode, palette: AppPalette): AppThemeClass {
-  const dark =
-    mode === 'dark' ||
-    (mode === 'system' &&
-      typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-color-scheme: dark)').matches);
-  return palette === 'globoox' ? (dark ? 'forest-dark' : 'forest-light') : (dark ? 'dark' : 'light');
+  const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return getThemeDefinition(resolveThemeId(mode, palette, prefersDark)).rootClass;
 }
 
 function applyClass(cls: AppThemeClass) {
-  const el = document.documentElement;
-  el.classList.remove(...THEME_CLASSES);
-  el.classList.add(cls);
+  applyThemeToElement(document.documentElement, cls);
 }
 
 type AppThemeState = {
