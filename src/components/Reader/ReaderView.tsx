@@ -165,6 +165,7 @@ const paginationCache = new Map<string, PaginationCacheEntry>();
 export default function ReaderView({ bookId, title, author, availableLanguages, originalLanguage, serverLanguage, coverUrl, isOwn = false }: ReaderViewProps) {
     const { user, isAlpha, isAuthenticated, loading: authLoading } = useAuth();
     const {
+        hasHydrated,
         settings,
         perBookLanguages,
         syncVersions,
@@ -727,6 +728,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
     const prevResetChapterIdRef = useRef<string>('');
 
     useEffect(() => {
+        if (!hasHydrated) return;
         if (chaptersLoading || chapters.length === 0) return;
         const anchor = getAnchor(bookId);
         if (!anchor?.chapterId) return;
@@ -739,7 +741,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
 
         localAnchorChapterAppliedRef.current = applyKey;
         setCurrentChapterIndex((prev) => (prev === chapterIdx + 1 ? prev : chapterIdx + 1));
-    }, [bookId, chapters, chaptersLoading, getAnchor]);
+    }, [bookId, chapters, chaptersLoading, getAnchor, hasHydrated]);
 
     useEffect(() => {
         if (layoutCacheReadyKey !== paginationCacheKey) return;
@@ -905,6 +907,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
 
     // Authenticated users: local-first anchor restore + conditional server revalidation.
     useEffect(() => {
+        if (!hasHydrated) return;
         let cancelled = false;
         const localAnchor = getAnchor(bookId);
         const localAnchorChapterId = localAnchor?.chapterId;
@@ -1042,9 +1045,10 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
         return () => {
             cancelled = true;
         };
-    }, [authLoading, chaptersLoading, isAuthenticated, bookId, chapters, storeSetAnchor, user?.id, getAnchor, syncVersions.progress]);
+    }, [authLoading, chaptersLoading, hasHydrated, isAuthenticated, bookId, chapters, storeSetAnchor, user?.id, getAnchor, syncVersions.progress]);
 
     useEffect(() => {
+        if (!hasHydrated) return;
         if (!remoteAnchorReady) return;
         if (!pagesReady || pages.length === 0) return;
         if (visiblePagesReady && pendingAnchorBlockId.current === null) return;
@@ -1112,7 +1116,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             setCurrentPageIdx(normalizeForLayout(Math.max(0, byPos)));
         }
         setVisiblePagesReady(true);
-    }, [remoteAnchorReady, pagesReady, pages, bookId, currentChapter?.id, displayBlocks, getAnchor, paginatedBlocks, visiblePagesReady, normalizeForLayout]);
+    }, [hasHydrated, remoteAnchorReady, pagesReady, pages, bookId, currentChapter?.id, displayBlocks, getAnchor, paginatedBlocks, visiblePagesReady, normalizeForLayout]);
 
     // ─── Anchor save (throttled ~1 s) ────────────────────────────────────────
     const lastSavedAnchorAt = useRef(0);
