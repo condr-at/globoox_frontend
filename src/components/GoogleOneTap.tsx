@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import { sha256 } from 'js-sha256';
 import { createClient } from '@/lib/supabase/client';
@@ -21,7 +21,24 @@ declare global {
 
 export default function GoogleOneTap() {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const allowedOriginsEnv = process.env.NEXT_PUBLIC_GOOGLE_ALLOWED_ORIGINS;
   const doneRef = useRef(false);
+  const [shouldLoadOneTap, setShouldLoadOneTap] = useState(false);
+
+  function isOriginAllowed(currentOrigin: string) {
+    const configuredOrigins = allowedOriginsEnv
+      ?.split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+
+    if (configuredOrigins && configuredOrigins.length > 0) {
+      return configuredOrigins.includes(currentOrigin);
+    }
+
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+    return !isLocalhost;
+  }
 
   async function buildNoncePair(): Promise<{ rawNonce?: string; hashedNonce?: string }> {
     const runtimeCrypto = window.crypto;
@@ -72,6 +89,19 @@ export default function GoogleOneTap() {
   useEffect(() => {
     if (!clientId) return;
 
+    const currentOrigin = window.location.origin;
+    if (!isOriginAllowed(currentOrigin)) {
+      console.info(
+        'Google One Tap: skipped for origin %s. Add it to NEXT_PUBLIC_GOOGLE_ALLOWED_ORIGINS and the Google client authorized origins if One Tap should run here.',
+        currentOrigin,
+      );
+      doneRef.current = false;
+      setShouldLoadOneTap(false);
+      return;
+    }
+
+    setShouldLoadOneTap(true);
+
     // Script may already be loaded (SPA navigation, HMR)
     if (window.google?.accounts?.id) {
       initOneTap();
@@ -95,7 +125,7 @@ export default function GoogleOneTap() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!clientId) return null;
+  if (!clientId || !shouldLoadOneTap) return null;
 
   return <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />;
 }
