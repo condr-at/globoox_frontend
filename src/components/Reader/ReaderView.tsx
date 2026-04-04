@@ -1842,7 +1842,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                             }}
                             className={`${uiIconTriggerButton} ${uiHeaderControlHitArea} -ml-2 flex-shrink-0`}
                         >
-                            <IOSIcon icon={ChevronLeft} className="text-primary" strokeWidth={2} />
+                            <IOSIcon icon={ChevronLeft} strokeWidth={2} style={{ color: readerUiColors.accent }} />
                         </Link>
                     </div>
 
@@ -1998,9 +1998,9 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                                     </div>
                                 </div>
                             ) : chaptersError ? (
-                                <p className="text-sm text-destructive py-8 text-center">{chaptersError}</p>
+                                <p className="py-8 text-center text-sm" style={{ color: '#dc2626' }}>{chaptersError}</p>
                             ) : contentError ? (
-                                <p className="text-sm text-destructive py-8 text-center">{contentError}</p>
+                                <p className="py-8 text-center text-sm" style={{ color: '#dc2626' }}>{contentError}</p>
                             ) : spreadModeEnabled ? (
                                 <div
                                     className="mx-auto flex h-full w-full items-stretch justify-center"
@@ -2047,7 +2047,8 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                     size="sm"
                     onClick={goToPrevPage}
                     disabled={activePageIdx === 0 && currentChapterIndex === 1}
-                    className="hidden md:flex items-center gap-1 text-xs text-primary disabled:opacity-30 px-1"
+                    className="hidden md:flex items-center gap-1 text-xs disabled:opacity-30 px-1"
+                    style={{ color: readerUiColors.accent }}
                 >
                     <IOSIcon icon={ChevronLeft} className="size-4" strokeWidth={2} />
                     <span className="truncate">Previous page</span>
@@ -2069,7 +2070,8 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
                     size="sm"
                     onClick={goToNextPage}
                     disabled={activePageIdx >= pages.length - 1 && currentChapterIndex === chapters.length}
-                    className="hidden md:flex items-center gap-1 text-xs text-primary disabled:opacity-30 px-1"
+                    className="hidden md:flex items-center gap-1 text-xs disabled:opacity-30 px-1"
+                    style={{ color: readerUiColors.accent }}
                 >
                     <span className="truncate">Next page</span>
                     <IOSIcon icon={ChevronRight} className="size-4" strokeWidth={2} />

@@ -6,6 +6,8 @@ import { useAppStore, Language, languageNames } from '@/lib/store';
 import { useAdaptiveDropdown } from '@/components/ui/useAdaptiveDropdown';
 import { uiDropdownItemButton, uiHeaderControlHitArea, uiTextActionButton } from '@/components/ui/button-styles';
 import IOSItemsStack from '@/components/ui/ios-items-stack';
+import { useReaderTheme } from '@/lib/hooks/useReaderTheme';
+import { getReaderUiColors } from '@/lib/readerTheme';
 
 interface LanguageSwitchProps {
   availableLanguages: Language[];
@@ -25,6 +27,8 @@ export default function LanguageSwitch({
   disabled
 }: LanguageSwitchProps) {
   const [internalOpen, setInternalOpen] = useState(false);
+  const readerTheme = useReaderTheme();
+  const uiColors = getReaderUiColors(readerTheme);
   const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
   const setIsOpen = setExternalOpen !== undefined ? setExternalOpen : setInternalOpen;
 
@@ -75,7 +79,7 @@ export default function LanguageSwitch({
           className="fixed w-[192px] z-[100]"
           style={externalOpen === undefined ? menuStyle : { top: 'calc(env(safe-area-inset-top) + 60px)', right: '16px' }}
         >
-        <IOSItemsStack className="py-[8px] bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
+        <IOSItemsStack className="py-[8px] shadow-lg border" style={{ backgroundColor: uiColors.surface, borderColor: uiColors.border, color: uiColors.text }}>
           {availableLanguages.map((lang, index) => (
             <div key={lang}>
               <button
@@ -84,11 +88,11 @@ export default function LanguageSwitch({
               >
                 <span className="text-[17px]">{languageNames[lang]}</span>
                 {activeLanguage === lang && (
-                  <Check className="w-[20px] h-[20px] text-primary" />
+                  <Check className="w-[20px] h-[20px]" style={{ color: uiColors.accent }} />
                 )}
               </button>
               {index < availableLanguages.length - 1 ? (
-                <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />
+                <div className="mx-4 h-[0.5px]" style={{ backgroundColor: uiColors.border }} />
               ) : null}
             </div>
           ))}

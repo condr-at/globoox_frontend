@@ -31,8 +31,6 @@ export default function SyncCheckClient() {
         return
       }
 
-      const isReaderRoute = window.location.pathname.startsWith('/reader/')
-
       try {
         positionCacheInvalidateAll()
         window.localStorage.removeItem('globoox-preview-storage')
@@ -46,9 +44,7 @@ export default function SyncCheckClient() {
       if (cancelled) return
 
       setCacheEpochReady(true)
-      if (!isReaderRoute) {
-        window.location.reload()
-      }
+      window.location.reload()
     }
 
     void run()
