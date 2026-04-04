@@ -274,6 +274,13 @@ export const THEME_CSS_VARIABLES: Record<ThemeId, ThemeCssVariables> = {
 
 export function getThemeCssVariables(themeId: ThemeId): ThemeCssVariables {
   const cssVars = THEME_CSS_VARIABLES[themeId];
+  const theme = getThemeDefinition(themeId);
+  const isDark = theme.mode === 'dark';
+  const readerBorder = `rgba(${isDark ? '244, 240, 232' : '44, 59, 45'}, ${isDark ? '0.16' : '0.12'})`;
+  const readerMuted = `rgba(${isDark ? '244, 240, 232' : '44, 59, 45'}, ${isDark ? '0.7' : '0.62'})`;
+  const readerSubtle = `rgba(${isDark ? '244, 240, 232' : '44, 59, 45'}, ${isDark ? '0.52' : '0.46'})`;
+  const readerQuote = `rgba(${isDark ? '244, 240, 232' : '44, 59, 45'}, ${isDark ? '0.82' : '0.78'})`;
+  const readerChromeBg = `rgba(${themeId === 'light' ? '246, 246, 250' : themeId === 'dark' ? '9, 9, 11' : themeId === 'forest-light' ? '244, 240, 232' : '26, 36, 25'}, ${isDark ? '0.9' : '0.92'})`;
   return {
     ...cssVars,
     '--primary': 'var(--system-blue)',
@@ -297,6 +304,15 @@ export function getThemeCssVariables(themeId: ThemeId): ThemeCssVariables {
     '--sidebar-accent-foreground': 'var(--label-primary)',
     '--sidebar-border': 'var(--separator)',
     '--sidebar-ring': 'var(--system-gray)',
+    '--reader-panel-bg': theme.colors.bg,
+    '--reader-chrome-bg': readerChromeBg,
+    '--reader-text': theme.colors.text,
+    '--reader-muted-text': readerMuted,
+    '--reader-subtle-text': readerSubtle,
+    '--reader-accent': theme.colors.accent,
+    '--reader-border': readerBorder,
+    '--reader-quote-text': readerQuote,
+    '--reader-danger': 'var(--danger-fg)',
   };
 }
 

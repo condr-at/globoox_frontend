@@ -1,5 +1,5 @@
 export const uiTextActionButton =
-  'cursor-pointer rounded-[10px] text-primary transition-colors hover:bg-[var(--fill-tertiary)] active:bg-[var(--fill-secondary)] disabled:pointer-events-none disabled:opacity-40';
+  'cursor-pointer rounded-[10px] text-[var(--reader-accent)] transition-colors hover:bg-[var(--fill-tertiary)] active:bg-[var(--fill-secondary)] disabled:pointer-events-none disabled:opacity-40';
 
 export const uiTextActionButtonPressed = 'bg-[var(--fill-secondary)]';
 
@@ -18,13 +18,13 @@ export const uiFilterPillInactive =
   'border-[var(--separator)] bg-background text-foreground hover:bg-[var(--fill-tertiary)] active:bg-[var(--fill-secondary)]';
 
 export const uiIconTriggerButton =
-  'cursor-pointer rounded-[10px] flex items-center justify-center min-w-[44px] min-h-[44px] text-primary transition-colors hover:bg-[var(--fill-tertiary)] active:bg-[var(--fill-secondary)] disabled:pointer-events-none disabled:opacity-50';
+  'cursor-pointer rounded-[10px] flex items-center justify-center min-w-[44px] min-h-[44px] text-[var(--reader-accent)] transition-colors hover:bg-[var(--fill-tertiary)] active:bg-[var(--fill-secondary)] disabled:pointer-events-none disabled:opacity-50';
 
 export const uiHeaderControlHitArea =
   'relative after:absolute after:inset-y-[-10px] after:left-[-6px] after:right-[-6px]';
 
 export const uiIconCircleButton =
-  'cursor-pointer flex h-9 w-9 items-center justify-center rounded-full bg-[var(--fill-tertiary)] text-muted-foreground transition-colors hover:bg-[var(--fill-secondary)] active:bg-[var(--fill-primary)] disabled:pointer-events-none disabled:opacity-50';
+  'cursor-pointer flex h-9 w-9 items-center justify-center rounded-full bg-[var(--fill-tertiary)] text-[var(--reader-muted-text)] transition-colors hover:bg-[var(--fill-secondary)] active:bg-[var(--fill-primary)] disabled:pointer-events-none disabled:opacity-50';
 
 export const uiMenuItemButton =
   'w-full cursor-pointer flex items-center justify-between px-4 py-3 text-left text-[17px] transition-colors hover:bg-[var(--fill-tertiary)] active:bg-[var(--fill-secondary)]';

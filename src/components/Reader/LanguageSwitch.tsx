@@ -81,7 +81,7 @@ export default function LanguageSwitch({
           className="fixed w-[192px] z-[100]"
           style={externalOpen === undefined ? menuStyle : { top: 'calc(env(safe-area-inset-top) + 60px)', right: '16px' }}
         >
-        <IOSItemsStack className="py-[8px] shadow-lg border" style={{ ...readerThemeStyle, backgroundColor: uiColors.panelSurface, borderColor: uiColors.border, color: uiColors.text }}>
+        <IOSItemsStack className="py-[8px] shadow-lg border bg-[var(--reader-panel-bg)] text-[var(--reader-text)] border-[var(--reader-border)]" style={readerThemeStyle}>
           {availableLanguages.map((lang, index) => (
             <div key={lang}>
               <button
@@ -90,11 +90,11 @@ export default function LanguageSwitch({
               >
                 <span className="text-[17px]">{languageNames[lang]}</span>
                 {activeLanguage === lang && (
-                  <Check className="w-[20px] h-[20px]" style={{ color: uiColors.accent }} />
+                  <Check className="w-[20px] h-[20px] text-[var(--reader-accent)]" />
                 )}
               </button>
               {index < availableLanguages.length - 1 ? (
-                <div className="mx-4 h-[0.5px]" style={{ backgroundColor: uiColors.border }} />
+                <div className="mx-4 h-[0.5px] bg-[var(--reader-border)]" />
               ) : null}
             </div>
           ))}

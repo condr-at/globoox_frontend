@@ -95,6 +95,17 @@
   --sidebar-accent-foreground: var(--label-primary);
   --sidebar-border: var(--separator);
   --sidebar-ring: var(--system-gray);
+
+  /* ---- Reader semantic tokens (fallbacks) ---- */
+  --reader-panel-bg: var(--bg-primary);
+  --reader-chrome-bg: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+  --reader-text: var(--label-primary);
+  --reader-muted-text: var(--label-secondary);
+  --reader-subtle-text: var(--label-tertiary);
+  --reader-accent: var(--system-blue);
+  --reader-border: var(--separator);
+  --reader-quote-text: var(--label-secondary);
+  --reader-danger: var(--danger-fg);
 }
 
 /* ============================================

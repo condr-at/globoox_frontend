@@ -78,29 +78,29 @@ export default function ReaderActionsMenu({
           className="fixed w-56 z-[100]"
           style={menuStyle}
         >
-        <IOSItemsStack className="py-1 shadow-lg border" style={{ ...readerThemeStyle, backgroundColor: uiColors.panelSurface, borderColor: uiColors.border, color: uiColors.text }}>
+        <IOSItemsStack className="py-1 shadow-lg border bg-[var(--reader-panel-bg)] text-[var(--reader-text)] border-[var(--reader-border)]" style={readerThemeStyle}>
           <button
             onClick={() => handleAction('toc')}
             className={uiMenuItemButton}
           >
             <div className="flex items-center gap-3">
-              <List className="w-5 h-5" style={{ color: uiColors.accent }} />
+              <List className="w-5 h-5 text-[var(--reader-accent)]" />
               <span className="text-[17px]">Chapters</span>
             </div>
-            <ChevronRight className="w-4 h-4" style={{ color: uiColors.subtleText }} />
+            <ChevronRight className="w-4 h-4 text-[var(--reader-subtle-text)]" />
           </button>
 
-          <div className="ml-12 mr-4 h-[0.5px]" style={{ backgroundColor: uiColors.border }} />
+          <div className="ml-12 mr-4 h-[0.5px] bg-[var(--reader-border)]" />
 
           <button
             onClick={() => handleAction('settings')}
             className={uiMenuItemButton}
           >
             <div className="flex items-center gap-3">
-              <Type className="w-5 h-5" style={{ color: uiColors.accent }} />
+              <Type className="w-5 h-5 text-[var(--reader-accent)]" />
               <span className="text-[17px]">Appearance</span>
             </div>
-            <ChevronRight className="w-4 h-4" style={{ color: uiColors.subtleText }} />
+            <ChevronRight className="w-4 h-4 text-[var(--reader-subtle-text)]" />
           </button>
         </IOSItemsStack>
         </div>

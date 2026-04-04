@@ -68,7 +68,7 @@ export default function TableOfContents({
                 onOpenChange={setIsOpen}
                 side="bottom"
                 enableDragDismiss
-                dragHandle={<div className="h-1 w-12 rounded-full" style={{ backgroundColor: uiColors.border }} />}
+                dragHandle={<div className="h-1 w-12 rounded-full bg-[var(--reader-border)]" />}
                 dragRegion={(
                     <IOSBottomDrawerHeader
                         title={<span className={isContentPending ? 'blur-[3px] opacity-40' : ''}>{bookTitle}</span>}
@@ -99,9 +99,9 @@ export default function TableOfContents({
                     />
                 )}
                 className="mt-[max(56px,calc(env(safe-area-inset-top)+18px))] flex h-[calc(100dvh-max(56px,calc(env(safe-area-inset-top)+18px)))] max-h-none flex-col overflow-hidden rounded-t-[20px] shadow-[0_-12px_40px_rgba(0,0,0,0.16)] sm:mt-0 sm:max-h-[calc(100dvh-2rem)] sm:max-w-[640px] sm:overflow-hidden sm:rounded-[24px]"
-                style={{ ...readerThemeStyle, backgroundColor: uiColors.panelSurface, color: uiColors.text }}
+                style={readerThemeStyle}
             >
-                <div className="relative flex-1 overflow-hidden sm:min-h-0">
+                <div className="relative flex-1 overflow-hidden sm:min-h-0 bg-[var(--reader-panel-bg)] text-[var(--reader-text)]">
                     <div className={`h-full overflow-y-auto ${isContentPending ? 'blur-[3px] opacity-40' : ''}`}>
                         {chapters.map((chapter) => {
                             const depth = chapter.depth || 1;
@@ -128,7 +128,7 @@ export default function TableOfContents({
                                             {chapter.title}
                                         </span>
                                     </span>
-                                    <span className="shrink-0 text-[15px]" style={{ color: uiColors.mutedText }}>
+                                    <span className="shrink-0 text-[15px] text-[var(--reader-muted-text)]">
                                         {depth === 1 ? chapter.number : ''}
                                     </span>
                                 </button>
@@ -142,7 +142,7 @@ export default function TableOfContents({
                     </div>
                     {isContentPending && (
                         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-                            <span className="text-sm font-medium animate-pulse-text" style={{ color: uiColors.background }}>
+                            <span className="text-sm font-medium animate-pulse-text" style={{ color: 'var(--reader-panel-bg)' }}>
                                 Translating...
                             </span>
                         </div>
