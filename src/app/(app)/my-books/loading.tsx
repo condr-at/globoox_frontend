@@ -1,6 +1,6 @@
 export default function LoadingMyBooks() {
   return (
-    <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
+    <div className="min-h-screen bg-[var(--app-shell-bg)] pb-[calc(60px+env(safe-area-inset-bottom))] text-[var(--app-text)]">
       <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(2rem+env(safe-area-inset-top)+72px)] pb-4 space-y-6 overflow-x-clip">
         <div className="flex items-center gap-2 relative">
           <div className="h-9 w-20 rounded-full bg-muted animate-pulse" />

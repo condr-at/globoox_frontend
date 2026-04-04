@@ -39,8 +39,8 @@ function getActionClassName({
     destructive
       ? 'font-normal text-destructive'
       : emphasized
-        ? 'font-normal text-primary sm:font-medium'
-        : 'font-normal text-primary',
+        ? 'font-normal text-[var(--app-accent)] sm:font-medium'
+        : 'font-normal text-[var(--app-accent)]',
     className,
   );
 }
@@ -49,7 +49,7 @@ export function IOSActionGroup({ children, className }: IOSActionGroupProps) {
   return (
     <div
       className={cn(
-        'overflow-hidden border-t border-[var(--separator)]',
+        'overflow-hidden border-t border-[var(--app-border)]',
         className,
       )}
     >
@@ -78,7 +78,7 @@ export function IOSActionDivider({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'h-px bg-[var(--separator)]',
+        'h-px bg-[var(--app-border)]',
         className,
       )}
     />
@@ -89,7 +89,7 @@ export function IOSActionVerticalDivider({ className }: { className?: string }) 
   return (
     <div
       className={cn(
-        'w-px self-stretch bg-[var(--separator)]',
+        'w-px self-stretch bg-[var(--app-border)]',
         className,
       )}
     />

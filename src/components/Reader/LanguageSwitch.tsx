@@ -81,7 +81,7 @@ export default function LanguageSwitch({
           className="fixed w-[192px] z-[100]"
           style={externalOpen === undefined ? menuStyle : { top: 'calc(env(safe-area-inset-top) + 60px)', right: '16px' }}
         >
-        <IOSItemsStack className="py-[8px] shadow-lg border bg-[var(--reader-panel-bg)] text-[var(--reader-text)] border-[var(--reader-border)]" style={readerThemeStyle}>
+        <IOSItemsStack tone="reader" className="py-[8px] shadow-lg" style={readerThemeStyle}>
           {availableLanguages.map((lang, index) => (
             <div key={lang}>
               <button

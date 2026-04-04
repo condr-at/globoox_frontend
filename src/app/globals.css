@@ -96,6 +96,42 @@
   --sidebar-border: var(--separator);
   --sidebar-ring: var(--system-gray);
 
+  /* ---- Product app semantic roles ---- */
+  --app-shell-bg: var(--bg-primary);
+  --app-section-bg: var(--bg-grouped);
+  --app-surface-bg: var(--bg-grouped-secondary);
+  --app-elevated-bg: color-mix(in srgb, var(--bg-grouped-secondary) 86%, transparent);
+  --app-chrome-bg: color-mix(in srgb, var(--bg-primary) 80%, transparent);
+  --app-input-bg: var(--bg-grouped-secondary);
+  --app-text: var(--label-primary);
+  --app-text-muted: var(--label-secondary);
+  --app-text-subtle: var(--label-tertiary);
+  --app-accent: var(--system-blue);
+  --app-border: var(--separator);
+  --app-divider: var(--separator-opaque);
+
+  /* ---- App typography roles ---- */
+  --app-type-display-size: 34px;
+  --app-type-display-line: 1.12;
+  --app-type-title-size: 22px;
+  --app-type-title-line: 1.27;
+  --app-type-heading-size: 17px;
+  --app-type-heading-line: 1.4;
+  --app-type-body-size: 17px;
+  --app-type-body-line: 1.5;
+  --app-type-caption-size: 15px;
+  --app-type-caption-line: 1.4;
+  --app-type-meta-size: 13px;
+  --app-type-meta-line: 1.35;
+
+  /* ---- Motion roles ---- */
+  --motion-fast: 180ms;
+  --motion-base: 240ms;
+  --motion-slow: 320ms;
+  --motion-ease-standard: cubic-bezier(0.22, 0.78, 0, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --motion-ease-emphasis: cubic-bezier(0.32, 0.72, 0, 1);
+
   /* ---- Reader semantic tokens (fallbacks) ---- */
   --reader-panel-bg: var(--bg-primary);
   --reader-chrome-bg: color-mix(in srgb, var(--bg-primary) 92%, transparent);
@@ -130,6 +166,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   font-size: 17px;
   line-height: 1.41;
+}
+
+body {
+  background: var(--app-shell-bg);
+  color: var(--app-text);
 }
 
 /* Reader pagination polish:

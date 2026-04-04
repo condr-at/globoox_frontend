@@ -7,6 +7,7 @@ interface IOSItemsStackProps {
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  tone?: 'default' | 'reader';
 }
 
 /**
@@ -14,9 +15,19 @@ interface IOSItemsStackProps {
  * Owns only clipping/radius rules; row behavior stays in child components.
  */
 const IOSItemsStack = React.forwardRef<HTMLDivElement, IOSItemsStackProps>(
-  ({ children, className, style }, ref) => {
+  ({ children, className, style, tone = 'default' }, ref) => {
     return (
-      <div ref={ref} className={cn('overflow-hidden rounded-xl', className)} style={style}>
+      <div
+        ref={ref}
+        className={cn(
+          'overflow-hidden rounded-xl border',
+          tone === 'reader'
+            ? 'bg-[var(--reader-panel-bg)] text-[var(--reader-text)] border-[var(--reader-border)]'
+            : 'bg-[var(--app-surface-bg)] text-[var(--app-text)] border-[var(--app-border)]',
+          className,
+        )}
+        style={style}
+      >
         {children}
       </div>
     );

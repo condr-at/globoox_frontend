@@ -56,6 +56,7 @@ export default function ReaderSettings({
                 open={isOpen}
                 onOpenChange={setIsOpen}
                 side="bottom"
+                tone="reader"
                 enableDragDismiss
                 dragHandle={<div className="h-1 w-12 rounded-full bg-[var(--reader-border)]" />}
                 dragRegion={(
@@ -67,7 +68,7 @@ export default function ReaderSettings({
                 className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:overflow-hidden sm:rounded-[24px]"
                 style={readerThemeStyle}
             >
-                <div className="flex-1 overflow-y-auto p-5 pt-0 space-y-5 sm:min-h-0 bg-[var(--reader-panel-bg)] text-[var(--reader-text)]">
+                <div className="flex-1 overflow-y-auto p-5 pt-0 space-y-5 sm:min-h-0">
                     {/* Theme Picker */}
                     <div>
                         <p className="mb-[12px] text-[15px] text-[var(--reader-muted-text)]">Theme</p>

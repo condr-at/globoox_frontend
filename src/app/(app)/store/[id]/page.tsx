@@ -29,19 +29,19 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                     ? 'fill-[var(--system-orange)] text-[var(--system-orange)]'
                     : i < rating
                         ? 'fill-[var(--system-orange)]/50 text-[var(--system-orange)]'
-                        : 'text-muted-foreground'
+                        : 'text-[var(--app-text-muted)]'
                     }`}
             />
         ));
     };
 
     return (
-        <div className="min-h-screen bg-[var(--bg-grouped)]">
+        <div className="min-h-screen bg-[var(--app-section-bg)] text-[var(--app-text)]">
             {/* Navigation Bar */}
             <header className="nav-bar fixed top-0 left-0 right-0 z-40 safe-area-inset-top">
                 <div className="flex items-center h-[44px] px-[16px]">
-                    <Link href="/store" className="flex items-center gap-[4px] text-primary -ml-[8px] min-w-[44px] min-h-[44px] pl-[8px]">
-                        <IOSIcon icon={ChevronLeft} className="text-primary" strokeWidth={2} />
+                    <Link href="/store" className="-ml-[8px] flex min-h-[44px] min-w-[44px] items-center gap-[4px] pl-[8px] text-[var(--app-accent)]">
+                        <IOSIcon icon={ChevronLeft} className="text-[var(--app-accent)]" strokeWidth={2} />
                         <span className="text-[17px]">Store</span>
                     </Link>
                 </div>
@@ -62,22 +62,22 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
 
                     {/* Demo badge */}
                     {book.hasDemo && (
-                        <div className="absolute -top-[8px] -right-[8px] px-[12px] py-[4px] rounded-full bg-primary text-[12px] font-semibold text-primary-foreground shadow-md">
+                        <div className="absolute -top-[8px] -right-[8px] rounded-full bg-[var(--app-accent)] px-[12px] py-[4px] text-[12px] font-semibold text-[var(--primary-foreground)] shadow-md">
                             Demo Available
                         </div>
                     )}
                 </div>
 
                 {/* Info Card */}
-                <div className="bg-[var(--bg-grouped-secondary)] rounded-[12px] p-[16px] mb-[16px]">
+                <div className="mb-[16px] rounded-[12px] bg-[var(--app-surface-bg)] p-[16px]">
                     <h1 className="text-[22px] font-bold mb-[4px]">{book.title}</h1>
-                    <p className="text-[17px] text-muted-foreground mb-[16px]">by {book.author}</p>
+                    <p className="mb-[16px] text-[17px] text-[var(--app-text-muted)]">by {book.author}</p>
 
                     {/* Rating */}
                     <div className="flex items-center gap-[8px] mb-[16px]">
                         <div className="flex">{renderStars(book.rating)}</div>
                         <span className="text-[15px] font-semibold">{book.rating}</span>
-                        <span className="text-[13px] text-muted-foreground/50">
+                        <span className="text-[13px] text-[var(--app-text-subtle)]">
                             ({book.reviews >= 1000 ? `${(book.reviews / 1000).toFixed(1)}K` : book.reviews} reviews)
                         </span>
                     </div>
@@ -87,7 +87,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                         {book.genre.map((genre) => (
                             <span
                                 key={genre}
-                                className="px-[12px] py-[4px] rounded-full bg-[var(--fill-tertiary)] text-[13px] font-medium text-muted-foreground"
+                                className="rounded-full bg-[var(--fill-tertiary)] px-[12px] py-[4px] text-[13px] font-medium text-[var(--app-text-muted)]"
                             >
                                 {genre}
                             </span>
@@ -96,20 +96,20 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                 </div>
 
                 {/* Description */}
-                <div className="bg-[var(--bg-grouped-secondary)] rounded-[12px] p-[16px] mb-[16px]">
+                <div className="mb-[16px] rounded-[12px] bg-[var(--app-surface-bg)] p-[16px]">
                     <h2 className="text-[17px] font-semibold mb-[12px]">About this book</h2>
-                    <p className="text-[17px] text-muted-foreground leading-[1.5]">
+                    <p className="text-[17px] leading-[1.5] text-[var(--app-text-muted)]">
                         {book.description}
                     </p>
                 </div>
 
                 {/* Price & Actions */}
-                <div className="bg-[var(--bg-grouped-secondary)] rounded-[12px] p-[16px]">
+                <div className="rounded-[12px] bg-[var(--app-surface-bg)] p-[16px]">
                     <div className="flex items-baseline gap-[8px] mb-[20px]">
-                        <p className="text-[28px] font-bold text-foreground">
+                        <p className="text-[28px] font-bold text-[var(--app-text)]">
                             {book.price}
                         </p>
-                        <span className="text-[13px] text-muted-foreground/50">USD</span>
+                        <span className="text-[13px] text-[var(--app-text-subtle)]">USD</span>
                     </div>
 
                     <div className="flex flex-col gap-[12px]">
@@ -132,7 +132,7 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
                                 <ExternalLink className="w-[20px] h-[20px]" />
                                 Buy
                             </Button>
-                            <p className="mt-[6px] text-[12px] text-muted-foreground/50 text-center">
+                            <p className="mt-[6px] text-center text-[12px] text-[var(--app-text-subtle)]">
                                 comnig soon
                             </p>
                         </div>
@@ -141,9 +141,9 @@ export default function BookDetailPage({ params }: BookDetailPageProps) {
 
                 {/* Info note */}
                 {book.hasDemo && (
-                    <div className="mt-[16px] p-[16px] rounded-[12px] bg-primary/10">
-                        <p className="text-[15px] text-muted-foreground">
-                            <span className="text-primary font-medium">Tip:</span> Try our instant translation feature. Switch between English, French, Spanish, and German while reading.
+                    <div className="mt-[16px] rounded-[12px] bg-[color:color-mix(in_srgb,var(--app-accent)_10%,transparent)] p-[16px]">
+                        <p className="text-[15px] text-[var(--app-text-muted)]">
+                            <span className="font-medium text-[var(--app-accent)]">Tip:</span> Try our instant translation feature. Switch between English, French, Spanish, and German while reading.
                         </p>
                     </div>
                 )}

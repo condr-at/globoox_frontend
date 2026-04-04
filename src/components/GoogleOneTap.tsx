@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Script from 'next/script';
+import { sha256 } from 'js-sha256';
 import { createClient } from '@/lib/supabase/client';
 
 declare global {
@@ -22,6 +23,21 @@ export default function GoogleOneTap() {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   const doneRef = useRef(false);
 
+  async function buildNoncePair(): Promise<{ rawNonce?: string; hashedNonce?: string }> {
+    const runtimeCrypto = window.crypto;
+    // One Tap should fail closed if secure random is unavailable.
+    // Do not add an insecure nonce fallback here.
+    if (!runtimeCrypto?.getRandomValues) {
+      console.warn('Google One Tap: secure random nonce generation is unavailable, skipping One Tap init');
+      return {};
+    }
+
+    const rawNonce = window.btoa(String.fromCharCode(...runtimeCrypto.getRandomValues(new Uint8Array(32))));
+    const hashedNonce = sha256(rawNonce);
+
+    return { rawNonce, hashedNonce };
+  }
+
   async function initOneTap() {
     if (doneRef.current || !clientId || !window.google?.accounts?.id) return;
     doneRef.current = true; // set synchronously before any await to prevent double-calls
@@ -31,11 +47,11 @@ export default function GoogleOneTap() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) return;
 
-    const rawNonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
-    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawNonce));
-    const hashedNonce = Array.from(new Uint8Array(hashBuffer))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const { rawNonce, hashedNonce } = await buildNoncePair();
+    if (!rawNonce || !hashedNonce) {
+      doneRef.current = false;
+      return;
+    }
 
     window.google.accounts.id.initialize({
       client_id: clientId,

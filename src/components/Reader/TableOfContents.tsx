@@ -67,6 +67,7 @@ export default function TableOfContents({
                 open={isOpen}
                 onOpenChange={setIsOpen}
                 side="bottom"
+                tone="reader"
                 enableDragDismiss
                 dragHandle={<div className="h-1 w-12 rounded-full bg-[var(--reader-border)]" />}
                 dragRegion={(
@@ -101,7 +102,7 @@ export default function TableOfContents({
                 className="mt-[max(56px,calc(env(safe-area-inset-top)+18px))] flex h-[calc(100dvh-max(56px,calc(env(safe-area-inset-top)+18px)))] max-h-none flex-col overflow-hidden rounded-t-[20px] shadow-[0_-12px_40px_rgba(0,0,0,0.16)] sm:mt-0 sm:max-h-[calc(100dvh-2rem)] sm:max-w-[640px] sm:overflow-hidden sm:rounded-[24px]"
                 style={readerThemeStyle}
             >
-                <div className="relative flex-1 overflow-hidden sm:min-h-0 bg-[var(--reader-panel-bg)] text-[var(--reader-text)]">
+                <div className="relative flex-1 overflow-hidden sm:min-h-0">
                     <div className={`h-full overflow-y-auto ${isContentPending ? 'blur-[3px] opacity-40' : ''}`}>
                         {chapters.map((chapter) => {
                             const depth = chapter.depth || 1;

@@ -517,7 +517,7 @@ export default function MyBooksPage() {
   }, [filteredBooks.length, hasMoreBooks]);
 
   return (
-    <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
+    <div className="min-h-screen bg-[var(--app-shell-bg)] pb-[calc(60px+env(safe-area-inset-bottom))] text-[var(--app-text)]">
       <GoogleOneTap />
       <PageHeader
         title="My Books"
@@ -540,8 +540,8 @@ export default function MyBooksPage() {
               className={[
                 `${uiTextActionButton} flex items-center gap-[6px] px-[12px] min-h-[40px] rounded-full border text-[14px] font-medium`,
                 filterDropdownOpen
-                  ? `border-[var(--separator)] text-foreground ${uiTextActionButtonPressed}`
-                  : 'border-[var(--separator)] bg-background text-foreground',
+                  ? `border-[var(--app-border)] text-[var(--app-text)] ${uiTextActionButtonPressed}`
+                  : 'border-[var(--app-border)] bg-[var(--app-surface-bg)] text-[var(--app-text)]',
               ].join(' ')}
               aria-label="Filter"
             >
@@ -553,7 +553,7 @@ export default function MyBooksPage() {
 
             {filterDropdownOpen && (
               <div className="absolute left-0 top-[calc(100%+8px)] w-[180px] z-[100]">
-              <IOSItemsStack className="py-[8px] bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
+              <IOSItemsStack className="py-[8px] bg-[var(--app-surface-bg)] shadow-lg border border-[var(--app-border)]">
                 {([
                   { value: 'visible', label: 'Visible' },
                   { value: 'hidden', label: 'Hidden' },
@@ -565,9 +565,9 @@ export default function MyBooksPage() {
                       className={uiDropdownItemButton}
                     >
                       <span className="text-[17px]">{label}</span>
-                      {statusFilter === value && <Check className="w-[18px] h-[18px] text-primary" />}
+                      {statusFilter === value && <Check className="w-[18px] h-[18px] text-[var(--app-accent)]" />}
                     </button>
-                    {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />}
+                    {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--app-border)]" />}
                   </div>
                 ))}
               </IOSItemsStack>
@@ -617,7 +617,7 @@ export default function MyBooksPage() {
               className="fixed w-[200px] z-[100]"
               style={{ ...menuStyle, visibility: isPositioned ? 'visible' : 'hidden' }}
             >
-            <IOSItemsStack className="py-[8px] bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
+            <IOSItemsStack className="py-[8px] bg-[var(--app-surface-bg)] shadow-lg border border-[var(--app-border)]">
               {([
                 { value: 'recently_added', label: 'Recently Added' },
                 { value: 'recently_opened', label: 'Recently Read' },
@@ -630,9 +630,9 @@ export default function MyBooksPage() {
                     className={uiDropdownItemButton}
                   >
                     <span className="text-[17px]">{label}</span>
-                    {sortOrder === value && <Check className="w-[18px] h-[18px] text-primary" />}
+                    {sortOrder === value && <Check className="w-[18px] h-[18px] text-[var(--app-accent)]" />}
                   </button>
-                  {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />}
+                  {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--app-border)]" />}
                 </div>
               ))}
             </IOSItemsStack>
@@ -650,7 +650,7 @@ export default function MyBooksPage() {
               ))}
             </div>
           ) : filteredBooks.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No books yet.</p>
+            <p className="text-sm text-[var(--app-text-muted)]">No books yet.</p>
           ) : (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
@@ -702,11 +702,11 @@ export default function MyBooksPage() {
         </section>
 
         {!isAuthenticated && !authLoading && (
-          <section className="rounded-3xl border border-[var(--separator)] bg-[var(--bg-grouped-secondary)] p-4 sm:p-5">
+          <section className="rounded-3xl border border-[var(--app-border)] bg-[var(--app-surface-bg)] p-4 sm:p-5">
             <div className="space-y-3">
               <div>
                 <h2 className="text-[17px] leading-6 font-semibold">Upload your own books</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-[var(--app-text-muted)]">
                   Sign in to upload and translate your own EPUBs.
                 </p>
               </div>
@@ -738,7 +738,7 @@ export default function MyBooksPage() {
         )}
       </div>
 
-      <footer className="container max-w-2xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-muted-foreground">
+      <footer className="container max-w-2xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-[var(--app-text-muted)]">
         Need help?{' '}
         <a href="mailto:support@globoox.co" className="underline underline-offset-2 hover:text-foreground transition-colors">
           support@globoox.co
@@ -765,7 +765,7 @@ export default function MyBooksPage() {
               onClick={() => { setSortOrder(value); localStorage.setItem(SORT_STORAGE_KEY, value); setSortDrawerOpen(false); }}
               className={[
                 uiDrawerItemButton,
-                i < arr.length - 1 ? 'border-b border-[var(--separator)]' : '',
+                i < arr.length - 1 ? 'border-b border-[var(--app-border)]' : '',
               ].join(' ')}
             >
               <span>{label}</span>

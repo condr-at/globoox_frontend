@@ -41,7 +41,7 @@ export default function IOSDialog({
         mobileLayout === 'sheet' ? 'items-end p-0' : 'items-center p-4',
       )}
       contentClassName={cn(
-        'relative w-full border border-[var(--separator)] bg-[var(--bg-grouped-secondary)] shadow-2xl sm:max-w-md sm:rounded-[28px] sm:pb-0',
+        'relative w-full border border-[var(--app-border)] bg-[var(--app-surface-bg)] text-[var(--app-text)] shadow-2xl sm:max-w-md sm:rounded-[28px] sm:pb-0',
         mobileLayout === 'sheet'
           ? 'rounded-t-[30px] pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
           : 'max-w-md rounded-[28px] pb-0',

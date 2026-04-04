@@ -74,10 +74,10 @@ type CatalogItem = {
 function LayerBadge({ layer }: { layer: Layer }) {
   const palette =
     layer === 'Primitive'
-      ? 'bg-[var(--fill-secondary)] text-muted-foreground'
+      ? 'bg-[var(--fill-secondary)] text-[var(--app-text-muted)]'
       : layer === 'Pattern'
-        ? 'bg-[var(--system-blue)]/10 text-primary'
-        : 'bg-[var(--fill-tertiary)] text-foreground';
+        ? 'bg-[color:color-mix(in_srgb,var(--app-accent)_10%,transparent)] text-[var(--app-accent)]'
+        : 'bg-[var(--fill-tertiary)] text-[var(--app-text)]';
 
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${palette}`}>
@@ -85,6 +85,9 @@ function LayerBadge({ layer }: { layer: Layer }) {
     </span>
   );
 }
+
+const previewPanelClassName = 'rounded-[22px] bg-[var(--app-section-bg)] p-4 text-[var(--app-text)]';
+const previewMutedTextClassName = 'text-[var(--app-text-muted)]';
 
 function Section({
   title,
@@ -96,10 +99,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[28px] bg-[var(--bg-grouped-secondary)] p-6">
+    <section className="rounded-[28px] bg-[var(--app-surface-bg)] p-6 text-[var(--app-text)]">
       <div className="mb-5">
-        <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-foreground">{title}</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
+        <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-[var(--app-text)]">{title}</h2>
+        <p className="mt-1 text-sm leading-relaxed text-[var(--app-text-muted)]">{description}</p>
       </div>
       {children}
     </section>
@@ -114,11 +117,11 @@ function CatalogCard({
   onOpen: (key: Exclude<OverlayKey, null>) => void;
 }) {
   return (
-    <div className="rounded-[24px] bg-[var(--bg-grouped)] p-5">
+    <div className="rounded-[24px] bg-[var(--app-section-bg)] p-5 text-[var(--app-text)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="break-words text-[17px] font-semibold text-foreground">{item.title}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Built on: {item.builtOn}</p>
+          <h3 className="break-words text-[17px] font-semibold text-[var(--app-text)]">{item.title}</h3>
+          <p className="mt-1 text-sm text-[var(--app-text-muted)]">Built on: {item.builtOn}</p>
         </div>
         <div className="shrink-0">
           <LayerBadge layer={item.layer} />
@@ -126,16 +129,16 @@ function CatalogCard({
       </div>
 
       <div className="mt-4 space-y-3 text-sm leading-relaxed">
-        <p className="text-foreground">
+        <p className="text-[var(--app-text)]">
           <span className="font-medium">Use when:</span> {item.useWhen}
         </p>
-        <p className="text-muted-foreground">
-          <span className="font-medium text-foreground">Avoid when:</span> {item.avoidWhen}
+        <p className="text-[var(--app-text-muted)]">
+          <span className="font-medium text-[var(--app-text)]">Avoid when:</span> {item.avoidWhen}
         </p>
         {item.inlinePreview ? item.inlinePreview : null}
         {item.notes ? (
-          <p className="text-muted-foreground">
-            <span className="font-medium text-foreground">Notes:</span> {item.notes}
+          <p className="text-[var(--app-text-muted)]">
+            <span className="font-medium text-[var(--app-text)]">Notes:</span> {item.notes}
           </p>
         ) : null}
       </div>
@@ -444,14 +447,14 @@ export default function ComponentsPreviewPage() {
 
   return (
     <ReaderThemeProvider>
-    <main className="min-h-screen bg-[var(--bg-grouped)] px-6 py-10">
+    <main className="min-h-screen bg-[var(--app-section-bg)] px-6 py-10 text-[var(--app-text)]">
       <div className="mx-auto flex max-w-6xl flex-col gap-6">
         <header className="max-w-4xl">
-          <p className="text-sm font-medium text-primary">Design Catalog</p>
-          <h1 className="mt-2 text-[34px] font-semibold tracking-[-0.03em] text-foreground">
+          <p className="text-sm font-medium text-[var(--app-accent)]">Design Catalog</p>
+          <h1 className="mt-2 text-[34px] font-semibold tracking-[-0.03em] text-[var(--app-text)]">
             Components Preview
           </h1>
-          <p className="mt-3 text-[17px] leading-[24px] text-muted-foreground">
+          <p className="mt-3 text-[17px] leading-[24px] text-[var(--app-text-muted)]">
             This page documents the modal stack by layer so it is obvious what can be inserted where.
           </p>
         </header>
@@ -461,27 +464,27 @@ export default function ComponentsPreviewPage() {
           description="These are the constraints for how modal code should be composed in product code."
         >
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-foreground">
+            <div className={`${previewPanelClassName} text-sm`}>
               <p className="font-medium">Allowed in feature code</p>
-              <p className="mt-2 text-muted-foreground">
+              <p className={`mt-2 ${previewMutedTextClassName}`}>
                 `IOSAlertDialog`, `IOSFlowDialog`, and reader-specific sheet components built on `IOSBottomDrawer`.
               </p>
             </div>
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-foreground">
+            <div className={`${previewPanelClassName} text-sm`}>
               <p className="font-medium">Do not use directly</p>
-              <p className="mt-2 text-muted-foreground">
+              <p className={`mt-2 ${previewMutedTextClassName}`}>
                 `IOSModalShell` and `IOSDialog` should stay in the UI layer unless you are defining a new canonical pattern.
               </p>
             </div>
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-foreground">
+            <div className={`${previewPanelClassName} text-sm`}>
               <p className="font-medium">Action weight</p>
-              <p className="mt-2 text-muted-foreground">
+              <p className={`mt-2 ${previewMutedTextClassName}`}>
                 Use regular by default. `font-medium` is allowed only for a single primary action in light theme.
               </p>
             </div>
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-foreground">
+            <div className={`${previewPanelClassName} text-sm`}>
               <p className="font-medium">Do not hand-roll chrome</p>
-              <p className="mt-2 text-muted-foreground">
+              <p className={`mt-2 ${previewMutedTextClassName}`}>
                 Reuse `IOSBottomDrawerHeader`, `IOSDialogHeaderCenterLarge`, and `IOSDialogFooter`. Do not rebuild modal chrome locally in feature files.
               </p>
             </div>
@@ -493,9 +496,9 @@ export default function ComponentsPreviewPage() {
           description="Canonical button states tied to semantic tokens. Reuse these classes to keep hover/pressed behavior consistent."
         >
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
-              <p className="text-sm font-medium text-foreground">Text Action</p>
-              <p className="mt-1 text-xs text-muted-foreground">For top-bar actions like Add/Sort and low-emphasis toolbar actions.</p>
+            <div className={previewPanelClassName}>
+              <p className="text-sm font-medium text-[var(--app-text)]">Text Action</p>
+              <p className={`mt-1 text-xs ${previewMutedTextClassName}`}>For top-bar actions like Add/Sort and low-emphasis toolbar actions.</p>
               <div className="mt-3">
                 <button type="button" className={`${uiTextActionButton} h-10 px-3 text-[15px] font-medium`}>
                   Add
@@ -506,9 +509,9 @@ export default function ComponentsPreviewPage() {
               </div>
             </div>
 
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
-              <p className="text-sm font-medium text-foreground">Design-System Variants (`Button`)</p>
-              <p className="mt-1 text-xs text-muted-foreground">Use these first before inventing custom button chrome. For `outline/secondary/ghost`: hover = `fill-tertiary`, pressed = `fill-secondary`.</p>
+            <div className={previewPanelClassName}>
+              <p className="text-sm font-medium text-[var(--app-text)]">Design-System Variants (`Button`)</p>
+              <p className={`mt-1 text-xs ${previewMutedTextClassName}`}>Use these first before inventing custom button chrome. For `outline/secondary/ghost`: hover = `fill-tertiary`, pressed = `fill-secondary`.</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button variant="default">Default</Button>
                 <Button variant="outline">Outline</Button>
@@ -518,9 +521,9 @@ export default function ComponentsPreviewPage() {
               </div>
             </div>
 
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
-              <p className="text-sm font-medium text-foreground">Design-System Sizes</p>
-              <p className="mt-1 text-xs text-muted-foreground">Use size tokens for spacing consistency.</p>
+            <div className={previewPanelClassName}>
+              <p className="text-sm font-medium text-[var(--app-text)]">Design-System Sizes</p>
+              <p className={`mt-1 text-xs ${previewMutedTextClassName}`}>Use size tokens for spacing consistency.</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Button size="sm">Small</Button>
                 <Button size="default">Default</Button>
@@ -531,36 +534,36 @@ export default function ComponentsPreviewPage() {
               </div>
             </div>
 
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
-              <p className="text-sm font-medium text-foreground">Items Stack (Container Rule)</p>
-              <p className="mt-1 text-xs text-muted-foreground">Stack owns only clipping/radius. Rows own size/hover/pressed.</p>
-              <IOSItemsStack className="mt-3 border border-[var(--separator)] bg-[var(--bg-grouped-secondary)]">
+            <div className={previewPanelClassName}>
+              <p className="text-sm font-medium text-[var(--app-text)]">Items Stack (Container Rule)</p>
+              <p className={`mt-1 text-xs ${previewMutedTextClassName}`}>Stack owns only clipping/radius. Rows own size/hover/pressed.</p>
+              <IOSItemsStack className="mt-3 border border-[var(--app-border)] bg-[var(--app-surface-bg)]">
                 <button type="button" className={uiMenuItemButton}>
                   <span>Row A</span>
-                  <span className="text-muted-foreground">›</span>
+                  <span className="text-[var(--app-text-muted)]">›</span>
                 </button>
-                <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />
+                <div className="mx-4 h-[0.5px] bg-[var(--app-border)]" />
                 <button type="button" className={uiMenuItemButton}>
                   <span>Row B</span>
-                  <span className="text-primary">✓</span>
+                  <span className="text-[var(--app-accent)]">✓</span>
                 </button>
               </IOSItemsStack>
-              <p className="mt-3 text-xs text-muted-foreground">Dropdown example (compact rows)</p>
-              <IOSItemsStack className="mt-2 w-full max-w-[260px] border border-[var(--separator)] bg-[var(--bg-grouped-secondary)]">
+              <p className={`mt-3 text-xs ${previewMutedTextClassName}`}>Dropdown example (compact rows)</p>
+              <IOSItemsStack className="mt-2 w-full max-w-[260px] border border-[var(--app-border)] bg-[var(--app-surface-bg)]">
                 <button type="button" className={uiDropdownItemButton}>
                   <span>Recently Added</span>
-                  <span className="text-primary">✓</span>
+                  <span className="text-[var(--app-accent)]">✓</span>
                 </button>
-                <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />
+                <div className="mx-4 h-[0.5px] bg-[var(--app-border)]" />
                 <button type="button" className={uiDropdownItemButton}>
                   <span>Title A → Z</span>
                 </button>
               </IOSItemsStack>
-              <p className="mt-3 text-xs text-muted-foreground">Drawer example (large rows)</p>
-              <IOSItemsStack className="mt-2 border border-[var(--separator)] bg-[var(--bg-grouped-secondary)]">
-                <button type="button" className={`${uiDrawerItemButton} border-b border-[var(--separator)]`}>
+              <p className={`mt-3 text-xs ${previewMutedTextClassName}`}>Drawer example (large rows)</p>
+              <IOSItemsStack className="mt-2 border border-[var(--app-border)] bg-[var(--app-surface-bg)]">
+                <button type="button" className={`${uiDrawerItemButton} border-b border-[var(--app-border)]`}>
                   <span>Recently Read</span>
-                  <span className="text-primary">✓</span>
+                  <span className="text-[var(--app-accent)]">✓</span>
                 </button>
                 <button type="button" className={uiDrawerItemButton}>
                   <span>Title Z → A</span>
@@ -568,9 +571,9 @@ export default function ComponentsPreviewPage() {
               </IOSItemsStack>
             </div>
 
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
-              <p className="text-sm font-medium text-foreground">Filter Pills</p>
-              <p className="mt-1 text-xs text-muted-foreground">Status chips in library/store-like toolbars.</p>
+            <div className={previewPanelClassName}>
+              <p className="text-sm font-medium text-[var(--app-text)]">Filter Pills</p>
+              <p className={`mt-1 text-xs ${previewMutedTextClassName}`}>Status chips in library/store-like toolbars.</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button variant="outline" size="sm" className={`${uiFilterPillBase} ${uiFilterPillActive}`}>
                   Visible
@@ -584,9 +587,9 @@ export default function ComponentsPreviewPage() {
               </div>
             </div>
 
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4">
-              <p className="text-sm font-medium text-foreground">IOS Action Rows</p>
-              <p className="mt-1 text-xs text-muted-foreground">For modal footer decisions. Do not replace with generic `Button`.</p>
+            <div className={previewPanelClassName}>
+              <p className="text-sm font-medium text-[var(--app-text)]">IOS Action Rows</p>
+              <p className={`mt-1 text-xs ${previewMutedTextClassName}`}>For modal footer decisions. Do not replace with generic `Button`.</p>
               <div className="mt-3 overflow-hidden rounded-[18px] bg-transparent">
                 <div className="h-12" />
                 <IOSDialogFooter>
@@ -599,8 +602,8 @@ export default function ComponentsPreviewPage() {
               </div>
             </div>
 
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">Rules</p>
+            <div className={`${previewPanelClassName} text-sm ${previewMutedTextClassName}`}>
+              <p className="font-medium text-[var(--app-text)]">Rules</p>
               <ul className="mt-2 space-y-1">
                 <li>Use `uiTextActionButton` for text-only actions and add `uiTextActionButtonPressed` when a menu is open.</li>
                 <li>Use `IOSItemsStack` as the only clipping/radius owner for stacked interactive rows.</li>
@@ -618,25 +621,53 @@ export default function ComponentsPreviewPage() {
         </Section>
 
         <Section
+          title="Typography & Motion"
+          description="Baseline semantic text roles and motion rules across app and reader-adjacent UI. Landing keeps its own subsystem voice on top of this foundation."
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className={previewPanelClassName}>
+              <p className="text-[var(--app-text)]" style={{ fontSize: 'var(--app-type-display-size)', lineHeight: 'var(--app-type-display-line)', letterSpacing: '-0.03em', fontWeight: 600 }}>Display</p>
+              <p className="mt-3 text-[var(--app-text)]" style={{ fontSize: 'var(--app-type-title-size)', lineHeight: 'var(--app-type-title-line)', fontWeight: 600 }}>Title</p>
+              <p className="mt-3 text-[var(--app-text)]" style={{ fontSize: 'var(--app-type-heading-size)', lineHeight: 'var(--app-type-heading-line)', fontWeight: 600 }}>Heading</p>
+              <p className="mt-3 text-[var(--app-text)]" style={{ fontSize: 'var(--app-type-body-size)', lineHeight: 'var(--app-type-body-line)' }}>Body text should remain readable first and decorative second.</p>
+              <p className="mt-3 text-[var(--app-text-muted)]" style={{ fontSize: 'var(--app-type-caption-size)', lineHeight: 'var(--app-type-caption-line)' }}>Caption text supports nearby content without competing with it.</p>
+              <p className="mt-2 uppercase tracking-[0.12em] text-[var(--app-text-muted)]" style={{ fontSize: 'var(--app-type-meta-size)', lineHeight: 'var(--app-type-meta-line)', fontWeight: 600 }}>Meta label</p>
+            </div>
+
+            <div className={previewPanelClassName}>
+              <p className="text-sm font-medium text-[var(--app-text)]">Motion rules</p>
+              <div className={`mt-3 space-y-2 text-sm ${previewMutedTextClassName}`}>
+                <p><span className="text-[var(--app-text)] font-medium">Fast:</span> `var(--motion-fast)` for small press and opacity feedback.</p>
+                <p><span className="text-[var(--app-text)] font-medium">Base:</span> `var(--motion-base)` for dropdowns and standard overlay transitions.</p>
+                <p><span className="text-[var(--app-text)] font-medium">Slow:</span> `var(--motion-slow)` for drawers and emphasized surface movement.</p>
+                <p><span className="text-[var(--app-text)] font-medium">Standard easing:</span> `var(--motion-ease-standard)`.</p>
+                <p><span className="text-[var(--app-text)] font-medium">Exit easing:</span> `var(--motion-ease-exit)`.</p>
+                <p><span className="text-[var(--app-text)] font-medium">Rule:</span> hover/pressed/focus may vary by control, but timing roles should not be re-invented per component.</p>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section
           title="Which One"
           description="Pick the pattern by interaction shape first, then by content density."
         >
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
-              <p className="font-medium text-foreground">IOSAlertDialog</p>
-              <p className="mt-2 text-muted-foreground">Use for short blocking decisions, warnings, confirmations, and simple access requests.</p>
+            <div className={`${previewPanelClassName} text-sm`}>
+              <p className="font-medium text-[var(--app-text)]">IOSAlertDialog</p>
+              <p className={`mt-2 ${previewMutedTextClassName}`}>Use for short blocking decisions, warnings, confirmations, and simple access requests.</p>
             </div>
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
-              <p className="font-medium text-foreground">IOSFeatureDialog</p>
-              <p className="mt-2 text-muted-foreground">Use for compact prompts with richer copy or benefits lists, but not full flows.</p>
+            <div className={`${previewPanelClassName} text-sm`}>
+              <p className="font-medium text-[var(--app-text)]">IOSFeatureDialog</p>
+              <p className={`mt-2 ${previewMutedTextClassName}`}>Use for compact prompts with richer copy or benefits lists, but not full flows.</p>
             </div>
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
-              <p className="font-medium text-foreground">IOSFlowDialog</p>
-              <p className="mt-2 text-muted-foreground">Use for sheet-based tasks with custom body layout, inputs, uploads, and drag-to-dismiss.</p>
+            <div className={`${previewPanelClassName} text-sm`}>
+              <p className="font-medium text-[var(--app-text)]">IOSFlowDialog</p>
+              <p className={`mt-2 ${previewMutedTextClassName}`}>Use for sheet-based tasks with custom body layout, inputs, uploads, and drag-to-dismiss.</p>
             </div>
-            <div className="rounded-[22px] bg-[var(--bg-grouped)] p-4 text-sm">
-              <p className="font-medium text-foreground">Reader BottomDrawer Pattern</p>
-              <p className="mt-2 text-muted-foreground">Use only inside the reader for Chapters, Appearance, and other reader-specific drawers.</p>
+            <div className={`${previewPanelClassName} text-sm`}>
+              <p className="font-medium text-[var(--app-text)]">Reader BottomDrawer Pattern</p>
+              <p className={`mt-2 ${previewMutedTextClassName}`}>Use only inside the reader for Chapters, Appearance, and other reader-specific drawers.</p>
             </div>
           </div>
         </Section>

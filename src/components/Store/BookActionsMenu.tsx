@@ -62,7 +62,7 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
       <button
         ref={triggerRef}
         type="button"
-        className={`${uiIconCircleButton} h-8 w-8 bg-background/80 backdrop-blur text-primary`}
+        className={`${uiIconCircleButton} h-8 w-8 bg-[var(--app-elevated-bg)] backdrop-blur text-[var(--app-accent)]`}
         onPointerDown={(e) => {
           e.stopPropagation();
         }}
@@ -85,7 +85,7 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
             opacity: menuVisible && isPositioned ? 1 : 0
           }}
         >
-        <IOSItemsStack className="py-1 bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
+        <IOSItemsStack className="py-1 bg-[var(--app-surface-bg)] shadow-lg border border-[var(--app-border)]">
           <button
             type="button"
             onPointerDown={(e) => {
@@ -98,14 +98,14 @@ export default function BookActionsMenu({ onHide, onDelete, hideLabel = 'Hide', 
             className={`${uiMenuItemButton} justify-start gap-3 text-[15px]`}
           >
             {hideLabel === 'Unhide' ? (
-              <Eye className="w-4 h-4 text-primary" />
+              <Eye className="w-4 h-4 text-[var(--app-accent)]" />
             ) : (
-              <EyeOff className="w-4 h-4 text-primary" />
+              <EyeOff className="w-4 h-4 text-[var(--app-accent)]" />
             )}
             <span className="text-[15px]">{hideLabel}</span>
           </button>
 
-          <div className="ml-[44px] mr-4 h-[0.5px] bg-[var(--separator)]" />
+          <div className="ml-[44px] mr-4 h-[0.5px] bg-[var(--app-border)]" />
 
           <button
             type="button"

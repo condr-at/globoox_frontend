@@ -52,12 +52,41 @@ html {
   --text-dark-heading: var(--parchment);
   --text-dark-body: var(--parchment);
   --text-dark-muted: var(--ink-50);
+
+  /* Marketing subsystem semantic roles */
+  --marketing-shell-bg: var(--parchment);
+  --marketing-surface-bg: rgba(244,240,232,0.9);
+  --marketing-overlay-bg: rgba(244,240,232,0.985);
+  --marketing-card-bg: var(--parchment-white);
+  --marketing-border: rgba(44,59,45,0.08);
+  --marketing-text: var(--ink);
+  --marketing-text-muted: rgba(44,59,45,0.82);
+  --marketing-text-subtle: var(--ash);
+  --marketing-accent: var(--primary);
+  --marketing-accent-hover: var(--primary-hover);
+  --marketing-accent-soft: rgba(44,59,45,0.06);
+
+  /* Marketing typography roles */
+  --marketing-type-hero-size: 56px;
+  --marketing-type-hero-line: 1.1;
+  --marketing-type-section-size: 36px;
+  --marketing-type-section-line: 1.2;
+  --marketing-type-body-size: 17px;
+  --marketing-type-body-line: 1.6;
+  --marketing-type-meta-size: 12px;
+  --marketing-type-meta-line: 1.4;
+
+  /* Marketing motion roles */
+  --marketing-motion-fast: 180ms;
+  --marketing-motion-base: 280ms;
+  --marketing-motion-slow: 600ms;
+  --marketing-ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 body {
   font-family: 'Inter', -apple-system, sans-serif;
-  background-color: var(--bg-light);
-  color: var(--text-heading);
+  background-color: var(--marketing-shell-bg);
+  color: var(--marketing-text);
   line-height: 1.6;
   overflow-x: hidden;
 }
@@ -70,14 +99,14 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Lora', serif;
   font-weight: 400;
   letter-spacing: -0.01em;
-  color: var(--ink);
+  color: var(--marketing-text);
   margin: 0;
   padding: 0;
 }
 
 h1 {
-  font-size: 56px;
-  line-height: 1.1;
+  font-size: var(--marketing-type-hero-size);
+  line-height: var(--marketing-type-hero-line);
 }
 
 h2 {
@@ -93,12 +122,12 @@ h3 {
 p {
   margin: 0;
   padding: 0;
-  font-size: 17px;
-  line-height: 1.6;
+  font-size: var(--marketing-type-body-size);
+  line-height: var(--marketing-type-body-line);
 }
 
 a {
-  color: var(--primary);
+  color: var(--marketing-accent);
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -127,13 +156,13 @@ a:hover {
 }
 
 .btn-primary-hover:hover {
-  background: var(--primary-hover) !important;
+  background: var(--marketing-accent-hover) !important;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(178, 80, 50, 0.3) !important;
 }
 
 .footer-link:hover {
-  color: var(--primary);
+  color: var(--marketing-accent);
 }
 
 /* ============================================

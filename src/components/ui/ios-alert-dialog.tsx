@@ -53,7 +53,7 @@ export default function IOSAlertDialog({
       labelledBy={titleId}
       describedBy={descriptionId}
       closeOnOverlay={!loading}
-      className="w-[min(320px,calc(100vw-32px))] max-w-none overflow-hidden rounded-[14px] border-0 bg-[var(--bg-grouped-secondary)] shadow-[0_20px_60px_rgba(0,0,0,0.24)] backdrop-blur-[24px] sm:max-w-none sm:rounded-[14px]"
+      className="w-[min(320px,calc(100vw-32px))] max-w-none overflow-hidden rounded-[14px] border-0 bg-[var(--app-surface-bg)] text-[var(--app-text)] shadow-[0_20px_60px_rgba(0,0,0,0.24)] backdrop-blur-[24px] sm:max-w-none sm:rounded-[14px]"
     >
       <div className="px-[16px] pt-3 text-center" style={{ paddingBottom: '18px' }}>
         <div
@@ -67,13 +67,13 @@ export default function IOSAlertDialog({
         </div>
         <h2
           id={titleId}
-          className="text-[17px] font-semibold leading-[22px] tracking-[-0.01em] text-foreground"
+          className="text-[17px] font-semibold leading-[22px] tracking-[-0.01em] text-[var(--app-text)]"
         >
           {title}
         </h2>
         <div
           id={descriptionId}
-          className="mt-3 text-[13px] leading-[18px] text-foreground"
+          className="mt-3 text-[13px] leading-[18px] text-[var(--app-text-muted)]"
         >
           {description}
         </div>

@@ -78,7 +78,7 @@ export default function ReaderActionsMenu({
           className="fixed w-56 z-[100]"
           style={menuStyle}
         >
-        <IOSItemsStack className="py-1 shadow-lg border bg-[var(--reader-panel-bg)] text-[var(--reader-text)] border-[var(--reader-border)]" style={readerThemeStyle}>
+        <IOSItemsStack tone="reader" className="py-1 shadow-lg" style={readerThemeStyle}>
           <button
             onClick={() => handleAction('toc')}
             className={uiMenuItemButton}

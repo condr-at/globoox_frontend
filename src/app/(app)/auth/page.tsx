@@ -81,10 +81,10 @@ function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-[var(--app-shell-bg)] text-[var(--app-text)]">
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-10 sm:px-6">
         <section className="flex flex-1 items-center justify-center">
-          <Card className="w-full max-w-md border-border/70 bg-card/95 shadow-md backdrop-blur-sm">
+          <Card className="w-full max-w-md border-[color:var(--app-border)] bg-[color:var(--app-elevated-bg)] text-[var(--app-text)] shadow-md backdrop-blur-sm">
             <CardHeader className="space-y-1.5 p-6">
               <CardTitle className="text-2xl">Sign in</CardTitle>
               <CardDescription>Enter your email to continue to your account</CardDescription>
@@ -144,7 +144,7 @@ function AuthForm() {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-1 top-1 h-8 w-8 text-muted-foreground"
+                      className="absolute right-1 top-1 h-8 w-8 text-[var(--app-text-muted)]"
                       onClick={() => setShowPassword((prev) => !prev)}
                       disabled={loading}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -160,7 +160,7 @@ function AuthForm() {
 
               <div className="flex items-center gap-3 py-1">
                 <Separator className="flex-1" />
-                <span className="text-xs uppercase tracking-wide text-muted-foreground">or</span>
+                <span className="text-xs uppercase tracking-wide text-[var(--app-text-muted)]">or</span>
                 <Separator className="flex-1" />
               </div>
 
@@ -174,7 +174,7 @@ function AuthForm() {
                 Continue with Google
               </Button>
 
-              <p className="text-center text-sm text-muted-foreground">
+              <p className="text-center text-sm text-[var(--app-text-muted)]">
                 Don&apos;t have an account?{' '}
                 <Link href="/auth/register" className="text-primary underline-offset-4 hover:underline">
                   Create account
@@ -183,7 +183,7 @@ function AuthForm() {
             </CardContent>
           </Card>
         </section>
-        <p className="pb-2 text-center text-sm text-muted-foreground">
+        <p className="pb-2 text-center text-sm text-[var(--app-text-muted)]">
           <Link href="/my-books" className="text-primary underline-offset-4 hover:underline">
             Browse as guest
           </Link>
