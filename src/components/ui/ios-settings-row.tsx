@@ -53,7 +53,7 @@ export default function IOSSettingsRow({
         className={`${uiMenuItemButton} h-12 px-4 py-0`}
       >
         <span>{label}</span>
-        <span className="flex items-center gap-1 text-muted-foreground text-[15px]">
+        <span className="flex items-center gap-1 text-[var(--app-text-muted)] text-[15px]">
           {currentLabel}
           <IOSIcon icon={ChevronsUpDown} className="size-4" strokeWidth={1.9} />
         </span>
@@ -65,7 +65,7 @@ export default function IOSSettingsRow({
           className="fixed w-[200px] z-[100]"
           style={{ ...menuStyle, visibility: isPositioned ? 'visible' : 'hidden' }}
         >
-        <IOSItemsStack className="py-[8px] bg-[var(--bg-grouped-secondary)] shadow-lg border border-[var(--separator)]">
+        <IOSItemsStack className="py-[8px] bg-[var(--app-surface-bg)] shadow-lg border border-[var(--app-border)]">
           {options.map((opt, i, arr) => (
             <div key={opt.id}>
               <button
@@ -73,9 +73,9 @@ export default function IOSSettingsRow({
                 className={uiDropdownItemButton}
               >
                 <span className="text-[17px]">{opt.label}</span>
-                {value === opt.id && <IOSIcon icon={Check} className="size-[18px] text-primary" strokeWidth={1.9} />}
+                {value === opt.id && <IOSIcon icon={Check} className="size-[18px] text-[var(--app-accent)]" strokeWidth={1.9} />}
               </button>
-              {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--separator)]" />}
+              {i < arr.length - 1 && <div className="mx-4 h-[0.5px] bg-[var(--app-border)]" />}
             </div>
           ))}
         </IOSItemsStack>

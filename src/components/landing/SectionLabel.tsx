@@ -12,7 +12,7 @@ export function SectionLabel({ children, style = {} }: SectionLabelProps) {
         textTransform: 'uppercase',
         fontSize: '12px',
         fontWeight: 600,
-        color: '#B25032',
+        color: 'var(--marketing-accent)',
         letterSpacing: '0.12em',
         marginBottom: '16px',
         display: 'block',

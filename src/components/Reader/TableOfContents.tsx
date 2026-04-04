@@ -6,6 +6,9 @@ import { List } from 'lucide-react';
 import IOSBottomDrawer from '@/components/ui/ios-bottom-drawer';
 import IOSBottomDrawerHeader from '@/components/ui/ios-bottom-drawer-header';
 import { uiIconTriggerButton, uiMenuItemButton } from '@/components/ui/button-styles';
+import { useReaderTheme } from '@/lib/hooks/useReaderTheme';
+import { getReaderUiColors } from '@/lib/readerTheme';
+import { getThemeStyle } from '@/lib/themes';
 
 interface Chapter {
     number: number;
@@ -37,6 +40,9 @@ export default function TableOfContents({
     onOpenChange: setExternalOpen,
 }: TableOfContentsProps) {
     const [internalOpen, setInternalOpen] = useState(false);
+    const readerTheme = useReaderTheme();
+    const uiColors = getReaderUiColors(readerTheme);
+    const readerThemeStyle = getThemeStyle(readerTheme.id);
 
     const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
     const setIsOpen = setExternalOpen !== undefined ? setExternalOpen : setInternalOpen;
@@ -61,8 +67,9 @@ export default function TableOfContents({
                 open={isOpen}
                 onOpenChange={setIsOpen}
                 side="bottom"
+                tone="reader"
                 enableDragDismiss
-                dragHandle={<div className="h-1 w-12 rounded-full bg-[var(--separator)]" />}
+                dragHandle={<div className="h-1 w-12 rounded-full bg-[var(--reader-border)]" />}
                 dragRegion={(
                     <IOSBottomDrawerHeader
                         title={<span className={isContentPending ? 'blur-[3px] opacity-40' : ''}>{bookTitle}</span>}
@@ -73,7 +80,7 @@ export default function TableOfContents({
                             </div>
                         )}
                         leading={(
-                            <div className="relative h-[94px] w-[64px] overflow-hidden rounded-[6px] bg-[var(--fill-secondary)] shadow-[0_3px_10px_rgba(0,0,0,0.18)]">
+                            <div className="relative h-[94px] w-[64px] overflow-hidden rounded-[6px] shadow-[0_3px_10px_rgba(0,0,0,0.18)]" style={{ backgroundColor: uiColors.border }}>
                                 {coverUrl ? (
                                     <Image
                                         src={coverUrl}
@@ -83,7 +90,7 @@ export default function TableOfContents({
                                         className="object-cover"
                                     />
                                 ) : (
-                                    <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(180deg,#cfcfcd,#aaaaa8)] text-[8px] font-medium uppercase tracking-[0.14em] text-white/70">
+                                    <div className="flex h-full w-full items-center justify-center text-[8px] font-medium uppercase tracking-[0.14em]" style={{ background: `linear-gradient(180deg, ${uiColors.border}, ${uiColors.mutedText})`, color: uiColors.background }}>
                                         EPUB
                                     </div>
                                 )}
@@ -92,7 +99,8 @@ export default function TableOfContents({
                         onClose={() => setIsOpen(false)}
                     />
                 )}
-                className="mt-[max(56px,calc(env(safe-area-inset-top)+18px))] flex h-[calc(100dvh-max(56px,calc(env(safe-area-inset-top)+18px)))] max-h-none flex-col overflow-hidden rounded-t-[20px] bg-[var(--bg-grouped-secondary)] shadow-[0_-12px_40px_rgba(0,0,0,0.16)] sm:mt-0 sm:max-h-[calc(100dvh-2rem)] sm:max-w-[640px] sm:overflow-hidden sm:rounded-[24px]"
+                className="mt-[max(56px,calc(env(safe-area-inset-top)+18px))] flex h-[calc(100dvh-max(56px,calc(env(safe-area-inset-top)+18px)))] max-h-none flex-col overflow-hidden rounded-t-[20px] shadow-[0_-12px_40px_rgba(0,0,0,0.16)] sm:mt-0 sm:max-h-[calc(100dvh-2rem)] sm:max-w-[640px] sm:overflow-hidden sm:rounded-[24px]"
+                style={readerThemeStyle}
             >
                 <div className="relative flex-1 overflow-hidden sm:min-h-0">
                     <div className={`h-full overflow-y-auto ${isContentPending ? 'blur-[3px] opacity-40' : ''}`}>
@@ -106,26 +114,22 @@ export default function TableOfContents({
                                     key={chapter.number}
                                     onClick={() => handleSelect(chapter.number)}
                                     disabled={isContentPending}
-                                    className={`${uiMenuItemButton} relative min-h-[72px] gap-4 border-t border-[var(--separator)] px-5`}
-                                    style={{ paddingLeft: `${20 + indentPx}px`, paddingRight: '20px' }}
+                                    className={`${uiMenuItemButton} relative min-h-[72px] gap-4 border-t px-5`}
+                                    style={{ borderColor: uiColors.border, paddingLeft: `${20 + indentPx}px`, paddingRight: '20px' }}
                                 >
                                     <span className="min-w-0 flex-1">
                                         <span
                                             className={`
                                                 block
                                                 ${depth === 1 ? 'text-[18px]' : 'text-[16px]'}
-                                                ${isActive
-                                                    ? 'text-foreground font-semibold'
-                                                    : depth === 1
-                                                        ? 'text-foreground'
-                                                        : 'text-muted-foreground'
-                                                }
+                                                ${isActive ? 'font-semibold' : ''}
                                             `}
+                                            style={{ color: isActive || depth === 1 ? uiColors.text : uiColors.mutedText }}
                                         >
                                             {chapter.title}
                                         </span>
                                     </span>
-                                    <span className="shrink-0 text-[15px] text-muted-foreground">
+                                    <span className="shrink-0 text-[15px] text-[var(--reader-muted-text)]">
                                         {depth === 1 ? chapter.number : ''}
                                     </span>
                                 </button>
@@ -133,12 +137,13 @@ export default function TableOfContents({
                         })}
                         <div
                             aria-hidden="true"
-                            className="min-h-[72px] border-t border-[var(--separator)]"
+                            className="min-h-[72px] border-t"
+                            style={{ borderColor: uiColors.border }}
                         />
                     </div>
                     {isContentPending && (
                         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-                            <span className="text-sm font-medium text-white/90 animate-pulse-text">
+                            <span className="text-sm font-medium animate-pulse-text" style={{ color: 'var(--reader-panel-bg)' }}>
                                 Translating...
                             </span>
                         </div>

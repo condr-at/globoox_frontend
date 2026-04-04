@@ -35,8 +35,8 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen flex items-center justify-center bg-[var(--app-shell-bg)] text-[var(--app-text)]">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--app-text-muted)]" />
       </div>
     );
   }
@@ -44,15 +44,15 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
   if (!user) {
     const returnUrl = token ? `/join-alpha?token=${encodeURIComponent(token)}` : '/join-alpha';
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="w-full max-w-sm">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--app-shell-bg)] p-6 text-[var(--app-text)]">
+        <Card className="w-full max-w-sm bg-[var(--app-surface-bg)] text-[var(--app-text)]">
           <CardContent className="p-6 flex flex-col items-center gap-4 text-center">
             <div className="w-14 h-14 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
               <FlaskConical className="w-7 h-7 text-violet-600 dark:text-violet-400" />
             </div>
             <div>
               <h1 className="text-lg font-semibold">Join Alpha Program</h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-sm text-[var(--app-text-muted)]">
                 Sign in to activate your alpha access.
               </p>
             </div>
@@ -67,12 +67,12 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="w-full max-w-sm">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--app-shell-bg)] p-6 text-[var(--app-text)]">
+        <Card className="w-full max-w-sm bg-[var(--app-surface-bg)] text-[var(--app-text)]">
           <CardContent className="p-6 text-center">
             <XCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
             <h1 className="text-lg font-semibold">Invalid Link</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-sm text-[var(--app-text-muted)]">
               This link is missing a token. Please use the link provided by our team.
             </p>
             <Button asChild className="mt-4 w-full" variant="outline">
@@ -85,15 +85,15 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <Card className="w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--app-shell-bg)] p-6 text-[var(--app-text)]">
+      <Card className="w-full max-w-sm bg-[var(--app-surface-bg)] text-[var(--app-text)]">
         <CardContent className="p-6 flex flex-col items-center gap-4 text-center">
           {effectiveStatus === 'success' ? (
             <>
               <CheckCircle className="w-14 h-14 text-green-500" />
               <div>
                 <h1 className="text-lg font-semibold">You&apos;re an Alpha Tester!</h1>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="mt-1 text-sm text-[var(--app-text-muted)]">
                   Unlimited translation access is now active on your account.
                 </p>
               </div>
@@ -106,7 +106,7 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
               <XCircle className="w-14 h-14 text-destructive" />
               <div>
                 <h1 className="text-lg font-semibold">Access Denied</h1>
-                <p className="text-sm text-muted-foreground mt-1">{errorMessage}</p>
+                <p className="mt-1 text-sm text-[var(--app-text-muted)]">{errorMessage}</p>
               </div>
               <Button asChild className="w-full" variant="outline">
                 <Link href="/my-books">Go to My Books</Link>
@@ -119,7 +119,7 @@ export default function JoinAlphaPage({ searchParams }: JoinAlphaPageProps) {
               </div>
               <div>
                 <h1 className="text-lg font-semibold">Join Alpha Program</h1>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="mt-1 text-sm text-[var(--app-text-muted)]">
                   Activate unlimited translation access for your account.
                 </p>
               </div>

@@ -11,6 +11,11 @@ Create a `.env.local` file with the following variables:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
+# Google One Tap
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+# Optional: comma-separated list of origins where One Tap may initialize.
+# Example: NEXT_PUBLIC_GOOGLE_ALLOWED_ORIGINS=http://localhost:3000,https://globoox.com
+
 # Backend API Configuration
 API_URL=https://globooks.onrender.com
 # Or use NEXT_PUBLIC_API_URL if you need it exposed to the browser

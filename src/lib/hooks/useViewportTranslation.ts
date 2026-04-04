@@ -30,6 +30,14 @@ const RECENT_BLOCK_TEXT_TTL_MS = 2000
 // Block types that don't need translation
 const SKIP_TYPES = new Set(['image', 'hr'])
 
+function createSessionId(): string {
+  if (typeof globalThis.crypto !== 'undefined' && typeof globalThis.crypto.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID()
+  }
+
+  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
 /** Merge a translatedText string into the appropriate field(s) of a ContentBlock. */
 function applyTranslation(block: ContentBlock, translatedText: string): ContentBlock | null {
   if (block.type === 'paragraph' || block.type === 'quote' || block.type === 'heading') {
@@ -257,7 +265,7 @@ export function useViewportTranslation({
   // Session = same book + language. Spans multiple chapters and flushes.
   // Ends after SESSION_INACTIVITY_MS of no LLM activity, or on book/lang change.
   const SESSION_INACTIVITY_MS = 30 * 60 * 1000
-  const sessionIdRef = useRef<string>(crypto.randomUUID())
+  const sessionIdRef = useRef<string>(createSessionId())
   const sessionStartRef = useRef<number>(Date.now())
   const sessionLlmCallsRef = useRef(0)
   const sessionRequestCountRef = useRef(0)
@@ -288,7 +296,7 @@ export function useViewportTranslation({
       clearTimeout(inactivityTimerRef.current)
       inactivityTimerRef.current = null
     }
-    sessionIdRef.current = crypto.randomUUID()
+    sessionIdRef.current = createSessionId()
     sessionStartRef.current = Date.now()
     sessionLlmCallsRef.current = 0
     sessionRequestCountRef.current = 0

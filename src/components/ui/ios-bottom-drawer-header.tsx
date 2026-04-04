@@ -30,11 +30,11 @@ export default function IOSBottomDrawerHeader({
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="truncate text-[18px] font-semibold tracking-[-0.02em] text-foreground">
+              <h3 className="truncate text-[18px] font-semibold tracking-[-0.02em] text-[var(--reader-text)]">
                 {title}
               </h3>
               {subtitle && (
-                <div className="mt-1 text-[17px] leading-[22px] text-muted-foreground">
+                <div className="mt-1 text-[17px] leading-[22px] text-[var(--reader-muted-text)]">
                   {subtitle}
                 </div>
               )}

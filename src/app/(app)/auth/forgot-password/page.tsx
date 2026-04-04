@@ -49,9 +49,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-[var(--app-shell-bg)] text-[var(--app-text)]">
       <section className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-10 sm:px-6">
-        <Card className="w-full max-w-md border-border/70 bg-card/95 shadow-md backdrop-blur-sm">
+        <Card className="w-full max-w-md border-[color:var(--app-border)] bg-[color:var(--app-elevated-bg)] text-[var(--app-text)] shadow-md backdrop-blur-sm">
           <CardHeader className="space-y-1.5 p-6">
             <CardTitle className="text-2xl">Reset password</CardTitle>
             <CardDescription>Enter your account email and we&apos;ll send a reset link</CardDescription>
@@ -88,13 +88,13 @@ export default function ForgotPasswordPage() {
               </Button>
             </form>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-[var(--app-text-muted)]">
               Remembered your password?{' '}
               <Link href="/auth" className="text-primary underline-offset-4 hover:underline">
                 Back to sign in
               </Link>
             </p>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-[var(--app-text-muted)]">
               Don&apos;t have an account?{' '}
               <Link href="/auth/register" className="text-primary underline-offset-4 hover:underline">
                 Create account

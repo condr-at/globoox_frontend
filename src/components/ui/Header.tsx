@@ -33,7 +33,7 @@ export default function Header() {
     if (isReaderPage || isAuthPage) return null;
 
     return (
-        <nav className="mobile-ui-no-select fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-t pb-[env(safe-area-inset-bottom)]">
+        <nav className="mobile-ui-no-select fixed bottom-0 left-0 right-0 z-50 border-t bg-[var(--app-chrome-bg)] text-[var(--app-text)] backdrop-blur-xl border-[var(--app-border)] pb-[env(safe-area-inset-bottom)]">
             <div className="container max-w-2xl mx-auto flex items-center justify-around h-15">
                 {/* Store — disabled, coming soon */}
                 <Button
@@ -46,7 +46,7 @@ export default function Header() {
                         <div className="opacity-40">
                             <IOSIcon icon={ShoppingBag} strokeWidth={1.5} />
                         </div>
-                        <span className="absolute -top-0.5 -right-3 text-[8px] font-semibold text-[var(--primary-foreground)] leading-none px-1 py-0.5 rounded-full bg-primary">
+                        <span className="absolute -top-0.5 -right-3 text-[8px] font-semibold text-[var(--primary-foreground)] leading-none px-1 py-0.5 rounded-full bg-[var(--app-accent)]">
                             soon
                         </span>
                     </div>
@@ -59,8 +59,8 @@ export default function Header() {
                     asChild
                     className={`flex-1 flex-col gap-1 h-full rounded-none ${
                         isActive('/my-books')
-                            ? 'text-primary'
-                            : 'text-muted-foreground'
+                            ? 'text-[var(--app-accent)]'
+                            : 'text-[var(--app-text-muted)]'
                     }`}
                 >
                     <Link href="/my-books" onClick={() => notifyNavigationIntent('/my-books')}>
@@ -75,8 +75,8 @@ export default function Header() {
                     asChild
                     className={`flex-1 flex-col gap-1 h-full rounded-none ${
                         isActive('/settings')
-                            ? 'text-primary'
-                            : 'text-muted-foreground'
+                            ? 'text-[var(--app-accent)]'
+                            : 'text-[var(--app-text-muted)]'
                     }`}
                 >
                     <Link href="/settings" onClick={() => notifyNavigationIntent('/settings')}>

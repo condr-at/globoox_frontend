@@ -34,8 +34,8 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
             padding: '8px 8px 8px 20px',
             borderRadius: '28px',
             backdropFilter: 'blur(14px)',
-            background: 'rgba(244,240,232,0.9)',
-            border: '1px solid rgba(44,59,45,0.08)',
+              background: 'var(--marketing-surface-bg)',
+              border: '1px solid var(--marketing-border)',
             boxShadow: '0 12px 28px rgba(0,0,0,0.08)',
           }}
         >
@@ -45,7 +45,7 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
             style={{
               fontFamily: "'Lora', serif",
               fontSize: '22px',
-              color: 'var(--ink)',
+              color: 'var(--marketing-text)',
               textDecoration: 'none',
               fontWeight: 500,
               letterSpacing: '-0.02em',
@@ -61,7 +61,7 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
                 <a
                   href={item.href}
                   style={{
-                    color: 'rgba(44,59,45,0.82)',
+                    color: 'var(--marketing-text-muted)',
                     textDecoration: 'none',
                     fontSize: '14px',
                     fontWeight: 500,
@@ -76,14 +76,14 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
               href="/my-books"
               className="landing-header-open-app"
               style={{
-                color: 'var(--ink)',
+                color: 'var(--marketing-text)',
                 textDecoration: 'none',
                 fontSize: '14px',
                 fontWeight: 600,
                 marginLeft: '28px',
                 padding: '10px 16px',
                 borderRadius: '999px',
-                background: 'rgba(44,59,45,0.06)',
+                background: 'var(--marketing-accent-soft)',
                 textAlign: 'center',
               }}
             >
@@ -105,7 +105,7 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
               borderRadius: '0',
               border: 'none',
               background: 'transparent',
-              color: 'var(--ink)',
+              color: 'var(--marketing-text)',
               cursor: 'pointer',
               padding: 0,
               position: 'relative',
@@ -128,7 +128,7 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
                   top: menuOpen ? '8px' : '3px',
                   height: '2px',
                   borderRadius: '999px',
-                  background: 'var(--ink)',
+                  background: 'var(--marketing-text)',
                   transform: menuOpen ? 'rotate(45deg)' : 'none',
                   transition: 'transform 180ms ease, top 180ms ease, opacity 180ms ease',
                 }}
@@ -141,7 +141,7 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
                   top: '8px',
                   height: '2px',
                   borderRadius: '999px',
-                  background: 'var(--ink)',
+                  background: 'var(--marketing-text)',
                   opacity: menuOpen ? 0 : 1,
                   transition: 'opacity 180ms ease',
                 }}
@@ -154,7 +154,7 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
                   top: menuOpen ? '8px' : '13px',
                   height: '2px',
                   borderRadius: '999px',
-                  background: 'var(--ink)',
+                  background: 'var(--marketing-text)',
                   transform: menuOpen ? 'rotate(-45deg)' : 'none',
                   transition: 'transform 180ms ease, top 180ms ease',
                 }}
@@ -176,8 +176,8 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
               gap: '0',
               padding: '22px 20px 24px',
               borderRadius: '20px',
-              background: 'rgba(244,240,232,0.985)',
-              border: '1px solid rgba(44,59,45,0.08)',
+              background: 'var(--marketing-overlay-bg)',
+              border: '1px solid var(--marketing-border)',
               boxShadow: '0 18px 40px rgba(0,0,0,0.12)',
             }}
           >
@@ -187,12 +187,12 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
                 style={{
-                  color: 'rgba(44,59,45,0.9)',
+                  color: 'var(--marketing-text-muted)',
                   textDecoration: 'none',
                   fontSize: '15px',
                   fontWeight: 500,
                   padding: '14px 0',
-                  borderBottom: index < navItems.length - 1 ? '1px solid rgba(44,59,45,0.08)' : 'none',
+                  borderBottom: index < navItems.length - 1 ? '1px solid var(--marketing-border)' : 'none',
                 }}
               >
                 {item.label}
@@ -209,7 +209,7 @@ export function LandingHeader({ navItems = [] }: LandingHeaderProps) {
                 padding: '12px 16px',
                 marginTop: '22px',
                 borderRadius: '12px',
-                background: 'var(--primary)',
+                background: 'var(--marketing-accent)',
                 textAlign: 'center',
               }}
             >

@@ -48,14 +48,14 @@ export default function SettingsPage() {
     const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
 
     return (
-        <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
+        <div className="min-h-screen bg-[var(--app-shell-bg)] pb-[calc(60px+env(safe-area-inset-bottom))] text-[var(--app-text)]">
             <PageHeader title="Settings" />
 
             <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(1rem+env(safe-area-inset-top)+76px)] pb-4 space-y-4">
                 {loading ? (
                     <Card className="shadow-none">
                         <CardContent className="flex items-center justify-center p-12">
-                            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                            <Loader2 className="w-6 h-6 animate-spin text-[var(--app-text-muted)]" />
                         </CardContent>
                     </Card>
                 ) : user ? (
@@ -101,7 +101,7 @@ export default function SettingsPage() {
                                         <FlaskConical className="w-5 h-5 text-violet-500 shrink-0" />
                                         <div>
                                             <p className="text-sm font-medium">Join Alpha Program</p>
-                                            <p className="text-xs text-muted-foreground">Get early access to new features</p>
+                                            <p className="text-xs text-[var(--app-text-muted)]">Get early access to new features</p>
                                         </div>
                                     </div>
                                     <Button
@@ -118,10 +118,10 @@ export default function SettingsPage() {
 
                         {/* Appearance */}
                         <div>
-                            <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-muted-foreground">
+                            <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-[var(--app-text-muted)]">
                                 Appearance
                             </p>
-                            <Card className="shadow-none">
+                            <Card className="shadow-none bg-[var(--app-surface-bg)] text-[var(--app-text)]">
                                 <CardContent className="p-0">
                                     <IOSItemsStack>
                                     <IOSSettingsRow
@@ -144,10 +144,10 @@ export default function SettingsPage() {
 
                         {/* Other */}
                         <div>
-                            <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-muted-foreground">
+                            <p className="px-4 pb-1 text-[13px] font-medium uppercase tracking-wide text-[var(--app-text-muted)]">
                                 Other
                             </p>
-                            <Card className="shadow-none">
+                            <Card className="shadow-none bg-[var(--app-surface-bg)] text-[var(--app-text)]">
                                 <CardContent className="p-0">
                                     <IOSItemsStack>
                                     <Button variant="ghost" asChild className={`${uiMenuItemButton} h-12 !rounded-none justify-start gap-3`}>
@@ -179,11 +179,11 @@ export default function SettingsPage() {
                     </>
                 ) : (
                     /* Guest state */
-                    <Card className="shadow-none">
+                        <Card className="shadow-none bg-[var(--app-surface-bg)] text-[var(--app-text)]">
                         <CardContent className="p-6">
                             <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                                    <User className="w-8 h-8 text-muted-foreground" />
+                                <div className="w-16 h-16 rounded-full bg-[var(--fill-tertiary)] flex items-center justify-center">
+                                    <User className="w-8 h-8 text-[var(--app-text-muted)]" />
                                 </div>
                                 <div>
                                     <CardTitle className="text-lg">Guest User</CardTitle>
@@ -198,7 +198,7 @@ export default function SettingsPage() {
                 )}
 
                 {/* App Info */}
-                <p className="text-center text-xs text-muted-foreground">
+                <p className="text-center text-xs text-[var(--app-text-muted)]">
                     Globoox v0.1
                 </p>
             </div>

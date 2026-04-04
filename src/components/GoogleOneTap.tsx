@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
+import { sha256 } from 'js-sha256';
 import { createClient } from '@/lib/supabase/client';
 
 declare global {
@@ -20,7 +21,39 @@ declare global {
 
 export default function GoogleOneTap() {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const allowedOriginsEnv = process.env.NEXT_PUBLIC_GOOGLE_ALLOWED_ORIGINS;
   const doneRef = useRef(false);
+  const [shouldLoadOneTap, setShouldLoadOneTap] = useState(false);
+
+  function isOriginAllowed(currentOrigin: string) {
+    const configuredOrigins = allowedOriginsEnv
+      ?.split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+
+    if (configuredOrigins && configuredOrigins.length > 0) {
+      return configuredOrigins.includes(currentOrigin);
+    }
+
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+    return !isLocalhost;
+  }
+
+  async function buildNoncePair(): Promise<{ rawNonce?: string; hashedNonce?: string }> {
+    const runtimeCrypto = window.crypto;
+    // One Tap should fail closed if secure random is unavailable.
+    // Do not add an insecure nonce fallback here.
+    if (!runtimeCrypto?.getRandomValues) {
+      console.warn('Google One Tap: secure random nonce generation is unavailable, skipping One Tap init');
+      return {};
+    }
+
+    const rawNonce = window.btoa(String.fromCharCode(...runtimeCrypto.getRandomValues(new Uint8Array(32))));
+    const hashedNonce = sha256(rawNonce);
+
+    return { rawNonce, hashedNonce };
+  }
 
   async function initOneTap() {
     if (doneRef.current || !clientId || !window.google?.accounts?.id) return;
@@ -31,11 +64,11 @@ export default function GoogleOneTap() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) return;
 
-    const rawNonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
-    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawNonce));
-    const hashedNonce = Array.from(new Uint8Array(hashBuffer))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
+    const { rawNonce, hashedNonce } = await buildNoncePair();
+    if (!rawNonce || !hashedNonce) {
+      doneRef.current = false;
+      return;
+    }
 
     window.google.accounts.id.initialize({
       client_id: clientId,
@@ -55,6 +88,19 @@ export default function GoogleOneTap() {
 
   useEffect(() => {
     if (!clientId) return;
+
+    const currentOrigin = window.location.origin;
+    if (!isOriginAllowed(currentOrigin)) {
+      console.info(
+        'Google One Tap: skipped for origin %s. Add it to NEXT_PUBLIC_GOOGLE_ALLOWED_ORIGINS and the Google client authorized origins if One Tap should run here.',
+        currentOrigin,
+      );
+      doneRef.current = false;
+      setShouldLoadOneTap(false);
+      return;
+    }
+
+    setShouldLoadOneTap(true);
 
     // Script may already be loaded (SPA navigation, HMR)
     if (window.google?.accounts?.id) {
@@ -79,7 +125,7 @@ export default function GoogleOneTap() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!clientId) return null;
+  if (!clientId || !shouldLoadOneTap) return null;
 
   return <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />;
 }

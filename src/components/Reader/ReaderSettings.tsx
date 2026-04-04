@@ -8,7 +8,9 @@ import { uiIconTriggerButton } from '@/components/ui/button-styles';
 import { useAppStore } from '@/lib/store';
 import { trackFontSizeChanged } from '@/lib/posthog';
 import { APP_THEME_PALETTE_OPTIONS } from '@/lib/theme-options';
-import { READER_THEME_CONFIGS } from '@/lib/readerTheme';
+import { getReaderPreviewTokens, getReaderSemanticTokens, READER_THEME_CONFIGS } from '@/lib/readerTheme';
+import { useReaderTheme } from '@/lib/hooks/useReaderTheme';
+import { getThemeStyle } from '@/lib/themes';
 
 const THEMES = [
     { id: 'light', label: `${APP_THEME_PALETTE_OPTIONS.find((p) => p.id === 'default')?.label ?? 'Default'} Light` },
@@ -30,6 +32,9 @@ export default function ReaderSettings({
 
     const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
     const setIsOpen = setExternalOpen !== undefined ? setExternalOpen : setInternalOpen;
+    const readerTheme = useReaderTheme();
+    const semanticTokens = getReaderSemanticTokens(readerTheme);
+    const readerThemeStyle = getThemeStyle(readerTheme.id);
 
     const { settings, setFontSize, setPageLayoutMode, setReaderTheme } = useAppStore();
     const fontSizeBeforeRef = useRef(settings.fontSize);
@@ -51,20 +56,22 @@ export default function ReaderSettings({
                 open={isOpen}
                 onOpenChange={setIsOpen}
                 side="bottom"
+                tone="reader"
                 enableDragDismiss
-                dragHandle={<div className="h-1 w-12 rounded-full bg-[var(--separator)]" />}
+                dragHandle={<div className="h-1 w-12 rounded-full bg-[var(--reader-border)]" />}
                 dragRegion={(
                     <IOSBottomDrawerHeader
                         title="Themes & Settings"
                         onClose={() => setIsOpen(false)}
                     />
                 )}
-                className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] bg-[var(--bg-grouped-secondary)] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:overflow-hidden sm:rounded-[24px]"
+                className="mt-[max(240px,46vh)] flex h-[calc(100dvh-max(240px,46vh))] max-h-none flex-col rounded-t-[20px] sm:mt-0 sm:h-auto sm:max-w-[320px] sm:overflow-hidden sm:rounded-[24px]"
+                style={readerThemeStyle}
             >
                 <div className="flex-1 overflow-y-auto p-5 pt-0 space-y-5 sm:min-h-0">
                     {/* Theme Picker */}
                     <div>
-                        <p className="text-[15px] text-muted-foreground mb-[12px]">Theme</p>
+                        <p className="mb-[12px] text-[15px] text-[var(--reader-muted-text)]">Theme</p>
                         <div className="grid grid-cols-4 gap-[8px]">
                             {THEMES.map((t) => {
                                 const isActive = settings.readerTheme === t.id;
@@ -78,26 +85,31 @@ export default function ReaderSettings({
                                         aria-label={t.label}
                                         aria-pressed={isActive}
                                     >
+                                        {(() => {
+                                            const previewTokens = getReaderPreviewTokens(READER_THEME_CONFIGS[t.id]);
+                                            return (
                                         <div
                                             className="relative w-full aspect-square rounded-[12px] border-[2px] transition-colors"
                                             style={{
-                                                background: READER_THEME_CONFIGS[t.id].colors.bg,
-                                                borderColor: isActive ? READER_THEME_CONFIGS[t.id].colors.accent : 'transparent',
+                                                background: previewTokens.swatchBackground,
+                                                borderColor: isActive ? previewTokens.activeRing : 'transparent',
                                                 boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
                                             }}
                                         >
                                             {/* Mini preview dot */}
                                             <span
                                                 className="absolute top-[6px] left-[6px] w-[8px] h-[8px] rounded-full"
-                                                style={{ background: READER_THEME_CONFIGS[t.id].colors.accent }}
+                                                style={{ background: previewTokens.swatchAccent }}
                                             />
                                             {isActive && (
-                                                <span className="absolute bottom-[4px] right-[4px] flex items-center justify-center w-[16px] h-[16px] rounded-full" style={{ background: READER_THEME_CONFIGS[t.id].colors.accent }}>
-                                                    <Check className="w-[10px] h-[10px]" style={{ color: READER_THEME_CONFIGS[t.id].colors.bg }} strokeWidth={2} />
+                                                <span className="absolute bottom-[4px] right-[4px] flex items-center justify-center w-[16px] h-[16px] rounded-full" style={{ background: previewTokens.activeCheckBackground }}>
+                                                    <Check className="w-[10px] h-[10px]" style={{ color: previewTokens.activeCheckForeground }} strokeWidth={2} />
                                                 </span>
                                             )}
                                         </div>
-                                        <span className="text-[11px] text-muted-foreground leading-tight text-center">{t.label}</span>
+                                            );
+                                        })()}
+                                        <span className="text-[11px] leading-tight text-center text-[var(--reader-muted-text)]">{t.label}</span>
                                     </button>
                                 );
                             })}
@@ -107,12 +119,12 @@ export default function ReaderSettings({
                     {/* Font Size */}
                     <div>
                         <div className="flex items-center gap-[8px] mb-[12px]">
-                            <Type className="w-[16px] h-[16px] text-muted-foreground" />
-                            <span className="text-[15px] text-muted-foreground">Font Size</span>
+                            <Type className="w-[16px] h-[16px] text-[var(--reader-muted-text)]" />
+                            <span className="text-[15px] text-[var(--reader-muted-text)]">Font Size</span>
                         </div>
                         <div className="flex items-center gap-[16px]">
                             <span className={sliderEdgeBoxClassName}>
-                                <span className="text-[13px] text-muted-foreground">A</span>
+                                <span className="text-[13px] text-[var(--reader-muted-text)]">A</span>
                             </span>
                             <input
                                 type="range"
@@ -153,25 +165,25 @@ export default function ReaderSettings({
                                 "
                             />
                             <span className={sliderEdgeBoxClassName}>
-                                <span className="text-[20px] text-muted-foreground">A</span>
+                                <span className="text-[20px] text-[var(--reader-muted-text)]">A</span>
                             </span>
                         </div>
-                        <p className="text-center text-[13px] text-muted-foreground/50 mt-[8px]">
+                        <p className="mt-[8px] text-center text-[13px] text-[var(--reader-subtle-text)]">
                             {settings.fontSize}px
                         </p>
                     </div>
 
                     {/* Page Layout */}
                     <div>
-                        <p className="text-[15px] text-muted-foreground mb-[12px]">Page Layout</p>
+                        <p className="mb-[12px] text-[15px] text-[var(--reader-muted-text)]">Page Layout</p>
                         <div className="grid grid-cols-2 gap-[8px]">
                             <button
                                 type="button"
                                 onClick={() => setPageLayoutMode('single')}
                                 className="rounded-[12px] border px-3 py-2 text-[14px] transition-colors"
                                 style={{
-                                    borderColor: settings.pageLayoutMode === 'single' ? 'var(--system-blue)' : 'var(--separator)',
-                                    background: settings.pageLayoutMode === 'single' ? 'color-mix(in srgb, var(--system-blue) 14%, transparent)' : 'transparent',
+                                    borderColor: settings.pageLayoutMode === 'single' ? semanticTokens.accent : semanticTokens.border,
+                                    background: settings.pageLayoutMode === 'single' ? `color-mix(in srgb, ${semanticTokens.accent} 14%, transparent)` : 'transparent',
                                 }}
                             >
                                 Single Page
@@ -181,14 +193,14 @@ export default function ReaderSettings({
                                 onClick={() => setPageLayoutMode('spread')}
                                 className="rounded-[12px] border px-3 py-2 text-[14px] transition-colors"
                                 style={{
-                                    borderColor: settings.pageLayoutMode === 'spread' ? 'var(--system-blue)' : 'var(--separator)',
-                                    background: settings.pageLayoutMode === 'spread' ? 'color-mix(in srgb, var(--system-blue) 14%, transparent)' : 'transparent',
+                                    borderColor: settings.pageLayoutMode === 'spread' ? semanticTokens.accent : semanticTokens.border,
+                                    background: settings.pageLayoutMode === 'spread' ? `color-mix(in srgb, ${semanticTokens.accent} 14%, transparent)` : 'transparent',
                                 }}
                             >
                                 Two-Page Spread
                             </button>
                         </div>
-                        <p className="text-[12px] text-muted-foreground/60 mt-[8px]">
+                        <p className="mt-[8px] text-[12px] text-[var(--reader-subtle-text)]">
                             Spread mode activates on wide screens.
                         </p>
                     </div>

@@ -23,9 +23,10 @@ export default function IOSReaderHeader({
   return (
     <div
       className={cn(
-        'mobile-ui-no-select bg-background/80 backdrop-blur-xl border-b',
+        'mobile-ui-no-select border-b backdrop-blur-xl',
         className,
       )}
+      style={{ backgroundColor: 'var(--reader-chrome-bg)', borderColor: 'var(--reader-border)', color: 'var(--reader-text)' }}
     >
       <div className="px-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
         <div className="flex h-11 items-center">
@@ -34,24 +35,24 @@ export default function IOSReaderHeader({
               variant="ghost"
               size="icon"
               type="button"
-              className="text-primary -ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px]"
+              className="-ml-2 flex-shrink-0 relative after:absolute after:inset-y-[-10px] after:left-[-10px] after:right-[-4px] text-[var(--reader-accent)]"
             >
-              <IOSIcon icon={ChevronLeft} className="text-primary" strokeWidth={2} />
+              <IOSIcon icon={ChevronLeft} className="text-[var(--reader-accent)]" strokeWidth={2} />
             </Button>
           </div>
 
           <div className="min-w-0 flex-1 px-2">
             <div className="flex max-w-full flex-col justify-center text-left">
-              <h1 className="max-w-full text-sm font-semibold truncate text-foreground">{title}</h1>
+              <h1 className="max-w-full text-sm font-semibold truncate text-[var(--reader-text)]">{title}</h1>
               {subtitle ? (
-                <p className="max-w-full text-[11px] leading-3 text-muted-foreground truncate">
+                <p className="max-w-full text-[11px] leading-3 text-[var(--reader-muted-text)] truncate">
                   {subtitle}
                 </p>
               ) : null}
             </div>
           </div>
 
-          <div className="flex h-full items-center justify-end shrink-0 text-primary">
+          <div className="flex h-full items-center justify-end shrink-0 text-[var(--reader-accent)]">
             {trailingLeft}
             {trailingRight}
           </div>

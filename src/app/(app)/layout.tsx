@@ -4,6 +4,8 @@ import Header from '@/components/ui/Header';
 import PostHogProvider from '@/components/PostHogProvider';
 import SyncCheckClient from '@/components/SyncCheckClient';
 import PaletteSync from '@/components/PaletteSync';
+import { sharedWidgetDescription, siteTitle } from '@/lib/shareMetadata';
+import { getThemeBootstrapScript } from '@/lib/themes';
 
 export const viewport: Viewport = {
   themeColor: [
@@ -18,8 +20,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Globoox',
-  description: 'Reading app that instantly translates ebooks into your native language with Al. Upload EPUBs and read in English, French, Spanish or Russian',
+  title: siteTitle,
+  description: sharedWidgetDescription,
   keywords: [
     'reading',
     'books',
@@ -35,25 +37,23 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Globoox',
+    title: siteTitle,
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
-    title: 'Globoox',
-    description:
-      'Reading app that instantly translates ebooks into your native language with Al. Upload EPUBs and read in English, French, Spanish or Russian',
+    title: siteTitle,
+    description: sharedWidgetDescription,
     type: 'website',
     url: 'https://globoox.com',
-    siteName: 'Globoox',
+    siteName: siteTitle,
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Globoox',
-    description:
-      'Reading app that instantly translates ebooks into your native language with Al. Upload EPUBs and read in English, French, Spanish or Russian',
+    title: siteTitle,
+    description: sharedWidgetDescription,
   },
 };
 
@@ -64,37 +64,7 @@ export default function RootLayout({
 }>) {
   return (
     <>
-      <script dangerouslySetInnerHTML={{ __html: `
-          (function() {
-            try {
-              var mode = 'dark';
-              var palette = 'globoox';
-              var raw = localStorage.getItem('globoox-app-theme');
-              if (raw) {
-                try {
-                  var parsed = JSON.parse(raw);
-                  if (parsed && parsed.state) {
-                    if (parsed.state.mode === 'light' || parsed.state.mode === 'dark' || parsed.state.mode === 'system') {
-                      mode = parsed.state.mode;
-                    }
-                    if (parsed.state.palette === 'globoox' || parsed.state.palette === 'default') {
-                      palette = parsed.state.palette;
-                    }
-                  }
-                } catch (_e) {}
-              } else {
-                var legacyMode = localStorage.getItem('globoox-mode');
-                var legacyPalette = localStorage.getItem('globoox-palette');
-                if (legacyMode === 'light' || legacyMode === 'dark' || legacyMode === 'system') mode = legacyMode;
-                if (legacyPalette === 'globoox' || legacyPalette === 'default') palette = legacyPalette;
-              }
-              var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-              var cls = palette === 'globoox' ? (dark ? 'forest-dark' : 'forest-light') : (dark ? 'dark' : 'light');
-              document.documentElement.classList.remove('light', 'dark', 'forest-light', 'forest-dark');
-              document.documentElement.classList.add(cls);
-            } catch(e) {}
-          })();
-        ` }} />
+      <script dangerouslySetInnerHTML={{ __html: getThemeBootstrapScript() }} />
       {process.env.NODE_ENV === 'production' && (
         <Script
           id="microsoft-clarity"

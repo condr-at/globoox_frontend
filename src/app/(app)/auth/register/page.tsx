@@ -100,9 +100,9 @@ function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-[var(--app-shell-bg)] text-[var(--app-text)]">
       <section className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-10 sm:px-6">
-        <Card className="w-full max-w-md border-border/70 bg-card/95 shadow-md backdrop-blur-sm">
+        <Card className="w-full max-w-md border-[color:var(--app-border)] bg-[color:var(--app-elevated-bg)] text-[var(--app-text)] shadow-md backdrop-blur-sm">
           <CardHeader className="space-y-1.5 p-6">
             <CardTitle className="text-2xl">Create account</CardTitle>
             <CardDescription>Enter your email to create a new account</CardDescription>
@@ -154,7 +154,7 @@ function RegisterForm() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-1 top-1 h-8 w-8 text-muted-foreground"
+                    className="absolute right-1 top-1 h-8 w-8 text-[var(--app-text-muted)]"
                     onClick={() => setShowPassword((prev) => !prev)}
                     disabled={loading || redirecting}
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -183,7 +183,7 @@ function RegisterForm() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-1 top-1 h-8 w-8 text-muted-foreground"
+                    className="absolute right-1 top-1 h-8 w-8 text-[var(--app-text-muted)]"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
                     disabled={loading || redirecting}
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
@@ -199,7 +199,7 @@ function RegisterForm() {
 
             <div className="flex items-center gap-3 py-1">
               <Separator className="flex-1" />
-              <span className="text-xs uppercase tracking-wide text-muted-foreground">or</span>
+              <span className="text-xs uppercase tracking-wide text-[var(--app-text-muted)]">or</span>
               <Separator className="flex-1" />
             </div>
 
@@ -213,7 +213,7 @@ function RegisterForm() {
               Continue with Google
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-[var(--app-text-muted)]">
               Already have an account?{' '}
               <Link href="/auth" className="text-primary underline-offset-4 hover:underline">
                 Sign in

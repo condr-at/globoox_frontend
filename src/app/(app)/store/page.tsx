@@ -30,11 +30,11 @@ export default function StorePage() {
     }, [search, selectedGenre]);
 
     return (
-        <div className="min-h-screen bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
+        <div className="min-h-screen bg-[var(--app-shell-bg)] pb-[calc(60px+env(safe-area-inset-bottom))] text-[var(--app-text)]">
             {/* Header */}
             <PageHeader title="Store">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--app-text-muted)]" />
                     <Input
                         type="text"
                         value={search}
@@ -45,9 +45,9 @@ export default function StorePage() {
                     {search && (
                         <button
                             onClick={() => setSearch('')}
-                            className={`${uiIconCircleButton} absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 p-1 bg-transparent text-muted-foreground`}
+                            className={`${uiIconCircleButton} absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 p-1 bg-transparent text-[var(--app-text-muted)]`}
                         >
-                            <X className="w-3 h-3 text-muted-foreground" />
+                            <X className="w-3 h-3 text-[var(--app-text-muted)]" />
                         </button>
                     )}
                 </div>
@@ -69,7 +69,7 @@ export default function StorePage() {
 
             <div className="container max-w-2xl mx-auto px-4 sm:px-6 pt-[calc(1rem+env(safe-area-inset-top)+120px)] pb-4">
                 {/* Results count */}
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="mb-4 text-sm text-[var(--app-text-muted)]">
                     {filteredBooks.length} {filteredBooks.length === 1 ? 'book' : 'books'} found
                 </p>
 
@@ -94,10 +94,10 @@ export default function StorePage() {
                 {/* Empty state */}
                 {filteredBooks.length === 0 && (
                     <div className="text-center py-16">
-                        <p className="text-base text-muted-foreground mb-2">
+                        <p className="mb-2 text-base text-[var(--app-text-muted)]">
                             No books found
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-[var(--app-text-muted)]">
                             Try adjusting your search or filters
                         </p>
                     </div>

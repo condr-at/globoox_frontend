@@ -9,7 +9,9 @@ interface IOSBottomDrawerProps {
   onOpenChange: (open: boolean) => void;
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   side?: 'bottom' | 'left' | 'right';
+  tone?: 'default' | 'reader';
   labelledBy?: string;
   describedBy?: string;
   dragHandle?: React.ReactNode;
@@ -17,10 +19,15 @@ interface IOSBottomDrawerProps {
   dragRegion?: React.ReactNode;
 }
 
-const sideClassName: Record<NonNullable<IOSBottomDrawerProps['side']>, string> = {
-  bottom: 'relative mt-auto flex min-h-0 w-full flex-col overflow-y-auto rounded-t-[30px] border-0 bg-[var(--bg-grouped-secondary)] shadow-2xl sm:mt-0 sm:max-h-[calc(100dvh-2rem)] sm:max-w-lg sm:rounded-[28px] sm:border sm:border-[var(--separator)] pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-0',
-  left: 'relative h-full w-[min(88vw,360px)] border-r border-[var(--separator)] bg-[var(--bg-grouped-secondary)] shadow-2xl',
-  right: 'relative ml-auto h-full w-[min(88vw,420px)] border-l border-[var(--separator)] bg-[var(--bg-grouped-secondary)] shadow-2xl',
+const sideBaseClassName: Record<NonNullable<IOSBottomDrawerProps['side']>, string> = {
+  bottom: 'relative mt-auto flex min-h-0 w-full flex-col overflow-y-auto rounded-t-[30px] border-0 shadow-2xl sm:mt-0 sm:max-h-[calc(100dvh-2rem)] sm:max-w-lg sm:rounded-[28px] sm:border pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-0',
+  left: 'relative h-full w-[min(88vw,360px)] border-r shadow-2xl',
+  right: 'relative ml-auto h-full w-[min(88vw,420px)] border-l shadow-2xl',
+};
+
+const sideToneClassName: Record<NonNullable<IOSBottomDrawerProps['tone']>, string> = {
+  default: 'bg-[var(--app-surface-bg)] text-[var(--app-text)] border-[var(--app-border)]',
+  reader: 'bg-[var(--reader-panel-bg)] text-[var(--reader-text)] border-[var(--reader-border)]',
 };
 
 const wrapperClassName: Record<NonNullable<IOSBottomDrawerProps['side']>, string> = {
@@ -46,7 +53,9 @@ export default function IOSBottomDrawer({
   onOpenChange,
   children,
   className,
+  style,
   side = 'bottom',
+  tone = 'default',
   labelledBy,
   describedBy,
   dragHandle,
@@ -104,7 +113,7 @@ export default function IOSBottomDrawer({
       describedBy={describedBy}
       wrapperClassName={wrapperClassName[side]}
       overlayClassName="bg-black/24"
-      contentClassName={cn(sideClassName[side], className)}
+      contentClassName={cn(sideBaseClassName[side], sideToneClassName[tone], className)}
       overlayStyle={(state) => ({
         opacity: state === 'open' ? 1 : 0,
         transition: 'opacity 240ms ease-out',
@@ -126,6 +135,7 @@ export default function IOSBottomDrawer({
             : 'transform 240ms cubic-bezier(0.4, 0, 1, 1)',
         opacity: shouldDisableSlide ? (state === 'open' ? 1 : 0) : 1,
         willChange: shouldDisableSlide ? 'opacity' : 'transform',
+        ...style,
       })}
     >
       {canDrag && dragHandle ? (
