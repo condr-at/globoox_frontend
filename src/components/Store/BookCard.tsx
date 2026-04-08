@@ -380,7 +380,7 @@ export default function BookCard({
                   style={{ background: ambientShadowColor }}
                 />
                 <div className="relative h-full w-full overflow-hidden rounded-[3px]">
-                  {hasValidCover && isAspectReady ? (
+                  {hasValidCover ? (
                     <Image
                       src={displayCover}
                       alt={title}
@@ -389,8 +389,6 @@ export default function BookCard({
                       sizes="(max-width: 640px) 45vw, 180px"
                       onError={() => setFailedCoverSrc(displayCover)}
                     />
-                  ) : hasValidCover ? (
-                    <Skeleton className="h-full w-full rounded-[3px] bg-muted animate-pulse" />
                   ) : (
                     <div aria-hidden="true" className="h-full w-full" style={{ backgroundColor: fallbackColor }} />
                   )}
