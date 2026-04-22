@@ -328,7 +328,7 @@ function FallbackCover({
 
   return (
     <div
-      className="relative h-full w-full"
+      className="relative h-full w-full [container-type:inline-size]"
       style={{ background: coverTheme.gradient }}
       aria-hidden="true"
     >
@@ -338,13 +338,13 @@ function FallbackCover({
       />
       <div className="absolute inset-0 px-[10%] pt-[14%] pb-[16%] flex flex-col justify-between text-center">
         <p
-          className="line-clamp-4 text-[clamp(12px,1.8vw,18px)] font-semibold leading-tight"
+          className="line-clamp-4 text-[clamp(12px,9cqw,24px)] font-semibold leading-tight"
           style={{ color: coverTheme.textColor }}
         >
           {title}
         </p>
         <p
-          className="line-clamp-3 text-[clamp(11px,1.5vw,14px)] font-medium leading-tight opacity-90"
+          className="line-clamp-3 text-[clamp(11px,7cqw,18px)] font-medium leading-tight opacity-90"
           style={{ color: coverTheme.textColor }}
         >
           {author}
