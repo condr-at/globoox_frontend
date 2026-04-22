@@ -34,7 +34,6 @@ import {
   setCachedReadingPosition,
 } from '@/lib/contentCache';
 
-const FALLBACK_COVER = '/covers/great-gatsby.jpg';
 const FALLBACK_AUTHOR = 'Unknown author';
 const BOOKS_BATCH_SIZE = 6;
 
@@ -660,7 +659,7 @@ export default function MyBooksPage() {
                     id={book.id}
                     title={book.title}
                     author={book.author ?? FALLBACK_AUTHOR}
-                    cover={book.cover_url ?? FALLBACK_COVER}
+                    cover={book.cover_url}
                     progress={getBookProgress(book)}
                     onHide={book.status === 'hidden' ? unhideBook : hideBook}
                     onDelete={handleRequestDelete}
