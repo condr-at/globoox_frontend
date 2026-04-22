@@ -51,21 +51,17 @@ function useCompressedCover(src: string, maxWidth = 480): string {
   return isDataUri ? compressed : src;
 }
 
-function hashString(input: string): number {
-  let hash = 0;
-  for (let i = 0; i < input.length; i += 1) {
-    hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
-  }
-  return hash;
-}
-
 function useThemeIsDark(): boolean {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     const root = document.documentElement;
     const apply = () => {
-      setIsDark(root.dataset.themeMode === 'dark' || root.classList.contains('dark') || root.classList.contains('forest-dark'));
+      setIsDark(
+        root.dataset.themeMode === 'dark' ||
+        root.classList.contains('dark') ||
+        root.classList.contains('forest-dark')
+      );
     };
 
     apply();
@@ -75,6 +71,14 @@ function useThemeIsDark(): boolean {
   }, []);
 
   return isDark;
+}
+
+function hashString(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i += 1) {
+    hash = (hash * 31 + input.charCodeAt(i)) >>> 0;
+  }
+  return hash;
 }
 
 function clampChannel(value: number): number {
@@ -245,6 +249,111 @@ function getContainFrameStyle(imageAspect: number | null): CSSProperties {
   return { width: `${(imageAspect / containerAspect) * 100}%`, height: '100%' };
 }
 
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  const sat = Math.max(0, Math.min(1, s));
+  const lig = Math.max(0, Math.min(1, l));
+  const c = (1 - Math.abs(2 * lig - 1)) * sat;
+  const hp = ((h % 360) + 360) % 360 / 60;
+  const x = c * (1 - Math.abs((hp % 2) - 1));
+  let [r1, g1, b1] = [0, 0, 0];
+
+  if (hp >= 0 && hp < 1) [r1, g1, b1] = [c, x, 0];
+  else if (hp < 2) [r1, g1, b1] = [x, c, 0];
+  else if (hp < 3) [r1, g1, b1] = [0, c, x];
+  else if (hp < 4) [r1, g1, b1] = [0, x, c];
+  else if (hp < 5) [r1, g1, b1] = [x, 0, c];
+  else [r1, g1, b1] = [c, 0, x];
+
+  const m = lig - c / 2;
+  return [
+    clampChannel((r1 + m) * 255),
+    clampChannel((g1 + m) * 255),
+    clampChannel((b1 + m) * 255),
+  ];
+}
+
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+  const toLinear = (value: number) => {
+    const n = value / 255;
+    return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+  };
+  const [rl, gl, bl] = [toLinear(r), toLinear(g), toLinear(b)];
+  return 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
+}
+
+function contrastRatio(l1: number, l2: number): number {
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function buildFallbackCoverTheme(key: string): {
+  baseHsl: string;
+  gradient: string;
+  textColor: string;
+  borderColor: string;
+} {
+  const hash = hashString(key);
+  const hue = hash % 360;
+  const saturation = 56 + ((hash >> 4) % 14); // 56..69
+  const topLightness = 44 + ((hash >> 8) % 7); // 44..50
+  let bottomLightness = 20 + ((hash >> 12) % 6); // 20..25
+
+  // Ensure white text has sufficient contrast against the darker gradient stop.
+  for (let i = 0; i < 8; i += 1) {
+    const rgb = hslToRgb(hue, saturation / 100, bottomLightness / 100);
+    const ratio = contrastRatio(relativeLuminance(rgb), 1);
+    if (ratio >= 4.5) break;
+    bottomLightness = Math.max(12, bottomLightness - 2);
+  }
+
+  return {
+    baseHsl: `hsl(${hue} ${saturation}% ${bottomLightness}%)`,
+    gradient: `linear-gradient(180deg, hsl(${hue} ${saturation}% ${topLightness}%) 0%, hsl(${hue} ${saturation}% ${bottomLightness}%) 100%)`,
+    textColor: '#FFFFFF',
+    borderColor: 'rgba(255,255,255,0.50)',
+  };
+}
+
+function FallbackCover({
+  id,
+  title,
+  author,
+}: {
+  id: string;
+  title: string;
+  author: string;
+}) {
+  const coverTheme = useMemo(() => buildFallbackCoverTheme(`${id}::${title}::${author}`), [id, title, author]);
+
+  return (
+    <div
+      className="relative h-full w-full [container-type:inline-size]"
+      style={{ background: coverTheme.gradient }}
+      aria-hidden="true"
+    >
+      <div
+        className="pointer-events-none absolute inset-[6px] rounded-[2px]"
+        style={{ border: `1px solid ${coverTheme.borderColor}` }}
+      />
+      <div className="absolute inset-0 px-[10%] pt-[14%] pb-[16%] flex flex-col justify-between text-center">
+        <p
+          className="line-clamp-4 text-[clamp(12px,9cqw,24px)] font-semibold leading-tight"
+          style={{ color: coverTheme.textColor }}
+        >
+          {title}
+        </p>
+        <p
+          className="line-clamp-3 text-[clamp(11px,7cqw,18px)] font-medium leading-tight opacity-90"
+          style={{ color: coverTheme.textColor }}
+        >
+          {author}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 interface BookCardProps {
   id: string;
   title: string;
@@ -293,14 +402,8 @@ export default function BookCard({
   const showMenuButton = canHover === null
     ? false
     : (!canHover || isCardHovered || isCardFocused || isMenuOpen);
-  const isDarkTheme = false;
-  const fallbackColor = useMemo(() => {
-    const hash = hashString(`${id}-${title}`);
-    const hue = hash % 360;
-    const saturation = 58;
-    const lightness = isDarkTheme ? 69 : 62;
-    return `hsl(${hue} ${saturation}% ${lightness}%)`;
-  }, [id, title, isDarkTheme]);
+  const isDarkTheme = useThemeIsDark();
+  const fallbackColor = useMemo(() => buildFallbackCoverTheme(`${id}::${title}::${author}`).baseHsl, [id, title, author]);
   const fallbackShadow = useMemo(() => (
     `0 1px 2px color-mix(in srgb, ${fallbackColor} 32%, transparent), 0 12px 26px color-mix(in srgb, ${fallbackColor} 40%, transparent)`
   ), [fallbackColor]);
@@ -380,7 +483,7 @@ export default function BookCard({
                   style={{ background: ambientShadowColor }}
                 />
                 <div className="relative h-full w-full overflow-hidden rounded-[3px]">
-                  {hasValidCover && isAspectReady ? (
+                  {hasValidCover ? (
                     <Image
                       src={displayCover}
                       alt={title}
@@ -389,10 +492,8 @@ export default function BookCard({
                       sizes="(max-width: 640px) 45vw, 180px"
                       onError={() => setFailedCoverSrc(displayCover)}
                     />
-                  ) : hasValidCover ? (
-                    <Skeleton className="h-full w-full rounded-[3px] bg-muted animate-pulse" />
                   ) : (
-                    <div aria-hidden="true" className="h-full w-full" style={{ backgroundColor: fallbackColor }} />
+                    <FallbackCover id={id} title={title} author={author} />
                   )}
 
                   {progress > 0 && (
@@ -458,13 +559,7 @@ export function StoreBookCard({
   const coverFrameStyle = getContainFrameStyle(coverAspect);
   const effectiveCoverFrameStyle = isAspectReady ? coverFrameStyle : { width: '100%', height: '100%' };
   const isDarkTheme = useThemeIsDark();
-  const fallbackColor = useMemo(() => {
-    const hash = hashString(`${id}-${title}`);
-    const hue = hash % 360;
-    const saturation = 58;
-    const lightness = isDarkTheme ? 69 : 62;
-    return `hsl(${hue} ${saturation}% ${lightness}%)`;
-  }, [id, title, isDarkTheme]);
+  const fallbackColor = useMemo(() => buildFallbackCoverTheme(`${id}::${title}::${author}`).baseHsl, [id, title, author]);
   const fallbackShadow = useMemo(() => (
     `0 1px 2px color-mix(in srgb, ${fallbackColor} 32%, transparent), 0 12px 26px color-mix(in srgb, ${fallbackColor} 40%, transparent)`
   ), [fallbackColor]);
@@ -502,7 +597,7 @@ export function StoreBookCard({
                   ) : hasValidCover ? (
                     <Skeleton className="h-full w-full rounded-[3px] bg-muted animate-pulse" />
                   ) : (
-                    <div aria-hidden="true" className="h-full w-full" style={{ backgroundColor: fallbackColor }} />
+                    <FallbackCover id={id} title={title} author={author} />
                   )}
                   {hasDemo && (
                     <Badge className="absolute top-2 left-2">

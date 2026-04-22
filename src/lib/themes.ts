@@ -344,17 +344,12 @@ export function getThemeStyle(themeId: ThemeId | string | null | undefined): Rec
 
 export function applyThemeToElement(element: HTMLElement, themeId: ThemeId | string | null | undefined) {
   const theme = getThemeDefinition(themeId);
-  const cssVars = getThemeCssVariables(themeId);
 
   element.classList.remove(...THEME_CLASSES);
   element.classList.add(theme.rootClass);
   element.dataset.themeId = theme.id;
   element.dataset.themeMode = theme.mode;
   element.dataset.themePalette = theme.palette;
-
-  for (const [key, value] of Object.entries(cssVars)) {
-    element.style.setProperty(key, value);
-  }
 }
 
 export function getThemeBootstrapScript(): string {
@@ -362,7 +357,6 @@ export function getThemeBootstrapScript(): string {
     (function() {
       try {
         var classes = ${JSON.stringify(THEME_CLASSES)};
-        var cssVars = ${JSON.stringify(THEME_CSS_VARIABLES)};
         var mode = 'dark';
         var palette = 'globoox';
         var raw = localStorage.getItem('globoox-app-theme');
@@ -389,33 +383,6 @@ export function getThemeBootstrapScript(): string {
         root.dataset.themeId = themeId;
         root.dataset.themeMode = dark ? 'dark' : 'light';
         root.dataset.themePalette = palette;
-        var vars = cssVars[themeId] || cssVars.light;
-        for (var key in vars) {
-          if (Object.prototype.hasOwnProperty.call(vars, key)) {
-            root.style.setProperty(key, vars[key]);
-          }
-        }
-        root.style.setProperty('--primary', 'var(--system-blue)');
-        root.style.setProperty('--background', 'var(--bg-primary)');
-        root.style.setProperty('--foreground', 'var(--label-primary)');
-        root.style.setProperty('--card', 'var(--bg-grouped-secondary)');
-        root.style.setProperty('--card-foreground', 'var(--label-primary)');
-        root.style.setProperty('--popover', 'var(--bg-grouped-secondary)');
-        root.style.setProperty('--popover-foreground', 'var(--label-primary)');
-        root.style.setProperty('--secondary', 'var(--system-gray6)');
-        root.style.setProperty('--secondary-foreground', 'var(--label-primary)');
-        root.style.setProperty('--muted-foreground', 'var(--label-secondary)');
-        root.style.setProperty('--accent-foreground', 'var(--label-primary)');
-        root.style.setProperty('--border', 'var(--separator)');
-        root.style.setProperty('--input', 'var(--separator)');
-        root.style.setProperty('--ring', 'var(--system-gray)');
-        root.style.setProperty('--sidebar', 'var(--bg-secondary)');
-        root.style.setProperty('--sidebar-foreground', 'var(--label-primary)');
-        root.style.setProperty('--sidebar-primary', 'var(--label-primary)');
-        root.style.setProperty('--sidebar-accent', 'var(--system-gray6)');
-        root.style.setProperty('--sidebar-accent-foreground', 'var(--label-primary)');
-        root.style.setProperty('--sidebar-border', 'var(--separator)');
-        root.style.setProperty('--sidebar-ring', 'var(--system-gray)');
       } catch (_e) {}
     })();
   `.trim();

@@ -67,6 +67,7 @@ const IS_DEV = process.env.NODE_ENV === 'development';
 const SHOW_READER_DEBUG_OVERLAY = false;
 const PREFETCH_FORWARD_TARGET_CHARS = 5000;
 const NEXT_CHAPTER_PREFETCH_TARGET_CHARS = 5000;
+const NEXT_CHAPTER_WARMUP_DELAY_MS = 1500;
 
 interface ReaderViewProps {
     bookId: string;
@@ -731,6 +732,7 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
         if (!nextChapter) return;
 
         let cancelled = false;
+        let timeoutId: number | null = null;
 
         const run = async () => {
             let nextChapterBlocks = (await getCachedChapterContent(nextChapter.id, activeLang.toUpperCase()))?.blocks ?? [];
@@ -795,10 +797,16 @@ export default function ReaderView({ bookId, title, author, availableLanguages, 
             }
         };
 
-        void run();
+        timeoutId = window.setTimeout(() => {
+            if (cancelled) return;
+            void run();
+        }, NEXT_CHAPTER_WARMUP_DELAY_MS);
 
         return () => {
             cancelled = true;
+            if (timeoutId != null) {
+                window.clearTimeout(timeoutId);
+            }
         };
     }, [pagesReady, isSourceLang, isContentLoading, chapters, currentChapterIndex, currentChapterId, activeLang]);
 
